@@ -1,5 +1,5 @@
---- /dev/null	2024-05-27 15:12:35
-+++ BUILD	2024-05-27 15:12:26
+--- /dev/null	2024-05-27 15:26:24
++++ BUILD	2024-05-27 15:26:19
 @@ -0,0 +1,77 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +
@@ -29,22 +29,22 @@
 +        "libxcb-dbe.so","libxcb-dbe.so.0","libxcb-dbe.so.0.0.0",
 +        "libxcb-dpms.so","libxcb-dpms.so.0","libxcb-dpms.so.0.0.0",
 +        "libxcb-dri2.so","libxcb-dri2.so.0","libxcb-dri2.so.0.0.0",
-+        "libxcb-dri3.so","libxcb-dri3.so.0","libxcb-dri3.so.0.0.0",
++        "libxcb-dri3.so","libxcb-dri3.so.0","libxcb-dri3.so.0.1.0",
 +        "libxcb-glx.so","libxcb-glx.so.0","libxcb-glx.so.0.0.0",
 +        "libxcb-present.so","libxcb-present.so.0","libxcb-present.so.0.0.0",
-+        "libxcb-randr.so","libxcb-randr.so.0","libxcb-randr.so.0.0.0",
++        "libxcb-randr.so","libxcb-randr.so.0","libxcb-randr.so.0.1.0",
 +        "libxcb-record.so","libxcb-record.so.0","libxcb-record.so.0.0.0",
 +        "libxcb-render.so","libxcb-render.so.0","libxcb-render.so.0.0.0",
 +        "libxcb-res.so","libxcb-res.so.0","libxcb-res.so.0.0.0",
 +        "libxcb-screensaver.so","libxcb-screensaver.so.0","libxcb-screensaver.so.0.0.0",
 +        "libxcb-shape.so","libxcb-shape.so.0","libxcb-shape.so.0.0.0",
 +        "libxcb-shm.so","libxcb-shm.so.0","libxcb-shm.so.0.0.0",
-+        "libxcb-sync.so","libxcb-sync.so.0","libxcb-sync.so.0.0.0",
++        "libxcb-sync.so","libxcb-sync.so.1","libxcb-sync.so.1.0.0",
 +        "libxcb-xf86dri.so","libxcb-xf86dri.so.0","libxcb-xf86dri.so.0.0.0",
 +        "libxcb-xfixes.so","libxcb-xfixes.so.0","libxcb-xfixes.so.0.0.0",
 +        "libxcb-xinerama.so","libxcb-xinerama.so.0","libxcb-xinerama.so.0.0.0",
-+        "libxcb-xinput.so","libxcb-xinput.so.0","libxcb-xinput.so.0.0.0",
-+        "libxcb-xkb.so","libxcb-xkb.so.0","libxcb-xkb.so.0.0.0",
++        "libxcb-xinput.so","libxcb-xinput.so.0","libxcb-xinput.so.0.1.0",
++        "libxcb-xkb.so","libxcb-xkb.so.1","libxcb-xkb.so.1.0.0",
 +        "libxcb-xtest.so","libxcb-xtest.so.0","libxcb-xtest.so.0.0.0",
 +        "libxcb-xv.so","libxcb-xv.so.0","libxcb-xv.so.0.0.0",
 +        "libxcb-xvmc.so","libxcb-xvmc.so.0","libxcb-xvmc.so.0.0.0",
