@@ -18,7 +18,10 @@ configure_make(
         "--disable-podpages",
         "--disable-txtpages",
         "--disable-sdl2",
-    ],
+    ] + select({
+        "@platforms//os:linux": ["--enable-libxcb"],
+        "//conditions:default": [],
+    }),
     env = select({
         "@platforms//os:macos": {
             "AR": "",
@@ -41,5 +44,8 @@ configure_make(
         "@bzip2//:bz2",
         "@iconv//:libiconv",
         "@zlib",
-    ],
+    ] + select({
+        "@platforms//os:linux": ["@libxcb"],
+        "//conditions:default": [],
+    }), ,
 )
