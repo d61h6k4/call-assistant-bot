@@ -24,10 +24,12 @@ absl::Status aikit::utils::CaptureDevice(const std::string &device_name,
   // and AVDictionary (which are options to the demuxer)
   // http://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49
   if (int err = avformat_open_input(&format_context, driver_url.c_str(),
-                                    input_format, nullptr); err < 0) {
+                                    input_format, nullptr);
+      err < 0) {
+    auto err_message = av_err2str(err);
     return absl::AbortedError(
         absl::StrCat("Failed to open the audio driver url: ", driver_url,
-                     " Error: ", av_err2str(err)));
+                     " Error: ", err_message));
   }
 
   // read Packets from the Format to get stream information
