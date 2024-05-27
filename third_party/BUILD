@@ -25,8 +25,3 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = ["@ffmpeg//:libffmpeg"],
 )
-
-alias(
-    name = "gtest",
-    actual = "@com_google_googletest//:gtest"
-)
