@@ -1,0 +1,26 @@
+--- /dev/null	2024-05-20 19:08:41
++++ BUILD	2024-05-20 19:08:31
+@@ -0,0 +1,23 @@
++load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
++
++filegroup(
++    name = "libxcb_srcs",
++    srcs = glob(["**"]),
++)
++
++configure_make(
++    name = "libxcb",
++    lib_source = ":libxcb_srcs",
++    env = select({
++        "@platforms//os:macos": {
++            "AR": "",
++        },
++        "//conditions:default": {
++        },
++    }),
++    deps = [
++        "@xcb_proto",
++        "@libxau"
++    ],
++    visibility = ["//visibility:public"],
++)

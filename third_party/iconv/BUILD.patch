@@ -1,0 +1,33 @@
+--- /dev/null	2024-05-21 17:12:17
++++ BUILD	2024-05-21 16:40:23
+@@ -0,0 +1,30 @@
++load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
++
++filegroup(
++    name = "iconv_srcs",
++    srcs = glob([
++        "**",
++    ]),
++)
++
++configure_make(
++    name = "libiconv",
++    configure_options = [
++        "--disable-debug",
++        "--disable-dependency-tracking",
++        "--enable-static",
++    ],
++    env = select({
++        "@platforms//os:macos": {
++            "AR": "",
++        },
++        "//conditions:default": {
++        },
++    }),
++    lib_source = ":iconv_srcs",
++    out_static_libs = [
++        "libcharset.a",
++        "libiconv.a",
++    ],
++    visibility = ["//visibility:public"],
++)

@@ -1,0 +1,17 @@
+--- /dev/null	2024-05-20 16:16:26
++++ BUILD	2024-05-20 16:16:23
+@@ -0,0 +1,14 @@
++load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
++
++filegroup(
++    name = "xcb_proto_srcs",
++    srcs = glob(["**"]),
++)
++
++configure_make(
++    name = "xcb_proto",
++    lib_source = ":xcb_proto_srcs",
++    out_headers_only = True,
++    out_data_dirs = ["share", "lib"],
++    visibility = ["//visibility:public"],
++)

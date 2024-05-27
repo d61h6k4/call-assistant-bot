@@ -1,0 +1,25 @@
+--- /dev/null	2024-05-20 19:03:29
++++ BUILD	2024-05-20 19:03:11
+@@ -0,0 +1,22 @@
++load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
++
++filegroup(
++    name = "libxau_srcs",
++    srcs = glob(["**"]),
++)
++
++configure_make(
++    name = "libxau",
++    lib_source = ":libxau_srcs",
++    deps = [
++        "@xorgproto",
++    ],
++    env = select({
++        "@platforms//os:macos": {
++            "AR": "",
++        },
++        "//conditions:default": {
++        },
++    }),
++    visibility = ["//visibility:public"],
++)

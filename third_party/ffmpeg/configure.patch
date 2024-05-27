@@ -1,0 +1,15 @@
+--- configure.orig	2024-05-21 12:42:08
++++ configure	2024-05-21 12:55:14
+@@ -4033,10 +4033,10 @@
+ 
+ # toolchain
+ ar_default="ar"
+-cc_default="gcc"
++cc_default="$CC"
+ stdc_default="c17"
+ stdcxx_default="c++11"
+-cxx_default="g++"
++cxx_default="$CXX"
+ host_cc_default="gcc"
+ doxygen_default="doxygen"
+ install="install"

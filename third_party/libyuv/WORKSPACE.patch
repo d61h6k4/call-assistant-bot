@@ -1,0 +1,5 @@
+--- /dev/null	2024-01-22 17:23:02
++++ WORKSPACE	2024-01-22 17:22:48
+@@ -0,0 +1 @@
++workspace(name = "libyuv")
+\ No newline at end of file

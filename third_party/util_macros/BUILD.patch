@@ -1,0 +1,17 @@
+--- /dev/null	2024-05-20 16:40:02
++++ BUILD	2024-05-20 16:39:51
+@@ -0,0 +1,14 @@
++load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
++
++filegroup(
++    name = "util_macros_srcs",
++    srcs = glob(["**"]),
++)
++
++configure_make(
++    name = "util_macros",
++    lib_source = ":util_macros_srcs",
++    out_headers_only = True,
++    out_data_dirs = ["share"],
++    visibility = ["//visibility:public"],
++)

@@ -1,0 +1,17 @@
+--- /dev/null	2024-05-20 16:46:28
++++ BUILD	2024-05-20 16:46:22
+@@ -0,0 +1,14 @@
++load("@rules_foreign_cc//foreign_cc:defs.bzl", "meson")
++
++filegroup(
++    name = "xorgproto_srcs",
++    srcs = glob(["**"]),
++)
++
++meson(
++    name = "xorgproto",
++    lib_source = ":xorgproto_srcs",
++    out_headers_only = True,
++    out_data_dirs = ["share"],
++    visibility = ["//visibility:public"],
++)

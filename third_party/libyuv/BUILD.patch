@@ -1,0 +1,28 @@
+--- /dev/null	2024-01-22 17:23:09
++++ BUILD	2024-01-22 17:22:16
+@@ -0,0 +1,24 @@
++# Description:
++#   The libyuv package provides implementation yuv image conversion, rotation
++#   and scaling.
++
++licenses(["notice"])  # BSD license
++
++exports_files(["LICENSE"])
++
++cc_library(
++    name = "libyuv",
++    srcs = glob(
++        [
++            "source/*.cc",
++            "include/libyuv/*.h",
++        ],
++    ),
++    hdrs = [
++        "include/libyuv/compare.h",
++        "include/libyuv/convert.h",
++        "include/libyuv/video_common.h",
++    ],
++    includes = ["include"],
++    visibility = ["//visibility:public"],
++)
+\ No newline at end of file

@@ -1,0 +1,152 @@
+###############################################################################
+# Bazel now uses Bzlmod by default to manage external dependencies.
+# Please consider migrating your external dependencies from WORKSPACE to MODULE.bazel.
+#
+# For more details, please check https://github.com/bazelbuild/bazel/issues/18958
+###############################################################################
+module(
+    version = "0.1.0",
+    repo_name = "meeting_bot",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.5.0")
+bazel_dep(name = "platforms", version = "0.0.8")
+bazel_dep(name = "apple_support", version = "1.11.1", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "rules_apple", version = "3.1.1", repo_name = "build_bazel_rules_apple")
+bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
+git_override(
+    module_name = "rules_foreign_cc",
+    commit = "7ce62009557d73da9aa0d2a1ca7eded49078b3cf",
+    patch_strip = 1,
+    patches = ["//third_party/rules_foreign_cc:update_meson.patch"],
+    remote = "https://github.com/bazelbuild/rules_foreign_cc",
+)
+
+bazel_dep(name = "rules_proto", version = "6.0.0")
+bazel_dep(name = "rules_proto_grpc", version = "5.0.0-alpha2")
+bazel_dep(name = "abseil-cpp", version = "20240116.2", repo_name = "com_google_absl")
+bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
+bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
+bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+_MEDIAPIPE_VERSION = "0.10.14"
+
+http_archive(
+    name = "mediapipe",
+    patch_args = ["-p1"],
+    patches = [
+        # Remove npm and js dependencies
+        "//third_party/mediapipe:mediapipe_framework_port_build_config.patch",
+        "//third_party/mediapipe:mediapipe_framework_tool_mediapipe_proto.patch",
+        # Remove tensorflow dependency
+        "//third_party/mediapipe:mediapipe_framework_tool_mediapipe_graph.patch",
+    ],
+    sha256 = "9d46fa5363f5c4e11c3d1faec71b0746f15c5aab7b5460d0e5655d7af93c6957",
+    strip_prefix = "mediapipe-{}".format(_MEDIAPIPE_VERSION),
+    url = "https://github.com/google/mediapipe/archive/refs/tags/v{}.tar.gz".format(_MEDIAPIPE_VERSION),
+)
+
+# sudo apt-get install yasm
+bazel_dep(name = "ffmpeg", version = "7.0.0")
+archive_override(
+    module_name = "ffmpeg",
+    integrity = "sha256-nqTx6TSxZVyaba1Xn9UvopnNT2pfK4K+l9qpj/LnmNA=",
+    patches = [
+        "//third_party/ffmpeg:BUILD.patch",
+        "//third_party/ffmpeg:MODULE.bazel.patch",
+        # Respect CC env variable
+        "//third_party/ffmpeg:configure.patch",
+    ],
+    strip_prefix = "FFmpeg-n7.0",
+    urls = "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.0.zip",
+)
+
+bazel_dep(name = "iconv", version = "1.17.0", repo_name = "iconv")
+archive_override(
+    module_name = "iconv",
+    integrity = "sha256-j3QhO1YjjIWlClMp934GGYdx5w3Zpzl3n0wC9l2XExM=",
+    patches = [
+        "@//third_party/iconv:BUILD.patch",
+        "@//third_party/iconv:MODULE.bazel.patch",
+    ],
+    strip_prefix = "libiconv-1.17",
+    urls = "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.17.tar.gz",
+)
+
+# libxcb (ffmpeg uses to capture the screen)
+bazel_dep(name = "libxcb", version = "1.16.0")
+archive_override(
+    module_name = "libxcb",
+    integrity = "sha256-vA91+Eso5klqGaHQlNfkfe+GGlDLfM5bI7Yu7NwqRHk=",
+    patches = [
+        "//third_party/libxcb:BUILD.patch",
+        "//third_party/libxcb:MODULE.bazel.patch",
+    ],
+    strip_prefix = "libxcb-1.16",
+    urls = "https://xorg.freedesktop.org/archive/individual/lib/libxcb-1.16.tar.gz",
+)
+
+bazel_dep(name = "xcb_proto", version = "1.16.0")
+archive_override(
+    module_name = "xcb_proto",
+    integrity = "sha256-2cfwELEQX8OFi/B7UWmy3Y50k8ZlKx/kXzMh2HTykdc=",
+    patches = [
+        "//third_party/xcb_proto:BUILD.patch",
+        "//third_party/xcb_proto:MODULE.bazel.patch",
+    ],
+    strip_prefix = "xcb-proto-1.16.0",
+    urls = "https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.16.0.tar.gz",
+)
+
+bazel_dep(name = "libxau", version = "1.0.11")
+archive_override(
+    module_name = "libxau",
+    integrity = "sha256-8/oygvVXDD9r1iAkRDjb+91YD8gPAvVJWHoPirMpu+s=",
+    patches = [
+        "//third_party/libxau:BUILD.patch",
+        "//third_party/libxau:MODULE.bazel.patch",
+    ],
+    strip_prefix = "libXau-1.0.11",
+    urls = "https://www.x.org/pub/individual/lib/libXau-1.0.11.tar.xz",
+)
+
+bazel_dep(name = "xorgproto", version = "2024.1")
+archive_override(
+    module_name = "xorgproto",
+    patches = [
+        "//third_party/xorgproto:BUILD.patch",
+        "//third_party/xorgproto:MODULE.bazel.patch",
+    ],
+    strip_prefix = "xorgproto-2024.1",
+    urls = "https://xorg.freedesktop.org/archive/individual/proto/xorgproto-2024.1.tar.xz",
+)
+
+bazel_dep(name = "util_macros", version = "1.20.1")
+archive_override(
+    module_name = "util_macros",
+    integrity = "sha256-CzCPYtznisD02d5oiCNL8XDydrZKx8lumXebtDGbzvU=",
+    patches = [
+        "//third_party/util_macros:BUILD.patch",
+        "//third_party/util_macros:MODULE.bazel.patch",
+    ],
+    strip_prefix = "util-macros-1.20.1",
+    urls = "https://www.x.org/pub/individual/util/util-macros-1.20.1.tar.xz",
+)
+# end of libxcb dependencies
+
+# linter
+bazel_dep(name = "aspect_rules_lint", version = "0.21.0")
+bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
+
+# Hedron's Compile Commands Extractor for Bazel
+# https://github.com/hedronvision/bazel-compile-commands-extractor
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+git_override(
+    module_name = "hedron_compile_commands",
+    commit = "204aa593e002cbd177d30f11f54cff3559110bb9",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+    # Replace the commit hash (above) with the latest (https://github.com/hedronvision/bazel-compile-commands-extractor/commits/main).
+    # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
+)
