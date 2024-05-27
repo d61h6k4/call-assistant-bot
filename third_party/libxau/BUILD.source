@@ -18,5 +18,11 @@ configure_make(
         "//conditions:default": {
         },
     }),
+    out_shared_libs = [
+        "libXau.so",
+    ],
+    out_static_libs = [
+        "libXau.a",
+    ],
     visibility = ["//visibility:public"],
 )
