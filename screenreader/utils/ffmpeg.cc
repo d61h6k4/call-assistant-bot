@@ -13,6 +13,8 @@ extern "C" {
 
 absl::Status aikit::utils::CaptureDevice(const std::string &device_name,
                                          const std::string &driver_url) {
+  avdevice_register_all();
+
   AVFormatContext *format_context = avformat_alloc_context();
   const AVInputFormat *input_format = av_find_input_format(device_name.c_str());
 
@@ -26,10 +28,9 @@ absl::Status aikit::utils::CaptureDevice(const std::string &device_name,
   if (int err = avformat_open_input(&format_context, driver_url.c_str(),
                                     input_format, nullptr);
       err < 0) {
-    auto err_message = av_err2str(err);
     return absl::AbortedError(
         absl::StrCat("Failed to open the audio driver url: ", driver_url,
-                     " Error: ", err_message));
+                     " Error code: ", err));
   }
 
   // read Packets from the Format to get stream information
