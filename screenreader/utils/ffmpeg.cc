@@ -2,11 +2,13 @@
 extern "C" {
 #endif
 #include "libavdevice/avdevice.h"
+
 #ifdef __cplusplus
 }
 #endif
 
 #include "absl/strings/str_cat.h"
+#include "libyuv/convert.h"
 #include "screenreader/utils/ffmpeg.h"
 
 namespace aikit::utils {
@@ -239,5 +241,87 @@ CaptureDevice(const std::string &device_name, const std::string &driver_url) {
 
   const AVInputFormat *input_format = av_find_input_format(device_name.c_str());
   return CreateVideoStreamContext(driver_url, input_format);
+}
+
+absl::Status PacketToFrame(AVCodecContext *codec_context, AVPacket *packet,
+                           AVFrame *frame) {
+  // Supply raw packet data as input to a decoder
+  // https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3
+  int response = avcodec_send_packet(codec_context, packet);
+  if (response < 0) {
+    return absl::AbortedError(absl::StrFormat(
+        "Error while sending a packet to the decoder: %d", response));
+  }
+  // Return decoded output data (into a frame) from a decoder
+  // https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c
+  response = avcodec_receive_frame(codec_context, frame);
+  if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+    return absl::FailedPreconditionError(
+        absl::StrFormat("Error while decoding the output data: %d", response));
+  }
+  return absl::OkStatus();
+}
+
+absl::StatusOr<std::vector<float>>
+ReadAudioFrame(const AudioStreamContext &audio_stream_context,
+               const AVFrame *frame) {
+
+  auto dst_nb_samples = av_rescale_rnd(
+      swr_get_delay(audio_stream_context.swr_context,
+                    audio_stream_context.sample_rate) +
+          frame->nb_samples,
+      kDestSampleRate, audio_stream_context.sample_rate, AV_ROUND_UP);
+
+  std::vector<float> audio_data;
+  // We convert to mono, so 1 channel
+  audio_data.resize(dst_nb_samples);
+
+  uint8_t *audio_data_ = reinterpret_cast<uint8_t *>(audio_data.data());
+  int error = swr_convert(
+      audio_stream_context.swr_context, &audio_data_, dst_nb_samples,
+      const_cast<const uint8_t **>(frame->extended_data), frame->nb_samples);
+
+  if (error < 0) {
+    return absl::AbortedError(
+        absl::StrFormat("Failed to convert raw audio. Erro code is %d", error));
+  }
+
+  return audio_data;
+}
+
+absl::StatusOr<YUV>
+ReadImageFrame(const ImageStreamContext &image_stream_context,
+               const AVFrame *frame) {
+  const size_t y_size =
+      image_stream_context.width * image_stream_context.height;
+  const size_t u_size = ((image_stream_context.width + 1) / 2) *
+                        ((image_stream_context.height + 1) / 2);
+  const size_t v_size = ((image_stream_context.width + 1) / 2) *
+                        ((image_stream_context.height + 1) / 2);
+
+  auto y = std::make_unique<uint8_t[]>(y_size);
+  auto u = std::make_unique<uint8_t[]>(u_size);
+  auto v = std::make_unique<uint8_t[]>(v_size);
+  if (image_stream_context.format == AV_PIX_FMT_YUV420P) {
+
+    libyuv::I420Copy(frame->data[0], frame->linesize[0], frame->data[1],
+                     frame->linesize[1], frame->data[2], frame->linesize[2],
+                     y.get(), frame->linesize[0], u.get(), frame->linesize[1],
+                     v.get(), frame->linesize[2], image_stream_context.width,
+                     image_stream_context.height);
+
+    return YUV{.y = std::move(y), .u = std::move(u), .v = std::move(v)};
+  } else if (image_stream_context.format == AV_PIX_FMT_UYVY422) {
+
+    libyuv::UYVYToI420(frame->data[0], frame->linesize[0], y.get(),
+                       image_stream_context.width, u.get(),
+                       (image_stream_context.width + 1) / 2, v.get(),
+                       (image_stream_context.width + 1) / 2,
+                       image_stream_context.width, image_stream_context.height);
+    return YUV{.y = std::move(y), .u = std::move(u), .v = std::move(v)};
+  } else {
+    return absl::AbortedError(absl::StrCat("Unsupported pixel format: ",
+                                           image_stream_context.format));
+  }
 }
 } // namespace aikit::utils

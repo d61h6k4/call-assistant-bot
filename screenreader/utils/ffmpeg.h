@@ -16,6 +16,16 @@ extern "C" {
 namespace aikit {
 namespace utils {
 
+struct YUV {
+  // We use this data only with mediapipe
+  // https://github.com/google/mediapipe/blob/master/mediapipe/framework/formats/yuv_image.h#L140
+  // To make easy conversation from YUV to YUVImage
+  // we chose to define yuv as a unique ptrs to C array
+  std::unique_ptr<uint8_t[]> y = nullptr;
+  std::unique_ptr<uint8_t[]> u = nullptr;
+  std::unique_ptr<uint8_t[]> v = nullptr;
+};
+
 struct ImageStreamContext {
   int stream_index;
   int start_time;
@@ -60,6 +70,16 @@ void DestroyVideoStreamContext(VideoStreamContext &video_stream_context);
 //         driver_url is alsa/pulse for audio and x11grab for screen
 absl::StatusOr<VideoStreamContext> CaptureDevice(const std::string &device_name,
                                                  const std::string &driver_url);
+
+absl::Status PacketToFrame(AVCodecContext *codec_context, AVPacket *packet,
+                           AVFrame *frame);
+
+absl::StatusOr<std::vector<float>>
+ReadAudioFrame(const AudioStreamContext &audio_stream_context,
+               const AVFrame *frame);
+absl::StatusOr<YUV>
+ReadImageFrame(const ImageStreamContext &image_stream_context,
+               const AVFrame *frame);
 
 } // namespace utils
 } // namespace aikit

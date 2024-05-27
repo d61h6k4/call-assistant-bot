@@ -25,3 +25,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = ["@ffmpeg//:libffmpeg"],
 )
+
+alias(
+    name = "libyuv",
+    actual = "@libyuv//:libyuv",
+)
