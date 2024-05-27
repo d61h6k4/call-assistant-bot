@@ -16,6 +16,9 @@ cc_test(
         "@platforms//os:macos": [
             "ffmpeg_macos_test.cc",
         ],
+        "@platforms//os:linux": [
+            "ffmpeg_linux_test.cc",
+        ],
         "//conditions:default": [],
     }),
     deps = [

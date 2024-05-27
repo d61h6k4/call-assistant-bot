@@ -53,3 +53,4 @@
 # End of https://www.toptal.com/developers/gitignore/api/bazel,c++
 
 compile_commands.json
+MODULE.bazel.lock

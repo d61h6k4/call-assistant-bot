@@ -47,5 +47,5 @@ configure_make(
     ] + select({
         "@platforms//os:linux": ["@libxcb"],
         "//conditions:default": [],
-    }), ,
+    }),
 )

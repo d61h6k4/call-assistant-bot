@@ -1,5 +1,5 @@
---- /dev/null	2024-05-27 13:00:37
-+++ BUILD	2024-05-27 13:00:28
+--- /dev/null	2024-05-27 13:14:21
++++ BUILD	2024-05-27 13:11:36
 @@ -0,0 +1,51 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +
@@ -50,5 +50,5 @@
 +    ] + select({
 +        "@platforms//os:linux": ["@libxcb"],
 +        "//conditions:default": [],
-+    }), ,
++    }),
 +)
