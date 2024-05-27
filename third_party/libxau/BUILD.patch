@@ -1,6 +1,6 @@
---- /dev/null	2024-05-20 19:03:29
-+++ BUILD	2024-05-20 19:03:11
-@@ -0,0 +1,22 @@
+--- /dev/null	2024-05-27 13:29:49
++++ BUILD	2024-05-27 13:29:32
+@@ -0,0 +1,28 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +
 +filegroup(
@@ -21,5 +21,11 @@
 +        "//conditions:default": {
 +        },
 +    }),
++    out_shared_libs = [
++        "libXau.so",
++    ],
++    out_static_libs = [
++        "libXau.a",
++    ],
 +    visibility = ["//visibility:public"],
 +)

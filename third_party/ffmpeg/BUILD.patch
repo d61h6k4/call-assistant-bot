@@ -1,6 +1,6 @@
---- /dev/null	2024-05-27 13:14:21
-+++ BUILD	2024-05-27 13:11:36
-@@ -0,0 +1,51 @@
+--- /dev/null	2024-05-27 14:03:36
++++ BUILD	2024-05-27 14:03:31
+@@ -0,0 +1,56 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +
 +filegroup(
@@ -22,7 +22,12 @@
 +        "--disable-txtpages",
 +        "--disable-sdl2",
 +    ] + select({
-+        "@platforms//os:linux": ["--enable-libxcb"],
++        "@platforms//os:linux": [
++            "--enable-libxcb",
++            "--enable-libxcb-shm",
++            "--enable-libxcb-xfixes",
++            "--enable-libxcb-shape",
++         ],
 +        "//conditions:default": [],
 +    }),
 +    env = select({
