@@ -48,6 +48,17 @@ http_archive(
     url = "https://github.com/google/mediapipe/archive/refs/tags/v{}.tar.gz".format(_MEDIAPIPE_VERSION),
 )
 
+bazel_dep(name = "libyuv", version = "0.1.0", repo_name = "libyuv")
+archive_override(
+    module_name = "libyuv",
+    urls = "https://chromium.googlesource.com/libyuv/libyuv/+archive/914624f0b8b92986ef385e9650ee7b5fb07099e9.tar.gz",
+    patches = [
+        "@//third_party/libyuv:BUILD.patch",
+        "@//third_party/libyuv:MODULE.bazel.patch",
+        "@//third_party/libyuv:WORKSPACE.patch",
+    ],
+)
+
 # sudo apt-get install yasm
 bazel_dep(name = "ffmpeg", version = "7.0.0")
 archive_override(
