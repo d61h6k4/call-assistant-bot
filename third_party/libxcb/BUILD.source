@@ -19,5 +19,17 @@ configure_make(
         "@xcb_proto",
         "@libxau"
     ],
+    out_shared_libs = [
+        "libxcb.so",
+        "libxcb-shm.so",
+        "libxcb-xfixes.so",
+        "libxcb-shape.so",
+    ],
+    out_static_libs = [
+        "libxcb.a",
+        "libxcb-shm.a",
+        "libxcb-xfixes.a",
+        "libxcb-shape.a",
+    ],
     visibility = ["//visibility:public"],
 )

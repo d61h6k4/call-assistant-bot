@@ -13,6 +13,7 @@ extern "C" {
 
 absl::Status aikit::utils::CaptureDevice(const std::string &device_name,
                                          const std::string &driver_url) {
+  // Without this call we get Protocol not found error.
   avdevice_register_all();
 
   AVFormatContext *format_context = avformat_alloc_context();
