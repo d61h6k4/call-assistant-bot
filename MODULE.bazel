@@ -42,6 +42,9 @@ http_archive(
         "//third_party/mediapipe:mediapipe_framework_tool_mediapipe_proto.patch",
         # Remove tensorflow dependency
         "//third_party/mediapipe:mediapipe_framework_tool_mediapipe_graph.patch",
+        # Use local opencv and libyuv
+        "//third_party/mediapipe:mediapipe_framework_port_build.patch",
+        "//third_party/mediapipe:mediapipe_calculators_image_build.patch",
     ],
     sha256 = "9d46fa5363f5c4e11c3d1faec71b0746f15c5aab7b5460d0e5655d7af93c6957",
     strip_prefix = "mediapipe-{}".format(_MEDIAPIPE_VERSION),
@@ -51,12 +54,12 @@ http_archive(
 bazel_dep(name = "libyuv", version = "0.1.0", repo_name = "libyuv")
 archive_override(
     module_name = "libyuv",
-    urls = "https://chromium.googlesource.com/libyuv/libyuv/+archive/914624f0b8b92986ef385e9650ee7b5fb07099e9.tar.gz",
     patches = [
         "@//third_party/libyuv:BUILD.patch",
         "@//third_party/libyuv:MODULE.bazel.patch",
         "@//third_party/libyuv:WORKSPACE.patch",
     ],
+    urls = "https://chromium.googlesource.com/libyuv/libyuv/+archive/914624f0b8b92986ef385e9650ee7b5fb07099e9.tar.gz",
 )
 
 # sudo apt-get install yasm
@@ -146,6 +149,18 @@ archive_override(
     urls = "https://www.x.org/pub/individual/util/util-macros-1.20.1.tar.xz",
 )
 # end of libxcb dependencies
+
+bazel_dep(name = "opencv", version = "3.4.20", repo_name = "opencv")
+archive_override(
+    module_name = "opencv",
+    urls = "https://github.com/opencv/opencv/archive/refs/tags/3.4.20.zip",
+    strip_prefix = "opencv-3.4.20",
+    integrity = "sha256-ggmL0iHRiqdaAbDukeyhRsWGgQcwZwlyElczDaVPAHQ=",
+    patches = [
+        "@//third_party/opencv:BUILD.patch",
+        "@//third_party/opencv:MODULE.bazel.patch",
+    ],
+)
 
 # linter
 bazel_dep(name = "aspect_rules_lint", version = "0.21.0")
