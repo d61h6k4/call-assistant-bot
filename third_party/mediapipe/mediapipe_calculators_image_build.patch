@@ -1,0 +1,13 @@
+diff --git a/mediapipe/calculators/image/BUILD b/mediapipe/calculators/image/BUILD
+index ab94df93..54ad1f51 100644
+--- a/mediapipe/calculators/image/BUILD
++++ b/mediapipe/calculators/image/BUILD
+@@ -877,7 +877,7 @@ cc_library(
+         "//mediapipe/framework/formats:image",
+         "//mediapipe/framework/formats:image_frame",
+         "//mediapipe/framework/formats:yuv_image",
+-        "//third_party/libyuv",
++        "@libyuv",
+         "@com_google_absl//absl/status",
+         "@com_google_absl//absl/strings:str_format",
+     ],

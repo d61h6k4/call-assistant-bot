@@ -1,6 +1,6 @@
---- /dev/null	2024-02-16 21:47:03
-+++ BUILD	2024-02-16 21:40:55
-@@ -0,0 +1,102 @@
+--- /dev/null	2024-05-28 17:32:54
++++ BUILD	2024-05-28 17:32:46
+@@ -0,0 +1,96 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 +
 +filegroup(
@@ -20,7 +20,7 @@
 +]
 +
 +cmake(
-+    name = "foreign_opencv",
++    name = "opencv",
 +    # Values to be passed as -Dkey=value on the CMake command line;
 +    # here are serving to provide some CMake script configuration options
 +    cache_entries = {
@@ -96,10 +96,4 @@
 +        "@libpng",
 +        "@zlib",
 +    ],
-+)
-+
-+cc_library(
-+    name = "opencv",
-+    visibility = ["//visibility:public"],
-+    deps = [":foreign_opencv"],
 +)

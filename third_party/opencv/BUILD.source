@@ -17,7 +17,7 @@ OPENCV_MODULES = [
 ]
 
 cmake(
-    name = "foreign_opencv",
+    name = "opencv",
     # Values to be passed as -Dkey=value on the CMake command line;
     # here are serving to provide some CMake script configuration options
     cache_entries = {
@@ -93,10 +93,4 @@ cmake(
         "@libpng",
         "@zlib",
     ],
-)
-
-cc_library(
-    name = "opencv",
-    visibility = ["//visibility:public"],
-    deps = [":foreign_opencv"],
 )

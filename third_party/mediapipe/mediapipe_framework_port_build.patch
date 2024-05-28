@@ -1,0 +1,85 @@
+diff --git a/mediapipe/framework/port/BUILD b/mediapipe/framework/port/BUILD
+index a6698c2d..0a9af377 100644
+--- a/mediapipe/framework/port/BUILD
++++ b/mediapipe/framework/port/BUILD
+@@ -257,7 +257,7 @@ cc_library(
+     name = "opencv_core",
+     hdrs = ["opencv_core_inc.h"],
+     deps = [
+-        "//third_party:opencv",
++        "@//third_party:opencv",
+     ],
+ )
+ 
+@@ -266,7 +266,7 @@ cc_library(
+     hdrs = ["opencv_imgproc_inc.h"],
+     deps = [
+         ":opencv_core",
+-        "//third_party:opencv",
++        "@//third_party:opencv",
+     ],
+ )
+ 
+@@ -275,7 +275,7 @@ cc_library(
+     hdrs = ["opencv_imgcodecs_inc.h"],
+     deps = [
+         ":opencv_core",
+-        "//third_party:opencv",
++        "@//third_party:opencv",
+     ],
+ )
+ 
+@@ -284,7 +284,7 @@ cc_library(
+     hdrs = ["opencv_photo_inc.h"],
+     deps = [
+         ":opencv_core",
+-        "//third_party:opencv",
++        "@//third_party:opencv",
+     ],
+ )
+ 
+@@ -294,7 +294,7 @@ cc_library(
+     deps = [
+         ":opencv_core",
+         "//mediapipe/framework:port",
+-        "//third_party:opencv",
++        "@//third_party:opencv",
+     ],
+ )
+ 
+@@ -303,7 +303,7 @@ cc_library(
+     hdrs = ["opencv_features2d_inc.h"],
+     deps = [
+         ":opencv_core",
+-        "//third_party:opencv",
++        "@//third_party:opencv",
+     ],
+ )
+ 
+@@ -312,7 +312,7 @@ cc_library(
+     hdrs = ["opencv_calib3d_inc.h"],
+     deps = [
+         ":opencv_core",
+-        "//third_party:opencv",
++        "@//third_party:opencv",
+     ],
+ )
+ 
+@@ -321,7 +321,7 @@ cc_library(
+     hdrs = ["opencv_highgui_inc.h"],
+     deps = [
+         ":opencv_core",
+-        "//third_party:opencv",
++        "@//third_party:opencv",
+     ],
+ )
+ 
+@@ -331,7 +331,7 @@ cc_library(
+     deps = [
+         ":opencv_core",
+         "//mediapipe/framework:port",
+-        "//third_party:opencv",
++        "@//third_party:opencv",
+     ],
+ )
+ 
