@@ -18,6 +18,12 @@ OPENCV_MODULES = [
 
 cmake(
     name = "opencv",
+    build_args = [
+        "-j8",
+    ],
+    generate_args = [
+        "-GNinja",
+    ],
     # Values to be passed as -Dkey=value on the CMake command line;
     # here are serving to provide some CMake script configuration options
     cache_entries = {
@@ -70,6 +76,7 @@ cmake(
         # In any case, Bazel does its own caching of the rule's outputs.
         "ENABLE_CCACHE": "OFF",
         "BUILD_ZLIB": "OFF",
+        "WITH_IPP": "OFF",
     },
     lib_source = ":opencv_srcs",
     linkopts = [
@@ -81,6 +88,7 @@ cmake(
         # After building, the linkopts for the current setup can be extracted
         # from lib/pkgconfig/opencv.pc in bazel-out
         "-lpthread",
+        "-ldl",
     ],
     out_static_libs = [
         "libopencv_%s.a" % module
