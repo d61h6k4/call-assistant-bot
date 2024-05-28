@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 #include "libavdevice/avdevice.h"
-
+#include "libavutil/pixdesc.h"
 #ifdef __cplusplus
 }
 #endif
@@ -145,8 +145,8 @@ CreateVideoStreamContext(const std::string &url,
   if (int err = avformat_open_input(&video_stream_context.format_context,
                                     url.c_str(), input_format, nullptr);
       err < 0) {
-    return absl::AbortedError(absl::StrCat(
-        "Failed to open the audio driver url: ", url, " Error code: ", err));
+    return absl::AbortedError(
+        absl::StrCat("Failed to open the url: ", url, " Error code: ", err));
   }
 
   // read Packets from the Format to get stream information
@@ -302,6 +302,8 @@ ReadImageFrame(const ImageStreamContext &image_stream_context,
   auto y = std::make_unique<uint8_t[]>(y_size);
   auto u = std::make_unique<uint8_t[]>(u_size);
   auto v = std::make_unique<uint8_t[]>(v_size);
+
+  // Regular video from file
   if (image_stream_context.format == AV_PIX_FMT_YUV420P) {
 
     libyuv::I420Copy(frame->data[0], frame->linesize[0], frame->data[1],
@@ -311,6 +313,8 @@ ReadImageFrame(const ImageStreamContext &image_stream_context,
                      image_stream_context.height);
 
     return YUV{.y = std::move(y), .u = std::move(u), .v = std::move(v)};
+
+    // Capturing MacOS screen
   } else if (image_stream_context.format == AV_PIX_FMT_UYVY422) {
 
     libyuv::UYVYToI420(frame->data[0], frame->linesize[0], y.get(),
@@ -319,9 +323,18 @@ ReadImageFrame(const ImageStreamContext &image_stream_context,
                        (image_stream_context.width + 1) / 2,
                        image_stream_context.width, image_stream_context.height);
     return YUV{.y = std::move(y), .u = std::move(u), .v = std::move(v)};
+    // Capturing Xvfb screen
+  } else if (image_stream_context.format == AV_PIX_FMT_BGR0) {
+    libyuv::BGRAToI420(frame->data[0], frame->linesize[0], y.get(),
+                       image_stream_context.width, u.get(),
+                       (image_stream_context.width + 1) / 2, v.get(),
+                       (image_stream_context.width + 1) / 2,
+                       image_stream_context.width, image_stream_context.height);
+    return YUV{.y = std::move(y), .u = std::move(u), .v = std::move(v)};
   } else {
-    return absl::AbortedError(absl::StrCat("Unsupported pixel format: ",
-                                           image_stream_context.format));
+    return absl::AbortedError(
+        absl::StrCat("Unsupported pixel format: ",
+                     av_get_pix_fmt_name(image_stream_context.format)));
   }
 }
 } // namespace aikit::utils
