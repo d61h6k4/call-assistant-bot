@@ -276,9 +276,9 @@ ReadAudioFrame(const AudioStreamContext &audio_stream_context,
   // We convert to mono, so 1 channel
   audio_data.resize(dst_nb_samples);
 
-  uint8_t *audio_data_ = reinterpret_cast<uint8_t *>(audio_data.data());
+  uint8_t *tmp_audio_data = reinterpret_cast<uint8_t *>(audio_data.data());
   int error = swr_convert(
-      audio_stream_context.swr_context, &audio_data_, dst_nb_samples,
+      audio_stream_context.swr_context, &tmp_audio_data, dst_nb_samples,
       const_cast<const uint8_t **>(frame->extended_data), frame->nb_samples);
 
   if (error < 0) {
@@ -314,17 +314,16 @@ ReadImageFrame(const ImageStreamContext &image_stream_context,
 
     return YUV{.y = std::move(y), .u = std::move(u), .v = std::move(v)};
 
-    // Capturing MacOS screen
   } else if (image_stream_context.format == AV_PIX_FMT_UYVY422) {
-
+    // Capturing MacOS screen
     libyuv::UYVYToI420(frame->data[0], frame->linesize[0], y.get(),
                        image_stream_context.width, u.get(),
                        (image_stream_context.width + 1) / 2, v.get(),
                        (image_stream_context.width + 1) / 2,
                        image_stream_context.width, image_stream_context.height);
     return YUV{.y = std::move(y), .u = std::move(u), .v = std::move(v)};
-    // Capturing Xvfb screen
   } else if (image_stream_context.format == AV_PIX_FMT_BGR0) {
+    // Capturing Xvfb screen
     libyuv::BGRAToI420(frame->data[0], frame->linesize[0], y.get(),
                        image_stream_context.width, u.get(),
                        (image_stream_context.width + 1) / 2, v.get(),

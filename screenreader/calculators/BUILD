@@ -35,6 +35,22 @@ cc_library(
     alwayslink = True,
 )
 
+cc_library(
+    name = "ffmpeg_sink_video_calculator",
+    srcs = ["ffmpeg_sink_video_calculator.cc"],
+    deps = [
+        "//third_party:libffmpeg",
+        "@com_google_absl//absl/log:absl_log",
+        "@mediapipe//mediapipe/framework:calculator_framework",
+        "@mediapipe//mediapipe/framework/api2:node",
+        "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/formats:yuv_image",
+        "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/tool:status_util",
+    ],
+    alwayslink = True,
+)
+
 cc_test(
     name = "ffmpeg_capture_audio_calculator_test",
     srcs = ["ffmpeg_capture_audio_calculator_test.cc"],
@@ -63,6 +79,22 @@ cc_test(
         "@mediapipe//mediapipe/framework/port:gtest_main",
         "@mediapipe//mediapipe/framework/port:opencv_imgcodecs",
         "@mediapipe//mediapipe/framework/port:opencv_imgproc",
+        "@mediapipe//mediapipe/framework/port:parse_text_proto",
+    ],
+)
+
+cc_test(
+    name = "ffmpeg_sink_video_calculator_test",
+    srcs = ["ffmpeg_sink_video_calculator_test.cc"],
+    deps = [
+    ":ffmpeg_sink_video_calculator",
+        "//third_party:libffmpeg",
+        "@com_google_absl//absl/log:absl_log",
+        "@mediapipe//mediapipe/calculators/image:yuv_to_image_calculator",
+        "@mediapipe//mediapipe/framework:calculator_runner",
+        "@mediapipe//mediapipe/framework/formats:yuv_image",
+        "@mediapipe//mediapipe/framework/port:gtest",
+        "@mediapipe//mediapipe/framework/port:gtest_main",
         "@mediapipe//mediapipe/framework/port:parse_text_proto",
     ],
 )

@@ -10,7 +10,6 @@ namespace aikit {
 // are optional.
 //
 // Output Streams:
-//   VIDEO: Output video frames (YUVImage).
 //   AUDIO: Output audio track (floats)
 //
 // Example config:

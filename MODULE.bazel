@@ -153,13 +153,13 @@ archive_override(
 bazel_dep(name = "opencv", version = "3.4.20", repo_name = "opencv")
 archive_override(
     module_name = "opencv",
-    urls = "https://github.com/opencv/opencv/archive/refs/tags/3.4.20.zip",
-    strip_prefix = "opencv-3.4.20",
     integrity = "sha256-ggmL0iHRiqdaAbDukeyhRsWGgQcwZwlyElczDaVPAHQ=",
     patches = [
         "@//third_party/opencv:BUILD.patch",
         "@//third_party/opencv:MODULE.bazel.patch",
     ],
+    strip_prefix = "opencv-3.4.20",
+    urls = "https://github.com/opencv/opencv/archive/refs/tags/3.4.20.zip",
 )
 
 # linter
