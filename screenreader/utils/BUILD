@@ -13,17 +13,43 @@ cc_library(
 
 cc_test(
     name = "ffmpeg_test",
-    srcs = select({
-        "@platforms//os:macos": [
-            "ffmpeg_macos_test.cc",
-        ],
-        "@platforms//os:linux": [
-            "ffmpeg_linux_test.cc",
-        ],
-        "//conditions:default": [],
-    }),
+    srcs = ["ffmpeg_test.cc"] ,
+   # + select({
+   #     "@platforms//os:macos": [
+   #         "ffmpeg_macos_test.cc",
+   #     ],
+   #     "@platforms//os:linux": [
+   #         "ffmpeg_linux_test.cc",
+   #     ],
+   #     "//conditions:default": [],
+   # }),
     deps = [
         ":ffmpeg",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "audio",
+    srcs = ["audio.cc"],
+    hdrs = ["audio.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//third_party:libffmpeg",
+        "//third_party:libyuv",
+        "@com_google_absl//absl/status:statusor",
+
+        "@com_google_absl//absl/log:absl_log",
+    ],
+)
+
+cc_test(
+    name = "audio_test",
+    srcs = ["audio_test.cc"] ,
+
+    deps = [
+        ":audio",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

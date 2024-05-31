@@ -12,7 +12,6 @@ extern "C" {
 #endif
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
-#include "libavutil/avassert.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/opt.h"
@@ -25,27 +24,22 @@ extern "C" {
 
 namespace aikit {
 namespace {
+// TODO(d61h6k4) Get this parameters from VideoHeader
 constexpr int kStreamFrameRate = 25;
 constexpr int kWidth = 1024;
 constexpr int kHeight = 768;
+constexpr int kInSampleRate = 16000;
 
 // a wrapper around a single output AVStream
 struct OutputStream {
   AVStream *st;
   AVCodecContext *enc;
 
-  /* pts of the next frame that will be generated */
-  int64_t next_pts;
-  int samples_count;
-
   AVFrame *frame;
   AVFrame *tmp_frame;
 
   AVPacket *tmp_pkt;
 
-  float t, tincr, tincr2;
-
-  struct SwsContext *sws_ctx;
   struct SwrContext *swr_ctx;
 };
 
@@ -90,8 +84,9 @@ AddStream(AVFormatContext *oc, const AVCodec **codec, enum AVCodecID codec_id) {
     if ((*codec)->supported_samplerates) {
       c->sample_rate = (*codec)->supported_samplerates[0];
       for (i = 0; (*codec)->supported_samplerates[i]; i++) {
-        if ((*codec)->supported_samplerates[i] == 44100)
+        if ((*codec)->supported_samplerates[i] == 44100) {
           c->sample_rate = 44100;
+        }
       }
     }
     av_channel_layout_copy(&c->ch_layout, &audio_channel_layout);
@@ -142,8 +137,9 @@ absl::Status CloseStream(AVFormatContext *oc, OutputStream &ost) {
   av_frame_free(&ost.frame);
   av_frame_free(&ost.tmp_frame);
   av_packet_free(&ost.tmp_pkt);
-  sws_freeContext(ost.sws_ctx);
   swr_free(&ost.swr_ctx);
+
+  return absl::OkStatus();
 }
 
 AVFrame *AllocFrame(enum AVPixelFormat pix_fmt, int width, int height) {
@@ -233,7 +229,6 @@ absl::Status OpenAudio(AVFormatContext *oc, const AVCodec *codec,
 
   AVCodecContext *c = ost.enc;
   int nb_samples = 0;
-  int ret = 0;
 
   /* open it */
   if (auto ret = avcodec_open2(c, codec, nullptr); ret < 0) {
@@ -252,8 +247,10 @@ absl::Status OpenAudio(AVFormatContext *oc, const AVCodec *codec,
   if (!ost.frame) {
     return absl::AbortedError("Could no allocate audio frame.");
   }
-  ost.tmp_frame = AllocAudioFrame(AV_SAMPLE_FMT_S16, &c->ch_layout,
-                                  c->sample_rate, nb_samples);
+
+  AVChannelLayout in_ch_layout = AV_CHANNEL_LAYOUT_MONO;
+  ost.tmp_frame = AllocAudioFrame(AV_SAMPLE_FMT_FLT, &in_ch_layout,
+                                  kInSampleRate, 16000 * 4);
   if (!ost.tmp_frame) {
     return absl::AbortedError("Could no allocate audio frame.");
   }
@@ -270,9 +267,9 @@ absl::Status OpenAudio(AVFormatContext *oc, const AVCodec *codec,
   }
 
   /* set options */
-  av_opt_set_chlayout(ost.swr_ctx, "in_chlayout", &c->ch_layout, 0);
-  av_opt_set_int(ost.swr_ctx, "in_sample_rate", c->sample_rate, 0);
-  av_opt_set_sample_fmt(ost.swr_ctx, "in_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+  av_opt_set_chlayout(ost.swr_ctx, "in_chlayout", &in_ch_layout, 0);
+  av_opt_set_int(ost.swr_ctx, "in_sample_rate", kInSampleRate, 0);
+  av_opt_set_sample_fmt(ost.swr_ctx, "in_sample_fmt", AV_SAMPLE_FMT_FLT, 0);
   av_opt_set_chlayout(ost.swr_ctx, "out_chlayout", &c->ch_layout, 0);
   av_opt_set_int(ost.swr_ctx, "out_sample_rate", c->sample_rate, 0);
   av_opt_set_sample_fmt(ost.swr_ctx, "out_sample_fmt", c->sample_fmt, 0);
@@ -316,9 +313,12 @@ absl::Status WriteFrame(AVFormatContext *fmt_ctx, AVCodecContext *c,
           absl::StrCat("Error encoding a frame: ", av_err2str(ret)));
     }
 
+    if (pkt->pts)
+    ABSL_LOG(INFO) << "Before: " << pkt->pts << " (" << c->time_base.den << ", " << st->time_base.den << ")";
     /* rescale output packet timestamp values from codec to stream timebase */
     av_packet_rescale_ts(pkt, c->time_base, st->time_base);
     pkt->stream_index = st->index;
+    ABSL_LOG(INFO) << "After: " << pkt->pts;
 
     /* Write the compressed frame to the media file. */
     LogPacket(fmt_ctx, pkt);
@@ -517,7 +517,7 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
                << res.message();
       }
     } else {
-      ABSL_LOG(WARNING)
+      ABSL_LOG_FIRST_N(WARNING, 1)
           << "Could not find video stream. Based on the ouput file path "
              "extension FFMpeg assumes user wants to store only audio stream, "
              "Please rename output file path (e.g. use .mp4 ext) if you want "
@@ -529,32 +529,57 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
     if (audio_stream_.has_value()) {
 
       const auto &audio_data = kInAudio(cc).Get();
+
+      ABSL_LOG_FIRST_N(INFO, 1)
+          << "Prealloated: " << audio_stream_->tmp_frame->nb_samples
+          << " new data size is "
+          << audio_data.size() * sizeof(float) / sizeof(uint8_t);
+      audio_stream_->tmp_frame->nb_samples = audio_data.size();
+      if (auto ret = avcodec_fill_audio_frame(
+              audio_stream_->tmp_frame, 1, AV_SAMPLE_FMT_FLT,
+              (uint8_t *)audio_data.data(),
+              audio_data.size() * sizeof(float) / sizeof(uint8_t), 1);
+          ret < 0) {
+        return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+               << "Failed to fill audio frame with the given audio data. "
+               << av_err2str(ret);
+      }
+      ABSL_LOG_FIRST_N(INFO, 1)
+          << "Result audio size is " << audio_stream_->tmp_frame->linesize[0];
+
       //  convert samples from native format to destination codec format,
       //  using the resampler compute destination number of samples
-      auto dst_nb_samples =
-          av_rescale_rnd(swr_get_delay(audio_stream_->swr_ctx,
-                                       audio_stream_->enc->sample_rate) +
-                             audio_data.size(),
-                         audio_stream_->enc->sample_rate, 16000, AV_ROUND_UP);
+      auto dst_nb_samples = av_rescale_rnd(
+          swr_get_delay(audio_stream_->swr_ctx,
+                        audio_stream_->enc->sample_rate) +
+              audio_stream_->tmp_frame->nb_samples,
+          audio_stream_->enc->sample_rate, kInSampleRate, AV_ROUND_UP);
 
+      ABSL_LOG_FIRST_N(INFO, 1) << "Dest nb samples: " << dst_nb_samples;
       // when we pass a frame to the encoder, it may keep a reference to it
       // internally; make sure we do not overwrite it here
       if (av_frame_make_writable(audio_stream_->frame) < 0) {
         return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
                << "Could not make audio frame writeable";
       }
-      if (swr_convert(audio_stream_->swr_ctx, audio_stream_->frame->data,
-                      dst_nb_samples, (const uint8_t **)(audio_data.data()),
-                      audio_data.size())) {
+      // ABSL_LOG_FIRST_N(INFO, 1) << "Available space in dest: " <<
+      // audio_stream_->frame->nb_samples;
+      if (auto res =
+              swr_convert(audio_stream_->swr_ctx, audio_stream_->frame->data,
+                          dst_nb_samples, audio_stream_->tmp_frame->data,
+                          audio_stream_->tmp_frame->nb_samples);
+          res <= 0) {
         return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-               << "Error while converting audio frame";
+               << "Error while converting audio frame. " << av_err2str(res);
+      } else {
+        ABSL_LOG_FIRST_N(INFO, 1)
+            << "Converted, each channel contains bytes: " << res;
       }
-      ABSL_LOG(INFO) << "Data converted";
       audio_stream_->frame->pts =
           av_rescale_q(cc->InputTimestamp().Microseconds(),
                        (AVRational){1, audio_stream_->enc->sample_rate},
                        audio_stream_->enc->time_base);
-      audio_stream_->samples_count += dst_nb_samples;
+      ABSL_LOG_FIRST_N(INFO, 10) << "PTS: " << audio_stream_->frame->pts;
 
       auto res = WriteFrame(output_media_context_, audio_stream_->enc,
                             audio_stream_->st, audio_stream_->frame,
@@ -564,7 +589,7 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
                << res.message();
       }
     } else {
-      ABSL_LOG(WARNING)
+      ABSL_LOG_FIRST_N(WARNING, 1)
           << "Could not find audio stream. Based on the ouput file path "
              "extension FFMpeg assumes user wants to store only video "
              "stream, "

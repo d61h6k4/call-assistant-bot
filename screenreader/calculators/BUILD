@@ -87,7 +87,7 @@ cc_test(
     name = "ffmpeg_sink_video_calculator_test",
     srcs = ["ffmpeg_sink_video_calculator_test.cc"],
     deps = [
-    ":ffmpeg_sink_video_calculator",
+        ":ffmpeg_sink_video_calculator",
         "//third_party:libffmpeg",
         "@com_google_absl//absl/log:absl_log",
         "@mediapipe//mediapipe/calculators/image:yuv_to_image_calculator",

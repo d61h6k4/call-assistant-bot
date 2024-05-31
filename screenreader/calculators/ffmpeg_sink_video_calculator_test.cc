@@ -53,7 +53,7 @@ protected:
   }
 
   mediapipe::Packet FillAudio() {
-    auto nb_samples = 16000;
+    auto nb_samples = static_cast<int>(16000.0 ) ;
     std::vector<float> audio_data(nb_samples);
 
     /* init signal generator */
@@ -63,7 +63,7 @@ protected:
     auto tincr2 = 2.0 * std::numbers::pi * 110.0 / 16000.0 / 16000.0;
 
     for (auto j = 0; j < nb_samples; ++j) {
-      audio_data[j] = std::sin(t) * 10000.f;
+      audio_data[j] = std::sin(t);
       t += tincr;
       tincr += tincr2;
     }
