@@ -15,19 +15,6 @@ extern "C" {
 
 namespace aikit {
 namespace media {
-
-struct AudioStreamParameters {
-  int frame_size;
-  int sample_rate;
-  int bit_rate;
-  AVSampleFormat format;
-  AVChannelLayout channel_layout;
-
-  AudioStreamParameters()
-      : frame_size(1024), sample_rate(16000), bit_rate(64000),
-        format(AV_SAMPLE_FMT_FLT), channel_layout(AV_CHANNEL_LAYOUT_MONO) {}
-};
-
 class ContainerStreamContext {
 public:
   static absl::StatusOr<ContainerStreamContext>
@@ -51,6 +38,18 @@ public:
   absl::Status PacketToFrame(AVPacket *packet, AudioFrame &frame);
 
   absl::Status WriteFrame(AVPacket *packet, AudioFrame &frame);
+
+  // Captures data from the device.
+  // This operation is operating system dependent:
+  //  MacOS: device_name is avfoundation
+  //         driver_url is ":<audio_device_index>" or "<screen_device_index>:"
+  //    to find audio_device_index please execute the next command
+  //    ffmpeg -f avfoundation -list_devices true -i ""
+  //
+  //  Linux: device_name is x11grab
+  //         driver_url is alsa/pulse for audio and x11grab for screen
+  static absl::StatusOr<ContainerStreamContext>
+  CaptureDevice(const std::string &device_name, const std::string &driver_url);
 
 private:
   ContainerStreamContext() {};

@@ -78,3 +78,47 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "converter",
+    srcs = ["converter.cc"],
+    hdrs = ["converter.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+    ":audio",
+        "//third_party:libffmpeg",
+        "//third_party:libyuv",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_test(
+    name = "converter_test",
+    srcs = ["converter_test.cc"] ,
+    deps = [
+        ":converter",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+
+cc_test(
+    name = "capture_device_test",
+    srcs = select({
+        "@platforms//os:macos": [
+            "capture_device_macos_test.cc",
+        ],
+        "@platforms//os:linux": [
+            "ffmpeg_linux_test.cc",
+        ],
+        "//conditions:default": [],
+    }),
+    deps = [
+        ":container",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+
+  "@com_google_absl//absl/log:absl_log",
+    ],
+)

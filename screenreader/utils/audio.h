@@ -13,6 +13,19 @@ extern "C" {
 
 namespace aikit {
 namespace media {
+
+struct AudioStreamParameters {
+  int frame_size;
+  int sample_rate;
+  int bit_rate;
+  AVSampleFormat format;
+  AVChannelLayout channel_layout;
+
+  AudioStreamParameters()
+      : frame_size(1024), sample_rate(16000), bit_rate(64000),
+        format(AV_SAMPLE_FMT_FLT), channel_layout(AV_CHANNEL_LAYOUT_MONO) {}
+};
+
 class AudioFrame {
 public:
   static absl::StatusOr<AudioFrame>
@@ -58,7 +71,7 @@ public:
   AVCodecContext *codec_context() { return codec_context_; }
 
   int sample_rate() { return sample_rate_; }
-  AVChannelLayout* channel_layout() { return &channel_layout_; }
+  AVChannelLayout *channel_layout() { return &channel_layout_; }
   AVSampleFormat format() { return format_; }
 
 private:

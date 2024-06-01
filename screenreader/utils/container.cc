@@ -5,6 +5,14 @@
 #include "screenreader/utils/audio.h"
 #include <optional>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "libavdevice/avdevice.h"
+#ifdef __cplusplus
+}
+#endif
+
 namespace aikit {
 namespace media {
 
@@ -324,5 +332,16 @@ absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
                     audio_stream_context_->stream_index(), packet,
                     frame.c_frame());
 }
+
+absl::StatusOr<ContainerStreamContext>
+ContainerStreamContext::CaptureDevice(const std::string &device_name,
+                                      const std::string &driver_url) {
+  // Without this call we get Protocol not found error.
+  avdevice_register_all();
+
+  const AVInputFormat *input_format = av_find_input_format(device_name.c_str());
+  return CreateReaderContainerStreamContext(driver_url, input_format);
+}
+
 } // namespace media
 } // namespace aikit
