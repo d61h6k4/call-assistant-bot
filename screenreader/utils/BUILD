@@ -40,7 +40,6 @@ cc_library(
         "//third_party:libyuv",
         "@com_google_absl//absl/status:statusor",
 
-        "@com_google_absl//absl/log:absl_log",
     ],
 )
 
@@ -50,6 +49,31 @@ cc_test(
 
     deps = [
         ":audio",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "container",
+    srcs = ["container.cc"],
+    hdrs = ["container.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+    ":audio",
+        "//third_party:libffmpeg",
+        "//third_party:libyuv",
+        "@com_google_absl//absl/status:statusor",
+
+        "@com_google_absl//absl/log:absl_log",
+    ],
+)
+
+cc_test(
+    name = "container_test",
+    srcs = ["container_test.cc"] ,
+    deps = [
+        ":container",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

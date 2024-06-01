@@ -1,8 +1,10 @@
 
 #include "screenreader/utils/audio.h"
-#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include <algorithm>
 #include <cstddef>
+#include <cstdint>
+#include <iterator>
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,8 +59,10 @@ AudioFrame::~AudioFrame() {
 absl::Status AudioFrame::FillAudioData(std::vector<float> &audio_data) {
   if (c_frame_->format != AV_SAMPLE_FMT_FLT &&
       c_frame_->format != AV_SAMPLE_FMT_FLTP) {
-    return absl::AbortedError("Filling audio frame with float data supported "
-                              "only for AV_SAMPLE_FMT_FLT format.");
+    return absl::AbortedError(
+        "Filling audio frame with float data supported "
+        "only for AV_SAMPLE_FMT_FLT format. Please"
+        "convert the frame to the AV_SAMPLE_FMT_FLT format");
   }
 
   c_frame_->nb_samples = audio_data.size();
@@ -70,6 +74,34 @@ absl::Status AudioFrame::FillAudioData(std::vector<float> &audio_data) {
         absl::StrCat("Failed to fill audio frame with the given audio data. ",
                      av_err2str(ret)));
   }
+
+  return absl::OkStatus();
+}
+
+absl::Status AudioFrame::AppendAudioData(std::vector<float> &audio_data) {
+  if (c_frame_->format != AV_SAMPLE_FMT_FLT &&
+      c_frame_->format != AV_SAMPLE_FMT_FLTP) {
+    return absl::AbortedError(
+        "Appending audio frame with float data supported "
+        "only for AV_SAMPLE_FMT_FLT format. Please "
+        "convert the frame to the AV_SAMPLE_FMT_FLT format");
+  }
+
+  int num_channels = c_frame_->ch_layout.nb_channels;
+  if (num_channels != 1) {
+    return absl::AbortedError(
+        "Number of channels in the frame expected to be 1, but it's not.");
+  }
+  int bps =
+      av_get_bytes_per_sample(static_cast<AVSampleFormat>(c_frame_->format));
+  int plane_size = bps * c_frame_->nb_samples;
+
+  auto append_from = audio_data.size();
+  audio_data.resize(audio_data.size() + c_frame_->nb_samples);
+
+  uint8_t *ptr = nullptr;
+  ptr = reinterpret_cast<uint8_t *>(audio_data.data()) + append_from;
+  std::copy_n(c_frame_->extended_data[0], plane_size, ptr);
 
   return absl::OkStatus();
 }
@@ -89,9 +121,7 @@ absl::StatusOr<AudioStreamContext> AudioStreamContext::CreateAudioStreamContext(
   // AVCodecParameters *codec_parameters_ ;
   result.stream_index_ = stream_idx;
   result.start_time_ = format_context->streams[stream_idx]->start_time;
-  result.time_base_ =
-      static_cast<float>(format_context->streams[stream_idx]->time_base.num) /
-      static_cast<float>(format_context->streams[stream_idx]->time_base.den);
+  result.time_base_ = format_context->streams[stream_idx]->time_base;
 
   result.sample_rate_ = codec_parameters->sample_rate;
   result.channels_ = codec_parameters->ch_layout.nb_channels;
@@ -112,10 +142,6 @@ absl::StatusOr<AudioStreamContext> AudioStreamContext::CreateAudioStreamContext(
       0) {
     return absl::FailedPreconditionError(
         "failed to copy codec params to codec context");
-  }
-  /* Some formats want stream headers to be separate. */
-  if (format_context->oformat->flags & AVFMT_GLOBALHEADER) {
-    result.codec_context_->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
   }
 
   // Initialize the AVCodecContext to use the given AVCodec.

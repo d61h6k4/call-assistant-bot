@@ -9,7 +9,6 @@
 
 #include "screenreader/utils/audio.h"
 
-#include "absl/log/absl_log.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,16 +36,36 @@ std::vector<float> GenerateAudioData(size_t nb_samples) {
   return audio_data;
 }
 
-TEST(TestAudioUtils, DISABLED_CheckFillAudioData) {
+TEST(TestAudioUtils, CheckFillAudioData) {
   auto audio_data = GenerateAudioData(16000);
 
   AVChannelLayout in_channel_layout = AV_CHANNEL_LAYOUT_MONO;
   auto in_frame_or = aikit::media::AudioFrame::CreateAudioFrame(
-      AV_SAMPLE_FMT_FLTP, &in_channel_layout, 16000, 1);
+      AV_SAMPLE_FMT_FLTP, &in_channel_layout, 16000, 16000);
   EXPECT_TRUE(in_frame_or.ok()) << in_frame_or.status().message();
   auto status = in_frame_or->FillAudioData(audio_data);
   EXPECT_TRUE(status.ok()) << status.message();
   EXPECT_EQ(in_frame_or->c_frame()->linesize[0], 64000);
+}
+
+TEST(TestAudioUtils, CheckAppendAudioData) {
+  auto audio_data = GenerateAudioData(16000);
+
+  AVChannelLayout in_channel_layout = AV_CHANNEL_LAYOUT_MONO;
+  auto in_frame_or = aikit::media::AudioFrame::CreateAudioFrame(
+      AV_SAMPLE_FMT_FLT, &in_channel_layout, 16000, 16000);
+  EXPECT_TRUE(in_frame_or.ok()) << in_frame_or.status().message();
+  auto status = in_frame_or->FillAudioData(audio_data);
+  EXPECT_TRUE(status.ok()) << status.message();
+  EXPECT_EQ(in_frame_or->c_frame()->linesize[0], 64000);
+
+  std::vector<float> copied_audio_data;
+  status = in_frame_or->AppendAudioData(copied_audio_data);
+  EXPECT_EQ(copied_audio_data.size(), 16000) << status.message();
+
+  for (auto i = 0; i < 16000; ++i) {
+    EXPECT_FLOAT_EQ(audio_data[0], copied_audio_data[0]);
+  }
 }
 
 TEST(TestAudioUtils, CheckSaveAudioData) {

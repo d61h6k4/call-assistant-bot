@@ -7,7 +7,6 @@ extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/frame.h"
-#include "libswresample/swresample.h"
 #ifdef __cplusplus
 }
 #endif
@@ -32,6 +31,8 @@ public:
 
   // Important: we assume here number of channels 1 and sample format FLT
   absl::Status FillAudioData(std::vector<float> &audio_data);
+  // Copies frames data to the given vector.
+  absl::Status AppendAudioData(std::vector<float> &audio_data);
 
 private:
   explicit AudioFrame(AVFrame *frame) : c_frame_(frame) {}
@@ -52,7 +53,13 @@ public:
   AudioStreamContext &operator=(AudioStreamContext &&) noexcept;
   ~AudioStreamContext();
 
+  int stream_index() { return stream_index_; }
+
   AVCodecContext *codec_context() { return codec_context_; }
+
+  int sample_rate() { return sample_rate_; }
+  AVChannelLayout* channel_layout() { return &channel_layout_; }
+  AVSampleFormat format() { return format_; }
 
 private:
   AudioStreamContext();
@@ -60,7 +67,7 @@ private:
 private:
   int stream_index_{};
   int start_time_{};
-  float time_base_{};
+  AVRational time_base_{};
   int sample_rate_{};
   int channels_{};
   AVChannelLayout channel_layout_ = AV_CHANNEL_LAYOUT_MONO;
