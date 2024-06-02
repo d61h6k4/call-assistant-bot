@@ -29,7 +29,7 @@ configure_make(
             "--enable-libxcb",
             "--enable-libxcb-shm",
             "--enable-libxcb-xfixes",
-            "--enable-libxcb-shape",,
+            "--enable-libxcb-shape",
             "--enable-libpulse",
          ],
         "//conditions:default": [],
