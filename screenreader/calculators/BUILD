@@ -4,7 +4,9 @@ cc_library(
     name = "ffmpeg_capture_audio_calculator",
     srcs = ["ffmpeg_capture_audio_calculator.cc"],
     deps = [
-        "//screenreader/utils:ffmpeg",
+        "//screenreader/utils:audio",
+         "//screenreader/utils:container",
+         "//screenreader/utils:converter",
         "@com_google_absl//absl/log:absl_log",
         "@mediapipe//mediapipe/framework:calculator_framework",
         "@mediapipe//mediapipe/framework/api2:node",
@@ -39,7 +41,8 @@ cc_library(
     name = "ffmpeg_sink_video_calculator",
     srcs = ["ffmpeg_sink_video_calculator.cc"],
     deps = [
-        "//third_party:libffmpeg",
+        "//screenreader/utils:audio",
+        "//screenreader/utils:container",
         "@com_google_absl//absl/log:absl_log",
         "@mediapipe//mediapipe/framework:calculator_framework",
         "@mediapipe//mediapipe/framework/api2:node",

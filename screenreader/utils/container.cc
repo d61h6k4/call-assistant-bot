@@ -139,7 +139,7 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
 
     // This call creates and connects stream with AVFormatContext
     AVStream *stream =
-        avformat_new_stream(container_stream_context.format_context_, codec);
+        avformat_new_stream(container_stream_context.format_context_, nullptr);
     stream->id = container_stream_context.format_context_->nb_streams - 1;
     // Here we define format of the output format
     stream->codecpar->frame_size = audio_stream_parameters.frame_size;
@@ -163,6 +163,13 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
       auto s = absl::AbortedError("Failed to initialize audio stream context.");
       s.Update(audio_stream_context_or.status());
       return s;
+    }
+
+    /* Some formats want stream headers to be separate. */
+    if (container_stream_context.format_context_->oformat->flags &
+        AVFMT_GLOBALHEADER) {
+      audio_stream_context_or->codec_context()->flags |=
+          AV_CODEC_FLAG_GLOBAL_HEADER;
     }
 
     // Print to stdout format info.
@@ -197,8 +204,10 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
 
 ContainerStreamContext::ContainerStreamContext(
     ContainerStreamContext &&o) noexcept
-    : is_reader_(o.is_reader_), format_context_(o.format_context_),
+    : is_reader_(o.is_reader_), header_written_(o.header_written_),
+      format_context_(o.format_context_),
       audio_stream_context_(std::move(o.audio_stream_context_)) {
+
   o.format_context_ = nullptr;
 }
 
@@ -206,6 +215,7 @@ ContainerStreamContext &
 ContainerStreamContext::operator=(ContainerStreamContext &&o) noexcept {
   if (this != &o) {
     is_reader_ = o.is_reader_;
+    header_written_ = o.header_written_;
     audio_stream_context_ = std::move(o.audio_stream_context_);
     format_context_ = o.format_context_;
     o.format_context_ = nullptr;
@@ -235,9 +245,10 @@ absl::StatusOr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {
                               "it, but container doesn't have audio stream.");
   }
 
-  return AudioFrame::CreateAudioFrame(audio_stream_context_->format(),
-                                      audio_stream_context_->channel_layout(),
-                                      audio_stream_context_->sample_rate(), 1);
+  auto audio_stream_params = GetAudioStreamParameters();
+  return AudioFrame::CreateAudioFrame(
+      audio_stream_params.format, &audio_stream_params.channel_layout,
+      audio_stream_params.sample_rate, audio_stream_params.frame_size);
 }
 
 absl::Status
@@ -274,13 +285,15 @@ absl::Status ContainerStreamContext::ReadPacket(AVPacket *packet) {
 
   // fill the Packet with data from the Stream
   // https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
-  while (av_read_frame(format_context_, packet) == 0) {
+  int res = av_read_frame(format_context_, packet);
+  for (; res == 0; res = av_read_frame(format_context_, packet)) {
     if (packet->stream_index == audio_stream_context_->stream_index()) {
       return absl::OkStatus();
     }
   }
 
-  return absl::FailedPreconditionError("No packet to read.");
+  return absl::FailedPreconditionError(
+      absl::StrCat("No packet to read. Error:", av_err2str(res)));
 }
 
 absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
@@ -343,5 +356,37 @@ ContainerStreamContext::CaptureDevice(const std::string &device_name,
   return CreateReaderContainerStreamContext(driver_url, input_format);
 }
 
+int64_t ContainerStreamContext::FramePTSInMicroseconds(AudioFrame &frame) {
+  return av_rescale_q(frame.c_frame()->pts, audio_stream_context_->time_base(),
+                      AVRational{1, 1000000});
+}
+
+void ContainerStreamContext::SetFramePTS(int64_t microseconds,
+                                         AudioFrame &frame) {
+  frame.c_frame()->pts = av_rescale_q(microseconds, AVRational{1, 1000000},
+                                      audio_stream_context_->time_base());
+}
+
+AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {
+  auto params = AudioStreamParameters();
+
+  if (audio_stream_context_->codec_context()->codec->capabilities &
+      AV_CODEC_CAP_VARIABLE_FRAME_SIZE) {
+    params.frame_size = 16000;
+  } else if (audio_stream_context_->codec_context()->frame_size == 0) {
+    params.frame_size = 1024;
+  } else {
+    params.frame_size = audio_stream_context_->codec_context()->frame_size;
+  }
+  params.sample_rate = audio_stream_context_->sample_rate();
+  int bit_rate =
+      av_get_bits_per_sample(audio_stream_context_->codec_context()->codec_id) *
+      params.sample_rate;
+  params.format = audio_stream_context_->format();
+  av_channel_layout_copy(&params.channel_layout,
+                         audio_stream_context_->channel_layout());
+
+  return params;
+}
 } // namespace media
 } // namespace aikit

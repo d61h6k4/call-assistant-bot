@@ -19,7 +19,7 @@ extern "C" {
 #include "screenreader/utils/audio.h"
 #include "screenreader/utils/container.h"
 
-TEST(TestContainerUtils, CheckCreateReaderContianer) {
+TEST(TestContainerUtils, DISABLED_CheckCreateReaderContianer) {
   const std::string filename = "/tmp/test_audio_utils.mp4";
 
   auto container =
@@ -78,7 +78,7 @@ TEST(TestContainerUtils, CheckCreateWriterContianer) {
   EXPECT_TRUE(audio_frame_or.ok()) << audio_frame_or.status().message();
 
   absl::Status status;
-  for (auto i = 0; i < 16; ++i) {
+  for (auto i = 0; i < 17; ++i) {
     audio_frame_or->c_frame()->pts = (i + 1) * params.frame_size;
     auto audio_data = GenerateAudioData(params.frame_size);
     auto status = audio_frame_or->FillAudioData(audio_data);

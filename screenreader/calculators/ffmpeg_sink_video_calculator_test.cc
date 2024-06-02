@@ -3,12 +3,14 @@
 #include "absl/log/absl_log.h"
 #include "gtest/gtest.h"
 #include <cstddef>
+#include <cstdint>
 #include <numbers>
 
 #include "mediapipe/framework/calculator_runner.h"
 #include "mediapipe/framework/formats/yuv_image.h"
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/status_matchers.h"
+#include "screenreader/utils/audio.h"
 
 namespace aikit {
 
@@ -18,7 +20,7 @@ protected:
       : runner_(R"pb(
                   calculator: "FFMPEGSinkVideoCalculator"
                   input_side_packet: "OUTPUT_FILE_PATH:output_file_path"
-                  input_stream: "YUV_IMAGE:video_frames"
+                  input_side_packet: "AUDIO_HEADER:audio_header"
                   input_stream: "AUDIO:audio_frames"
                   )pb") {}
 
@@ -53,7 +55,7 @@ protected:
   }
 
   mediapipe::Packet FillAudio() {
-    auto nb_samples = static_cast<int>(16000.0 ) ;
+    auto nb_samples = static_cast<int>(1024);
     std::vector<float> audio_data(nb_samples);
 
     /* init signal generator */
@@ -73,20 +75,25 @@ protected:
 
   void SetInput() {
     runner_.MutableSidePackets()->Tag("OUTPUT_FILE_PATH") =
-        mediapipe::MakePacket<std::string>("/tmp/testvideo.aac");
+        mediapipe::MakePacket<std::string>("/tmp/testvideo.mp4");
+    auto audio_header = aikit::media::AudioStreamParameters();
+    runner_.MutableSidePackets()->Tag("AUDIO_HEADER") =
+        mediapipe::MakePacket<aikit::media::AudioStreamParameters>(
+            audio_header);
 
-    for (auto frame_ix = 0; frame_ix < 25 * 10; ++frame_ix) {
-      auto yuv_image_packet = FillYuvImage(frame_ix);
-      runner_.MutableInputs()
-          ->Tag("YUV_IMAGE")
-          .packets.push_back(
-              yuv_image_packet.At(mediapipe::Timestamp(frame_ix)));
-    }
+    // for (auto frame_ix = 0; frame_ix < 25 * 10; ++frame_ix) {
+    //   auto yuv_image_packet = FillYuvImage(frame_ix);
+    //   runner_.MutableInputs()
+    //       ->Tag("YUV_IMAGE")
+    //       .packets.push_back(
+    //           yuv_image_packet.At(mediapipe::Timestamp(frame_ix)));
+    // }
 
-    for (auto ix = 0; ix < 10; ++ix) {
+    for (auto ix = 0; ix < 1 * 16; ++ix) {
       auto audio_packet = FillAudio();
-      runner_.MutableInputs()->Tag("AUDIO").packets.push_back(
-          audio_packet.At(mediapipe::Timestamp(ix * 1000000)));
+      auto microseconds = ix * 1024.0 / audio_header.sample_rate * 1000000.0;
+      runner_.MutableInputs()->Tag("AUDIO").packets.push_back(audio_packet.At(
+          mediapipe::Timestamp(static_cast<int64_t>(microseconds))));
     }
   }
 

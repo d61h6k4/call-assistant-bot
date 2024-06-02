@@ -73,6 +73,7 @@ public:
   int sample_rate() { return sample_rate_; }
   AVChannelLayout *channel_layout() { return &channel_layout_; }
   AVSampleFormat format() { return format_; }
+  AVRational time_base() { return time_base_; }
 
 private:
   AudioStreamContext();

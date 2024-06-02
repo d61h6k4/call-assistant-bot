@@ -1,6 +1,7 @@
 #pragma once
 
 #include "absl/status/statusor.h"
+#include <cstdint>
 #include <optional>
 
 #ifdef __cplusplus
@@ -32,7 +33,11 @@ public:
 
   ~ContainerStreamContext();
 
+  AudioStreamParameters GetAudioStreamParameters();
+
   absl::StatusOr<AudioFrame> CreateAudioFrame();
+  int64_t FramePTSInMicroseconds(AudioFrame &frame);
+  void SetFramePTS(int64_t microseconds, AudioFrame &frame);
 
   absl::Status ReadPacket(AVPacket *packet);
   absl::Status PacketToFrame(AVPacket *packet, AudioFrame &frame);
