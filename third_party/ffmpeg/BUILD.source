@@ -9,12 +9,7 @@ filegroup(
 
 configure_make(
     name = "libffmpeg",
-    build_args = [
-        "-j8",
-    ],
-    generate_args = [
-        "-GNinja",
-    ],
+    args = ["-j `nproc`"],
     configure_options = [
         "--disable-programs",
         "--disable-doc",
