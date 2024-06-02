@@ -1,6 +1,6 @@
---- /dev/null	2024-05-27 14:03:36
-+++ BUILD	2024-05-27 14:03:31
-@@ -0,0 +1,56 @@
+--- /dev/null	2024-06-02 19:15:58
++++ BUILD	2024-06-02 19:15:45
+@@ -0,0 +1,63 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +
 +filegroup(
@@ -12,6 +12,12 @@
 +
 +configure_make(
 +    name = "libffmpeg",
++    build_args = [
++        "-j8",
++    ],
++    generate_args = [
++        "-GNinja",
++    ],
 +    configure_options = [
 +        "--disable-programs",
 +        "--disable-doc",
@@ -26,7 +32,8 @@
 +            "--enable-libxcb",
 +            "--enable-libxcb-shm",
 +            "--enable-libxcb-xfixes",
-+            "--enable-libxcb-shape",
++            "--enable-libxcb-shape",,
++            "--enable-libpulse",
 +         ],
 +        "//conditions:default": [],
 +    }),

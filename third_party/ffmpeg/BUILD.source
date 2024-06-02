@@ -9,6 +9,12 @@ filegroup(
 
 configure_make(
     name = "libffmpeg",
+    build_args = [
+        "-j8",
+    ],
+    generate_args = [
+        "-GNinja",
+    ],
     configure_options = [
         "--disable-programs",
         "--disable-doc",
@@ -23,7 +29,8 @@ configure_make(
             "--enable-libxcb",
             "--enable-libxcb-shm",
             "--enable-libxcb-xfixes",
-            "--enable-libxcb-shape",
+            "--enable-libxcb-shape",,
+            "--enable-libpulse",
          ],
         "//conditions:default": [],
     }),
