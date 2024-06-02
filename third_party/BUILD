@@ -31,9 +31,8 @@ alias(
     actual = "@libyuv//:libyuv",
 )
 
-
 cc_library(
     name = "opencv",
     visibility = ["//visibility:public"],
-    deps = ["@opencv//:opencv"],
+    deps = ["@opencv"],
 )
