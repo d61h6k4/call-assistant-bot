@@ -5,8 +5,8 @@ cc_library(
     srcs = ["ffmpeg_capture_audio_calculator.cc"],
     deps = [
         "//screenreader/utils:audio",
-         "//screenreader/utils:container",
-         "//screenreader/utils:converter",
+        "//screenreader/utils:container",
+        "//screenreader/utils:converter",
         "@com_google_absl//absl/log:absl_log",
         "@mediapipe//mediapipe/framework:calculator_framework",
         "@mediapipe//mediapipe/framework/api2:node",
