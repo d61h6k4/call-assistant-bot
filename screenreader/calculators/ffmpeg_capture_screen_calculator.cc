@@ -15,13 +15,13 @@ namespace aikit {
 // Example config:
 // node {
 //   calculator: "FFMPEGCaptureScreenCalculator"
-//   output_stream: "VIDEO:video_frames"
+//   output_stream: "YUV_IMAGE:video_frames"
 //   output_stream: "VIDEO_PRESTREAM:video_header"
 // }
 class FFMPEGCaptureScreenCalculator : public mediapipe::api2::Node {
 public:
   static constexpr mediapipe::api2::Output<mediapipe::YUVImage> kOutVideo{
-      "VIDEO"};
+      "YUV_IMAGE"};
   static constexpr mediapipe::api2::Output<mediapipe::VideoHeader>
       kOutVideoPrestream{"VIDEO_PRESTREAM"};
 
@@ -53,8 +53,8 @@ FFMPEGCaptureScreenCalculator::Open(mediapipe::CalculatorContext *cc) {
 #if __APPLE__
   auto video_stream_context_or = utils::CaptureDevice("avfoundation", "3:");
 #elif __linux__
-  auto video_stream_context_or =
-      utils::CaptureDevice("x11grab", ":0.0+100,200");
+  // :1 is DISPLAY value
+  auto video_stream_context_or = utils::CaptureDevice("x11grab", ":1");
 #endif
 
   if (!video_stream_context_or.ok()) {

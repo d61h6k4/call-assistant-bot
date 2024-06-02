@@ -8,7 +8,7 @@ build --define MEDIAPIPE_DISABLE_GPU=1
 build --enable_platform_specific_config
 
 # Enable stack traces
-test --test_env="GTEST_INSTALL_FAILURE_SIGNAL_HANDLER=1"
+# test --test_env="GTEST_INSTALL_FAILURE_SIGNAL_HANDLER=1"
 
 # Linux
 build:linux --cxxopt=-std=c++20
@@ -35,3 +35,21 @@ build:macos --host_action_env=CXXFLAGS=-Wno-int-conversion
 build:macos --action_env=CXXFLAGS=-Wno-int-conversion
 build:macos --host_action_env=CFLAGS=-Wno-int-conversion
 build:macos --action_env=CFLAGS=-Wno-int-conversion
+
+# Address sanitizer
+# To use it: bazel build --config asan
+build:asan --strip=never
+build:asan --copt -fsanitize=address
+build:asan --copt -DADDRESS_SANITIZER
+build:asan --copt -O1
+build:asan --copt -g
+build:asan --copt -fno-omit-frame-pointer
+build:asan --linkopt -fsanitize=address
+
+# --config msan: Memory sanitizer
+build:msan --strip=never
+build:msan --copt -fsanitize=memory
+build:msan --copt -DADDRESS_SANITIZER
+build:msan --copt -O1
+build:msan --copt -fno-omit-frame-pointer
+build:msan --linkopt -fsanitize=memory
