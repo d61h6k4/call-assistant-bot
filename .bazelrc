@@ -11,8 +11,8 @@ build --enable_platform_specific_config
 # test --test_env="GTEST_INSTALL_FAILURE_SIGNAL_HANDLER=1"
 
 # Linux
-build:linux --cxxopt=-std=c++20
-build:linux --host_cxxopt=-std=c++20
+build:linux --cxxopt='-std=c++20'
+build:linux --host_cxxopt='-std=c++20'
 build:linux --copt=-w
 # https://github.com/bazelbuild/bazel/issues/20886
 build:linux --noincompatible_sandbox_hermetic_tmp

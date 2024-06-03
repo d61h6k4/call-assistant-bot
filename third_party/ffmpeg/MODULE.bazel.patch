@@ -1,6 +1,6 @@
---- /dev/null	2024-05-27 13:14:26
-+++ MODULE.bazel	2024-05-27 13:14:15
-@@ -0,0 +1,15 @@
+--- /dev/null	2024-06-03 11:48:58
++++ MODULE.bazel	2024-06-03 11:48:26
+@@ -0,0 +1,16 @@
 +module(
 +    name = "ffmpeg",
 +    version = "7.0.0",
@@ -16,3 +16,4 @@
 +bazel_dep(name = "bzip2", version = "1.0.8")
 +bazel_dep(name = "iconv", version = "1.17.0")
 +bazel_dep(name = "libxcb", version = "1.16.0")
++bazel_dep(name = "pulseaudio", version = "17.0")
