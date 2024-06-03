@@ -1,0 +1,16 @@
+
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "meson")
+
+filegroup(
+    name = "pulseaudio_srcs",
+    srcs = glob(
+        ["**"],
+        exclude = ["src/modules/alsa/mixer/samples/USB Device 0x46d:0x9a4--USB Mixer"]
+    ),
+)
+
+meson(
+    name = "libpulse",
+    lib_source = ":pulseaudio_srcs",
+    visibility = ["//visibility:public"],
+)

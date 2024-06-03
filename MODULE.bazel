@@ -150,6 +150,19 @@ archive_override(
 )
 # end of libxcb dependencies
 
+bazel_dep(name = "pulseaudio", version = "17.0")
+archive_override(
+    module_name = "pulseaudio",
+    integrity = "sha256-lmk9cpvU1XbZ9pipCfl64hpf/kvKaixLzjj1t/I0R3s=",
+    patches = [
+        "//third_party/pulseaudio:BUILD.patch",
+        "//third_party/pulseaudio:MODULE.bazel.patch",
+        "//third_party/pulseaudio:.tarball-version.patch",
+    ],
+    strip_prefix = "pulseaudio-17.0",
+    urls = "https://github.com/pulseaudio/pulseaudio/archive/refs/tags/v17.0.zip",
+)
+
 bazel_dep(name = "opencv", version = "3.4.20", repo_name = "opencv")
 archive_override(
     module_name = "opencv",
