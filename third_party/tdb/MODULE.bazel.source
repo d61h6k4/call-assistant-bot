@@ -1,0 +1,4 @@
+module(name = "tdb", version = "1.4.10")
+
+bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
+bazel_dep(name = "rules_python", version = "0.32.2")

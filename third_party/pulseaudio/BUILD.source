@@ -15,5 +15,6 @@ meson(
     visibility = ["//visibility:public"],
     deps = [
         "@libsndfile",
+        "@tdb",
     ],
 )
