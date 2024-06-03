@@ -15,6 +15,9 @@ cmake(
     generate_args = [
         "-GNinja",
     ],
+    cache_entries = {
+        "CMAKE_C_FLAGS": "-fPIC",
+    },
     lib_source = ":libsndfile_srcs",
     visibility = ["//visibility:public"],
 )
