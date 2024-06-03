@@ -1,6 +1,6 @@
---- /dev/null	2024-06-02 19:20:11
-+++ BUILD	2024-06-02 19:20:03
-@@ -0,0 +1,58 @@
+--- /dev/null	2024-06-03 11:48:53
++++ BUILD	2024-06-03 11:48:47
+@@ -0,0 +1,61 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +
 +filegroup(
@@ -55,7 +55,10 @@
 +        "@iconv//:libiconv",
 +        "@zlib",
 +    ] + select({
-+        "@platforms//os:linux": ["@libxcb"],
++        "@platforms//os:linux": [
++            "@libxcb",
++            "@pulseaudio//:libpulse",
++        ],
 +        "//conditions:default": [],
 +    }),
 +)

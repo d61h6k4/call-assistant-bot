@@ -52,7 +52,10 @@ configure_make(
         "@iconv//:libiconv",
         "@zlib",
     ] + select({
-        "@platforms//os:linux": ["@libxcb"],
+        "@platforms//os:linux": [
+            "@libxcb",
+            "@pulseaudio//:libpulse",
+        ],
         "//conditions:default": [],
     }),
 )
