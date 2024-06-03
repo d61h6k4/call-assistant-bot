@@ -1,6 +1,6 @@
---- /dev/null	2024-06-03 10:11:11
-+++ BUILD	2024-06-03 10:10:49
-@@ -0,0 +1,20 @@
+--- /dev/null	2024-06-03 10:56:14
++++ BUILD	2024-06-03 10:56:11
+@@ -0,0 +1,21 @@
 +
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "meson")
 +
@@ -19,5 +19,6 @@
 +    deps = [
 +        "@libsndfile",
 +        "@tdb",
++        "@check",
 +    ],
 +)

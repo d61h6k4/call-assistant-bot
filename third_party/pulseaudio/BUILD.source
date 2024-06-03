@@ -16,5 +16,6 @@ meson(
     deps = [
         "@libsndfile",
         "@tdb",
+        "@check",
     ],
 )
