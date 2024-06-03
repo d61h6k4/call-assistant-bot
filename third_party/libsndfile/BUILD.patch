@@ -1,0 +1,26 @@
+--- /dev/null	2024-06-03 11:22:29
++++ BUILD	2024-06-03 11:22:18
+@@ -0,0 +1,23 @@
++load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
++
++filegroup(
++    name = "libsndfile_srcs",
++    srcs = glob([
++        "**",
++    ]),
++)
++
++cmake(
++    name = "libsndfile",
++    build_args = [
++        "-j8",
++    ],
++    generate_args = [
++        "-GNinja",
++    ],
++    cache_entries = {
++        "CMAKE_C_FLAGS": "-fPIC",
++    },
++    lib_source = ":libsndfile_srcs",
++    visibility = ["//visibility:public"],
++)

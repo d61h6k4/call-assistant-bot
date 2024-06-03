@@ -1,6 +1,6 @@
---- /dev/null	2024-05-27 14:03:36
-+++ BUILD	2024-05-27 14:03:31
-@@ -0,0 +1,56 @@
+--- /dev/null	2024-06-03 11:48:53
++++ BUILD	2024-06-03 11:48:47
+@@ -0,0 +1,61 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +
 +filegroup(
@@ -12,6 +12,7 @@
 +
 +configure_make(
 +    name = "libffmpeg",
++    args = ["-j `nproc`"],
 +    configure_options = [
 +        "--disable-programs",
 +        "--disable-doc",
@@ -27,6 +28,7 @@
 +            "--enable-libxcb-shm",
 +            "--enable-libxcb-xfixes",
 +            "--enable-libxcb-shape",
++            "--enable-libpulse",
 +         ],
 +        "//conditions:default": [],
 +    }),
@@ -53,7 +55,10 @@
 +        "@iconv//:libiconv",
 +        "@zlib",
 +    ] + select({
-+        "@platforms//os:linux": ["@libxcb"],
++        "@platforms//os:linux": [
++            "@libxcb",
++            "@pulseaudio//:libpulse",
++        ],
 +        "//conditions:default": [],
 +    }),
 +)

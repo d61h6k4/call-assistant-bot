@@ -1,0 +1,23 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+filegroup(
+    name = "srcs",
+    srcs = glob([
+        "**",
+    ]),
+)
+
+cmake(
+    name = "check",
+    build_args = [
+        "-j8",
+    ],
+    generate_args = [
+        "-GNinja",
+    ],
+    out_static_libs = [
+        "libcheck.a",
+    ],
+    lib_source = ":srcs",
+    visibility = ["//visibility:public"],
+)

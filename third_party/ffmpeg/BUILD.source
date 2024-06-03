@@ -9,6 +9,7 @@ filegroup(
 
 configure_make(
     name = "libffmpeg",
+    args = ["-j `nproc`"],
     configure_options = [
         "--disable-programs",
         "--disable-doc",
@@ -24,6 +25,7 @@ configure_make(
             "--enable-libxcb-shm",
             "--enable-libxcb-xfixes",
             "--enable-libxcb-shape",
+            "--enable-libpulse",
          ],
         "//conditions:default": [],
     }),
@@ -50,7 +52,10 @@ configure_make(
         "@iconv//:libiconv",
         "@zlib",
     ] + select({
-        "@platforms//os:linux": ["@libxcb"],
+        "@platforms//os:linux": [
+            "@libxcb",
+            "@pulseaudio//:libpulse",
+        ],
         "//conditions:default": [],
     }),
 )
