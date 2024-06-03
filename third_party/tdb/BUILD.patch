@@ -1,6 +1,6 @@
---- /dev/null	2024-06-03 10:21:37
-+++ BUILD	2024-06-03 10:21:30
-@@ -0,0 +1,16 @@
+--- /dev/null	2024-06-03 10:33:15
++++ BUILD	2024-06-03 10:33:10
+@@ -0,0 +1,21 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +
 +filegroup(
@@ -9,10 +9,15 @@
 +)
 +
 +configure_make(
-+    name = "tdb",
++    name = "libtdb",
 +    lib_source = ":srcs",
 +    configure_in_place = True,
 +    visibility = ["//visibility:public"],
++    out_shared_libs = [
++        "libtdb.so",
++        "libtdb.so.1",
++        "libtdb.so.1.4.10",
++    ],
 +    deps = [
 +        "@rules_python//python/cc:current_py_cc_headers",
 +    ]

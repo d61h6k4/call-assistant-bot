@@ -6,10 +6,15 @@ filegroup(
 )
 
 configure_make(
-    name = "tdb",
+    name = "libtdb",
     lib_source = ":srcs",
     configure_in_place = True,
     visibility = ["//visibility:public"],
+    out_shared_libs = [
+        "libtdb.so",
+        "libtdb.so.1",
+        "libtdb.so.1.4.10",
+    ],
     deps = [
         "@rules_python//python/cc:current_py_cc_headers",
     ]
