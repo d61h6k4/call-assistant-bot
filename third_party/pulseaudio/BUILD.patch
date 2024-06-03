@@ -1,5 +1,5 @@
---- /dev/null	2024-06-03 11:06:06
-+++ BUILD	2024-06-03 11:05:56
+--- /dev/null	2024-06-03 11:12:51
++++ BUILD	2024-06-03 11:12:45
 @@ -0,0 +1,25 @@
 +
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "meson")
@@ -14,10 +14,10 @@
 +
 +meson(
 +    name = "libpulse",
-+    build_args = [
-+        "--doxygen=false",
-+        "--man=false",
-+    ],
++    options = {
++        "doxygen": "false",
++        "man": "false",
++    },
 +    lib_source = ":pulseaudio_srcs",
 +    visibility = ["//visibility:public"],
 +    deps = [
