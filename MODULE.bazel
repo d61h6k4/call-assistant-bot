@@ -163,6 +163,20 @@ archive_override(
     urls = "https://github.com/pulseaudio/pulseaudio/archive/refs/tags/v17.0.zip",
 )
 
+# pulseaudio dependencies
+bazel_dep(name = "libsndfile", version = "1.2.2")
+archive_override(
+    module_name = "libsndfile",
+    patches = [
+        "//third_party/libsndfile:BUILD.patch",
+        "//third_party/libsndfile:MODULE.bazel.patch",
+    ],
+    strip_prefix = "libsndfile-1.2.2",
+    urls = "https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz",
+    integrity = "sha256-N5nKmSTTElA4iANnvxRo5TobfjaGqTTwmLfh0obNuA4=",
+)
+# endof pulseaudio dependencies
+
 bazel_dep(name = "opencv", version = "3.4.20", repo_name = "opencv")
 archive_override(
     module_name = "opencv",

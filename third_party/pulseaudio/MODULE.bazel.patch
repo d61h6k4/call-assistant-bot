@@ -1,7 +1,8 @@
---- /dev/null	2024-06-03 09:25:02
-+++ MODULE.bazel	2024-06-02 19:28:31
-@@ -0,0 +1,4 @@
+--- /dev/null	2024-06-03 09:53:47
++++ MODULE.bazel	2024-06-03 09:53:23
+@@ -0,0 +1,5 @@
 +
 +module(name = "pulseaudio", version = "17.0")
 +
 +bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
++bazel_dep(name = "libsndfile", version = "1.2.2")

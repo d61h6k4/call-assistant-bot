@@ -13,4 +13,7 @@ meson(
     name = "libpulse",
     lib_source = ":pulseaudio_srcs",
     visibility = ["//visibility:public"],
+    deps = [
+        "@libsndfile",
+    ],
 )
