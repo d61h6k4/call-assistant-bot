@@ -1,6 +1,6 @@
---- /dev/null	2024-06-03 11:16:32
-+++ BUILD	2024-06-03 11:16:29
-@@ -0,0 +1,28 @@
+--- /dev/null	2024-06-03 11:29:06
++++ BUILD	2024-06-03 11:28:56
+@@ -0,0 +1,31 @@
 +
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "meson")
 +
@@ -22,6 +22,9 @@
 +        "-fPIC",
 +    ],
 +    lib_source = ":pulseaudio_srcs",
++    out_shared_libs = [
++        "libpulse.so",
++    ],
 +    visibility = ["//visibility:public"],
 +    deps = [
 +        "@libsndfile",

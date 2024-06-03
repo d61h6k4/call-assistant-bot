@@ -19,6 +19,9 @@ meson(
         "-fPIC",
     ],
     lib_source = ":pulseaudio_srcs",
+    out_shared_libs = [
+        "libpulse.so",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         "@libsndfile",
