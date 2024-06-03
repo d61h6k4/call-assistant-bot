@@ -15,6 +15,9 @@ meson(
         "doxygen": "false",
         "man": "false",
     },
+    copts = [
+        "-fPIC",
+    ],
     lib_source = ":pulseaudio_srcs",
     visibility = ["//visibility:public"],
     deps = [
