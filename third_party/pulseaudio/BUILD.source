@@ -11,6 +11,10 @@ filegroup(
 
 meson(
     name = "libpulse",
+    build_args = [
+        "--doxygen=false",
+        "--man=false",
+    ],
     lib_source = ":pulseaudio_srcs",
     visibility = ["//visibility:public"],
     deps = [
