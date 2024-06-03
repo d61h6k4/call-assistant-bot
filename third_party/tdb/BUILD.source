@@ -8,6 +8,7 @@ filegroup(
 configure_make(
     name = "tdb",
     lib_source = ":srcs",
+    configure_in_place = True,
     visibility = ["//visibility:public"],
     deps = [
         "@rules_python//python/cc:current_py_cc_headers",
