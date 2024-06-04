@@ -29,6 +29,18 @@ bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf"
 bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
 
+bazel_dep(name = "rules_python", version = "0.32.2")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+
+pip.parse(
+    hub_name = "pip",
+    python_version = "3.11",
+    requirements_lock = "//third_party:requirements_lock.txt",
+)
+
+use_repo(pip, "pip")
+
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 _MEDIAPIPE_VERSION = "0.10.14"
@@ -167,35 +179,37 @@ archive_override(
 bazel_dep(name = "libsndfile", version = "1.2.2")
 archive_override(
     module_name = "libsndfile",
+    integrity = "sha256-N5nKmSTTElA4iANnvxRo5TobfjaGqTTwmLfh0obNuA4=",
     patches = [
         "//third_party/libsndfile:BUILD.patch",
         "//third_party/libsndfile:MODULE.bazel.patch",
     ],
     strip_prefix = "libsndfile-1.2.2",
     urls = "https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz",
-    integrity = "sha256-N5nKmSTTElA4iANnvxRo5TobfjaGqTTwmLfh0obNuA4=",
 )
+
 bazel_dep(name = "tdb", version = "1.4.10")
 archive_override(
     module_name = "tdb",
+    integrity = "sha256-AjOOM8FsIcnilXHO9SPnaytwhjYlT28wxs8ZXUjGLa8=",
     patches = [
         "//third_party/tdb:BUILD.patch",
         "//third_party/tdb:MODULE.bazel.patch",
     ],
     strip_prefix = "tdb-1.4.10",
     urls = "https://www.samba.org/ftp/tdb/tdb-1.4.10.tar.gz",
-    integrity = "sha256-AjOOM8FsIcnilXHO9SPnaytwhjYlT28wxs8ZXUjGLa8=",
 )
+
 bazel_dep(name = "check", version = "0.15.2")
 archive_override(
     module_name = "check",
+    integrity = "sha256-qN5OC6z7TXbdHGGN7SY1I7U7hdkqFG2INesaUpMvogo=",
     patches = [
         "//third_party/check:BUILD.patch",
         "//third_party/check:MODULE.bazel.patch",
     ],
     strip_prefix = "check-0.15.2",
     urls = "https://github.com/libcheck/check/releases/download/0.15.2/check-0.15.2.tar.gz",
-    integrity = "sha256-qN5OC6z7TXbdHGGN7SY1I7U7hdkqFG2INesaUpMvogo=",
 )
 # endof pulseaudio dependencies
 

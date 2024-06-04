@@ -1,0 +1,6 @@
+Deprecated==1.2.14
+mss==9.0.1
+nodriver==0.29rc2
+picologging==0.9.3
+websockets==12.0
+wrapt==1.16.0
