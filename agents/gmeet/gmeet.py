@@ -1,6 +1,7 @@
 import asyncio
 import argparse
 import base64
+import datetime
 import nodriver
 import os
 
@@ -22,7 +23,9 @@ class GoogleMeetOperator:
         self.email = email
         self.password = password
         self.session_id = base64.b64encode(email.encode("utf8")).decode("utf8")
-        self.screenshots_dir = screenshots_dir / self.session_id
+        self.screenshots_dir = (
+            screenshots_dir / datetime.datetime.now().isoformat() / self.session_id
+        )
 
     async def join(self, url: str):
         self.logger.info(
@@ -267,7 +270,7 @@ async def main(
         {"message": "Joining Google Meeting", "gmeet_link": gmeet_link, "email": email}
     )
     browser_config = nodriver.Config(
-        headless=True,
+        headless=False,
         sandbox=True,
         browser_args=[
             "--window-size=1024x768",
