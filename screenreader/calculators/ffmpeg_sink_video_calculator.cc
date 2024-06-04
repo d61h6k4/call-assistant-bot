@@ -3,11 +3,18 @@
 #include "mediapipe/framework/formats/yuv_image.h"
 #include "screenreader/utils/audio.h"
 #include "screenreader/utils/container.h"
+#include <csignal>
 #include <cstdint>
 #include <optional>
 #include <vector>
 
 namespace aikit {
+
+namespace {
+volatile std::sig_atomic_t gSignalStatus;
+}
+
+void SignalHandler(int signal) { gSignalStatus = signal; }
 
 // Calculator takes video (images) stream (optional) and audio stream
 // (optional), muxes them and writes to a file.
@@ -47,10 +54,13 @@ private:
 MEDIAPIPE_REGISTER_NODE(FFMPEGSinkVideoCalculator);
 
 absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
+  // Register processing system signals
+  std::signal(SIGTERM, SignalHandler);
+  std::signal(SIGINT, SignalHandler);
+
   const auto &output_file_path = kInFilePath(cc).Get();
   const auto &audio_stream_parameters = kInAudioHeader(cc).Get();
 
-  ABSL_LOG(INFO) << "Sample rate = " << audio_stream_parameters.sample_rate;
   auto container_stream_context_or =
       media::ContainerStreamContext::CreateWriterContainerStreamContext(
           audio_stream_parameters, output_file_path);
@@ -115,6 +125,11 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
   //   }
   // }
 
+  if (gSignalStatus == SIGINT || gSignalStatus == SIGTERM) {
+    ABSL_LOG(WARNING) << "Got system singal. Stoping processing.";
+    return mediapipe::tool::StatusStop();
+  }
+
   if (kInAudio(cc).IsConnected() && !kInAudio(cc).IsEmpty()) {
 
     auto audio_data = kInAudio(cc).Get();
@@ -124,9 +139,8 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
              << "Failed to fill audio frame with the given audio data. "
              << status.message();
     }
-    container_stream_context_->SetFramePTS(
-        cc->InputTimestamp().Microseconds(),
-        audio_frame_.value());
+    container_stream_context_->SetFramePTS(cc->InputTimestamp().Microseconds(),
+                                           audio_frame_.value());
 
     status =
         container_stream_context_->WriteFrame(packet_, audio_frame_.value());
