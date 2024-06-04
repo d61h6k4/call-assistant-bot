@@ -267,10 +267,10 @@ async def main(
         {"message": "Joining Google Meeting", "gmeet_link": gmeet_link, "email": email}
     )
     browser_config = nodriver.Config(
-        headless=False,
+        headless=True,
         sandbox=True,
         browser_args=[
-            "--window-size=1920x1080",
+            "--window-size=1024x768",
             "--disable-gpu",
             "--disable-extensions",
             "--disable-application-cache",
@@ -283,9 +283,12 @@ async def main(
 
     browser = await nodriver.start(config=browser_config)
     await browser.wait()
+    await browser.grant_all_permissions()
 
     agent = GoogleMeetOperator(browser, email, password, logger, screenshots_dir)
     await agent.join(gmeet_link)
+
+    browser.stop()
 
 
 def parse_args():
