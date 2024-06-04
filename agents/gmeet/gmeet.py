@@ -39,7 +39,10 @@ class GoogleMeetOperator:
         await self.try_continue_wo_mic_and_camera(tab)
         await self.ask_to_join(tab)
 
-        await tab.wait(t=1800)
+        for tx in range(180):
+            screenshot_path = self.screenshots_dir / f"on_a_call_{tx}.jpg"
+            await tab.save_screenshot(filename=screenshot_path)
+            await tab.wait(t=10)
 
     async def ask_to_join(self, tab: nodriver.Tab):
         """Click the button 'Ask to join'"""
