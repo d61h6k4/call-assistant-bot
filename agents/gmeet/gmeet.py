@@ -39,7 +39,7 @@ class GoogleMeetOperator:
         await self.try_continue_wo_mic_and_camera(tab)
         await self.ask_to_join(tab)
 
-        await tab.wait(t=10)
+        await tab.wait(t=1800)
 
     async def ask_to_join(self, tab: nodriver.Tab):
         """Click the button 'Ask to join'"""
@@ -290,8 +290,6 @@ async def main(
 
     agent = GoogleMeetOperator(browser, email, password, logger, screenshots_dir)
     await agent.join(gmeet_link)
-
-    browser.stop()
 
 
 def parse_args():
