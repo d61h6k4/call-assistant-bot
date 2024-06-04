@@ -34,9 +34,9 @@ class GoogleMeetOperator:
         tab = await self.browser.get(url)
         await tab.wait()
 
-        await self.try_continue_wo_mic_and_camera(tab)
+        await self.try_continue_wo_mic(tab)
         await self.try_sign_in(tab)
-        await self.try_continue_wo_mic_and_camera(tab)
+        await self.try_continue_wo_mic(tab)
         await self.ask_to_join(tab)
 
         for tx in range(180):
@@ -123,25 +123,25 @@ class GoogleMeetOperator:
         await self.click_next(tab, "passwordNext")
         await tab.wait()
 
-    async def try_continue_wo_mic_and_camera(self, tab: nodriver.Tab):
-        """If tab's page is modal dialog about turning on microphone and camera
-        before joinning the meeting then press btn "Continue without microphone
-        and camera". Otherwise do nothing.
+    async def try_continue_wo_mic(self, tab: nodriver.Tab):
+        """If tab's page is modal dialog about turning on microphone
+        before joinning the meeting then press btn "Continue without microphone".
+        Otherwise do nothing.
         """
 
         self.logger.info(
             {
-                "message": "Trying continue with meeting without microphone and camera",
+                "message": "Trying continue with meeting without microphone",
                 "session_id": self.session_id,
             }
         )
         try:
             await tab.wait_for(
                 selector="div[role=dialog]",
-                text="Do you want people to see and hear you in the meeting?",
+                text="Do you want people to hear you in the meeting?",
             )
         except asyncio.TimeoutError:
-            screenshot_path = self.screenshots_dir / "mic_camera_on_model_dialog.jpg"
+            screenshot_path = self.screenshots_dir / "mic_on_model_dialog.jpg"
             await tab.save_screenshot(filename=screenshot_path)
             self.logger.info(
                 {
@@ -153,14 +153,14 @@ class GoogleMeetOperator:
             return
 
         continue_wo_span = await tab.find_element_by_text(
-            "Continue without microphone and camera", best_match=True
+            "Continue without microphone", best_match=True
         )
         if not continue_wo_span or continue_wo_span.tag != "span":
-            screenshot_path = self.screenshots_dir / "mic_camera_on_model_dialog.jpg"
+            screenshot_path = self.screenshots_dir / "mic_on_model_dialog.jpg"
             await tab.save_screenshot(filename=screenshot_path)
             self.logger.error(
                 {
-                    "message": "Could not find button to continue without mic and camera. See screenshot.",
+                    "message": "Could not find button to continue without mic. See screenshot.",
                     "screenshot_path": screenshot_path,
                     "session_id": self.session_id,
                 }
@@ -169,7 +169,7 @@ class GoogleMeetOperator:
 
         cancel_btn = continue_wo_span.parent
         if not cancel_btn or cancel_btn.tag != "button":
-            screenshot_path = self.screenshots_dir / "mic_camera_on_model_dialog.jpg"
+            screenshot_path = self.screenshots_dir / "mic_on_model_dialog.jpg"
             await tab.save_screenshot(filename=screenshot_path)
             self.logger.error(
                 {
