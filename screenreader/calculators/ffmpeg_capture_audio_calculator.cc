@@ -140,7 +140,15 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
           std::vector<float> copied_audio_data;
           status = out_audio_frame_->AppendAudioData(copied_audio_data);
           if (status.ok()) {
-            kOutAudio(cc).Send(copied_audio_data, timestamp);
+            // PTS depends on sample_rate, so input frame pts may be different
+            // then converted one.
+            kOutAudio(cc).Send(
+                copied_audio_data,
+                mediapipe::Timestamp(
+                    container_stream_context_->FramePTSInMicroseconds(
+                        out_audio_frame_.value())));
+
+            // Here we have input frame timestamp
             prev_audio_timestamp_ = timestamp;
 
             // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
