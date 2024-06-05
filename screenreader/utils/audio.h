@@ -24,7 +24,7 @@ struct AudioStreamParameters {
 
   AudioStreamParameters()
       : frame_size(1024), sample_rate(16000), bit_rate(64000),
-        format(AV_SAMPLE_FMT_FLT), channel_layout(AV_CHANNEL_LAYOUT_MONO) {}
+        format(AV_SAMPLE_FMT_FLTP), channel_layout(AV_CHANNEL_LAYOUT_MONO) {}
 };
 
 class AudioFrame {

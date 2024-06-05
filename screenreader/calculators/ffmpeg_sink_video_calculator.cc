@@ -61,9 +61,6 @@ absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
   write_audio_stream_parameters.sample_rate =
       audio_stream_parameters.sample_rate;
   write_audio_stream_parameters.frame_size = audio_stream_parameters.frame_size;
-  write_audio_stream_parameters.format = AV_SAMPLE_FMT_FLTP;
-  write_audio_stream_parameters.channel_layout =
-      audio_stream_parameters.channel_layout;
 
   auto container_stream_context_or =
       media::ContainerStreamContext::CreateWriterContainerStreamContext(
