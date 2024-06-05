@@ -313,14 +313,14 @@ absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
                                                 AVCodecContext *codec_context,
                                                 int stream_index,
                                                 AVPacket *packet,
-                                                AVFrame *frame) {
+                                                const AVFrame *frame) {
   // send the frame to the encoder
-  if (auto ret = avcodec_send_frame(codec_context, frame); ret < 0) {
+  int ret = 0;
+  if (ret = avcodec_send_frame(codec_context, frame); ret < 0) {
     return absl::AbortedError(absl::StrCat(
         "Error sending a frame to the encoder: ", av_err2str(ret)));
   }
 
-  int ret = 0;
   while (ret >= 0) {
     ret = avcodec_receive_packet(codec_context, packet);
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {

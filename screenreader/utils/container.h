@@ -64,7 +64,7 @@ private:
   static absl::Status WriteFrame(AVFormatContext *format_context,
                                  AVCodecContext *codec_context,
                                  int stream_index, AVPacket *packet,
-                                 AVFrame *frame);
+                                 const AVFrame *frame);
 
 private:
   bool is_reader_ = true;

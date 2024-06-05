@@ -73,7 +73,7 @@ absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
 
   auto audio_frame_or = media::AudioFrame::CreateAudioFrame(
       audio_stream_parameters.format, &audio_stream_parameters.channel_layout,
-      audio_stream_parameters.sample_rate, 1);
+      audio_stream_parameters.sample_rate, audio_stream_parameters.frame_size);
   if (!audio_frame_or.ok()) {
     return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
            << "failed to allocate memory for AVFrame. "
@@ -84,7 +84,8 @@ absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
   auto write_audio_frame_or = media::AudioFrame::CreateAudioFrame(
       write_audio_stream_parameters.format,
       &write_audio_stream_parameters.channel_layout,
-      write_audio_stream_parameters.sample_rate, 1024);
+      write_audio_stream_parameters.sample_rate,
+      write_audio_stream_parameters.frame_size);
   if (!write_audio_frame_or.ok()) {
     return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
            << "failed to allocate memory for AVFrame. "
