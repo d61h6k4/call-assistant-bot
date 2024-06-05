@@ -1,6 +1,7 @@
 #pragma once
 
 #include "absl/status/statusor.h"
+#include <cstdint>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,12 +41,15 @@ public:
 
   ~AudioFrame();
 
-  AVFrame *c_frame() { return c_frame_; }
+  AVFrame *c_frame() const { return c_frame_; }
 
   // Important: we assume here number of channels 1 and sample format FLT
   absl::Status FillAudioData(std::vector<float> &audio_data);
   // Copies frames data to the given vector.
   absl::Status AppendAudioData(std::vector<float> &audio_data);
+
+  int64_t GetPTS() const { return c_frame_->pts; }
+  void SetPTS(int64_t pts) { c_frame_->pts = pts; }
 
 private:
   explicit AudioFrame(AVFrame *frame) : c_frame_(frame) {}

@@ -95,6 +95,9 @@ absl::Status AudioConverter::Convert(AudioFrame &in_frame,
       ret < 0) {
     return absl::AbortedError("Error while converting.");
   }
+  out_frame.SetPTS(av_rescale_q(in_frame.GetPTS(),
+                                AVRational{1, in_sample_rate_},
+                                AVRational{1, out_sample_rate_}));
 
   return absl::OkStatus();
 }

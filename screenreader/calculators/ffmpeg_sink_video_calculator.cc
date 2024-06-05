@@ -10,12 +10,6 @@
 
 namespace aikit {
 
-namespace {
-volatile std::sig_atomic_t gSignalStatus;
-}
-
-void SignalHandler(int signal) { gSignalStatus = signal; }
-
 // Calculator takes video (images) stream (optional) and audio stream
 // (optional), muxes them and writes to a file.
 //
@@ -35,8 +29,8 @@ public:
       kInAudioHeader{"AUDIO_HEADER"};
   // static constexpr mediapipe::api2::Input<mediapipe::YUVImage>::Optional
   //     kInVideo{"YUV_IMAGE"};
-  static constexpr mediapipe::api2::Input<std::vector<float>>::Optional
-      kInAudio{"AUDIO"};
+  static constexpr mediapipe::api2::Input<media::AudioFrame>::Optional kInAudio{
+      "AUDIO"};
 
   MEDIAPIPE_NODE_CONTRACT(kInFilePath, kInAudioHeader, kInAudio);
 
@@ -54,10 +48,6 @@ private:
 MEDIAPIPE_REGISTER_NODE(FFMPEGSinkVideoCalculator);
 
 absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
-  // Register processing system signals
-  std::signal(SIGTERM, SignalHandler);
-  std::signal(SIGINT, SignalHandler);
-
   const auto &output_file_path = kInFilePath(cc).Get();
   const auto &audio_stream_parameters = kInAudioHeader(cc).Get();
 
@@ -125,25 +115,12 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
   //   }
   // }
 
-  if (gSignalStatus == SIGINT || gSignalStatus == SIGTERM) {
-    ABSL_LOG(WARNING) << "Got system singal. Stopping processing.";
-    return mediapipe::tool::StatusStop();
-  }
-
   if (kInAudio(cc).IsConnected() && !kInAudio(cc).IsEmpty()) {
 
-    auto audio_data = kInAudio(cc).Get();
-    auto status = audio_frame_->FillAudioData(audio_data);
-    if (!status.ok()) {
-      return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-             << "Failed to fill audio frame with the given audio data. "
-             << status.message();
-    }
-    container_stream_context_->SetFramePTS(cc->InputTimestamp().Microseconds(),
-                                           audio_frame_.value());
+    const auto& audio_frame = kInAudio(cc).Get();
 
-    status =
-        container_stream_context_->WriteFrame(packet_, audio_frame_.value());
+    auto status =
+        container_stream_context_->WriteFrame(packet_, audio_frame);
     if (!status.ok()) {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
              << "Failed to write frame. " << status.message();

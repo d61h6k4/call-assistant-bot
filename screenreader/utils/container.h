@@ -42,7 +42,7 @@ public:
   absl::Status ReadPacket(AVPacket *packet);
   absl::Status PacketToFrame(AVPacket *packet, AudioFrame &frame);
 
-  absl::Status WriteFrame(AVPacket *packet, AudioFrame &frame);
+  absl::Status WriteFrame(AVPacket *packet, const AudioFrame &frame);
 
   // Captures data from the device.
   // This operation is operating system dependent:

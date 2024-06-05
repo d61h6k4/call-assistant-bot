@@ -13,7 +13,6 @@ extern "C" {
 }
 #endif
 
-
 // Replacement of av_err2str, which causes
 // `error: taking address of temporary array`
 // https://github.com/joncampbell123/composite-video-simulator/issues/5
@@ -21,12 +20,11 @@ extern "C" {
 #undef av_err2str
 #include <string>
 av_always_inline std::string av_err2string(int errnum) {
-    char str[AV_ERROR_MAX_STRING_SIZE];
-    return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
+  char str[AV_ERROR_MAX_STRING_SIZE];
+  return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
 }
 #define av_err2str(err) av_err2string(err).c_str()
-#endif  // av_err2str
-
+#endif // av_err2str
 
 namespace aikit {
 namespace media {
@@ -351,7 +349,7 @@ absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
   return absl::OkStatus();
 }
 absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
-                                                AudioFrame &frame) {
+                                                const AudioFrame &frame) {
   if (is_reader_) {
     return absl::AbortedError("The container stream context was created as "
                               "reader, writing is not allowed.");
@@ -372,14 +370,14 @@ ContainerStreamContext::CaptureDevice(const std::string &device_name,
 }
 
 int64_t ContainerStreamContext::FramePTSInMicroseconds(AudioFrame &frame) {
-  return av_rescale_q(frame.c_frame()->pts, audio_stream_context_->time_base(),
+  return av_rescale_q(frame.GetPTS(), audio_stream_context_->time_base(),
                       AVRational{1, 1000000});
 }
 
 void ContainerStreamContext::SetFramePTS(int64_t microseconds,
                                          AudioFrame &frame) {
-  frame.c_frame()->pts = av_rescale_q(microseconds, AVRational{1, 1000000},
-                                      audio_stream_context_->time_base());
+  frame.SetPTS(av_rescale_q(microseconds, AVRational{1, 1000000},
+                            audio_stream_context_->time_base()));
 }
 
 AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {

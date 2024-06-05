@@ -54,7 +54,7 @@ protected:
         (width_ + 1) / 2, std::move(v), (width_ + 1) / 2, width_, height_));
   }
 
-  mediapipe::Packet FillAudio() {
+  std::vector<float> FillAudio() {
     auto nb_samples = static_cast<int>(1024);
     std::vector<float> audio_data(nb_samples);
 
@@ -70,7 +70,7 @@ protected:
       tincr += tincr2;
     }
 
-    return mediapipe::MakePacket<std::vector<float>>(audio_data);
+    return audio_data;
   }
 
   void SetInput() {
@@ -89,11 +89,21 @@ protected:
     //           yuv_image_packet.At(mediapipe::Timestamp(frame_ix)));
     // }
 
-    for (auto ix = 0; ix < 1 * 16; ++ix) {
-      auto audio_packet = FillAudio();
-      auto microseconds = ix * 1024.0 / audio_header.sample_rate * 1000000.0;
-      runner_.MutableInputs()->Tag("AUDIO").packets.push_back(audio_packet.At(
-          mediapipe::Timestamp(static_cast<int64_t>(microseconds))));
+    for (auto ix = 0; ix < 10 * 16; ++ix) {
+
+      auto audio_frame = aikit::media::AudioFrame::CreateAudioFrame(
+          audio_header.format, &audio_header.channel_layout,
+          audio_header.sample_rate, 1024);
+
+      auto audio_data = FillAudio();
+      audio_frame->FillAudioData(audio_data);
+      audio_frame->SetPTS(ix * 1024);
+
+      auto microseconds = ix * 1000000.0;
+      runner_.MutableInputs()->Tag("AUDIO").packets.push_back(
+          mediapipe::MakePacket<aikit::media::AudioFrame>(
+              std::move(audio_frame.value()))
+              .At(mediapipe::Timestamp(static_cast<int64_t>(microseconds))));
     }
   }
 

@@ -3,6 +3,7 @@
 
 #include <bsm/audit.h>
 #include <cstddef>
+#include <cstdint>
 #include <numbers>
 #include <vector>
 
@@ -43,6 +44,8 @@ TEST(TestConverterUtils, CheckAudioConvert) {
       in_audio_stream.format, &in_audio_stream.channel_layout,
       in_audio_stream.sample_rate, in_audio_stream.frame_size);
   EXPECT_TRUE(in_audio_frame.ok());
+  in_audio_frame->SetPTS(in_audio_stream.frame_size); // Second frame
+
   auto audio_data = GenerateAudioData(in_audio_stream.frame_size);
   in_audio_frame->FillAudioData(audio_data);
 
@@ -60,5 +63,8 @@ TEST(TestConverterUtils, CheckAudioConvert) {
 
   auto s = audio_converter_or->Convert(in_audio_frame.value(),
                                        out_audio_frame.value());
+  EXPECT_EQ(in_audio_frame->GetPTS(), 1024);
+  EXPECT_EQ(out_audio_frame->GetPTS(),
+            static_cast<int64_t>(1024.0 / 16000.0 * 44100.0));
   EXPECT_TRUE(s.ok()) << s.message();
 }
