@@ -2,7 +2,6 @@
 #include "mediapipe/framework/api2/packet.h"
 #include "screenreader/utils/audio.h"
 #include "screenreader/utils/container.h"
-#include "screenreader/utils/converter.h"
 #include <csignal>
 #include <optional>
 namespace aikit {

@@ -3,6 +3,7 @@
 #include "mediapipe/framework/formats/yuv_image.h"
 #include "screenreader/utils/audio.h"
 #include "screenreader/utils/container.h"
+#include "screenreader/utils/converter.h"
 #include <csignal>
 #include <cstdint>
 #include <optional>
@@ -42,6 +43,10 @@ private:
   std::optional<media::ContainerStreamContext> container_stream_context_;
   std::optional<media::AudioFrame> audio_frame_ = std::nullopt;
 
+  // AAC encoder support only FLTP format
+  std::optional<media::AudioFrame> write_audio_frame_ = std::nullopt;
+  std::optional<media::AudioConverter> audio_converter_ = std::nullopt;
+
   // https://ffmpeg.org/doxygen/trunk/structAVPacket.html
   AVPacket *packet_ = nullptr;
 };
@@ -51,22 +56,53 @@ absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
   const auto &output_file_path = kInFilePath(cc).Get();
   const auto &audio_stream_parameters = kInAudioHeader(cc).Get();
 
+  auto write_audio_stream_parameters = media::AudioStreamParameters();
+  write_audio_stream_parameters.bit_rate = audio_stream_parameters.bit_rate;
+  write_audio_stream_parameters.sample_rate =
+      audio_stream_parameters.sample_rate;
+  write_audio_stream_parameters.frame_size = audio_stream_parameters.frame_size;
+  write_audio_stream_parameters.format = AV_SAMPLE_FMT_FLTP;
+  write_audio_stream_parameters.channel_layout =
+      audio_stream_parameters.channel_layout;
+
   auto container_stream_context_or =
       media::ContainerStreamContext::CreateWriterContainerStreamContext(
-          audio_stream_parameters, output_file_path);
+          write_audio_stream_parameters, output_file_path);
   if (!container_stream_context_or.ok()) {
     return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
            << "Failed to create container stream context";
   }
   container_stream_context_ = std::move(container_stream_context_or.value());
 
-  auto audio_frame_or = container_stream_context_->CreateAudioFrame();
+  auto audio_frame_or = media::AudioFrame::CreateAudioFrame(
+      audio_stream_parameters.format, &audio_stream_parameters.channel_layout,
+      audio_stream_parameters.sample_rate, 1);
   if (!audio_frame_or.ok()) {
     return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
            << "failed to allocate memory for AVFrame. "
            << audio_frame_or.status().message();
   }
   audio_frame_ = std::move(audio_frame_or.value());
+
+  auto write_audio_frame_or = media::AudioFrame::CreateAudioFrame(
+      write_audio_stream_parameters.format,
+      &write_audio_stream_parameters.channel_layout,
+      write_audio_stream_parameters.sample_rate, 1024);
+  if (!write_audio_frame_or.ok()) {
+    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+           << "failed to allocate memory for AVFrame. "
+           << write_audio_frame_or.status().message();
+  }
+  write_audio_frame_ = std::move(write_audio_frame_or.value());
+
+  auto audio_converter_or = media::AudioConverter::CreateAudioConverter(
+      audio_stream_parameters, write_audio_stream_parameters);
+  if (!audio_converter_or.ok()) {
+    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+           << "Failed to create audio converter. "
+           << audio_converter_or.status().message();
+  }
+  audio_converter_ = std::move(audio_converter_or.value());
 
   packet_ = av_packet_alloc();
   if (!packet_) {
@@ -117,10 +153,16 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
 
   if (kInAudio(cc).IsConnected() && !kInAudio(cc).IsEmpty()) {
 
-    const auto& audio_frame = kInAudio(cc).Get();
-
+    const auto &audio_frame = kInAudio(cc).Get();
     auto status =
-        container_stream_context_->WriteFrame(packet_, audio_frame);
+        audio_converter_->Convert(audio_frame, write_audio_frame_.value());
+    if (!status.ok()) {
+      return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+             << "Failed to convert frame. " << status.message();
+    }
+
+    status = container_stream_context_->WriteFrame(packet_,
+                                                   write_audio_frame_.value());
     if (!status.ok()) {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
              << "Failed to write frame. " << status.message();

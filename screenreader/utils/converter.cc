@@ -1,5 +1,4 @@
 
-
 #include "screenreader/utils/audio.h"
 #ifdef __cplusplus
 extern "C" {
@@ -68,7 +67,7 @@ AudioConverter::~AudioConverter() {
   }
 }
 
-absl::Status AudioConverter::Convert(AudioFrame &in_frame,
+absl::Status AudioConverter::Convert(const AudioFrame &in_frame,
                                      AudioFrame &out_frame) {
 
   /* convert samples from native format to destination codec format, using the
@@ -95,6 +94,7 @@ absl::Status AudioConverter::Convert(AudioFrame &in_frame,
       ret < 0) {
     return absl::AbortedError("Error while converting.");
   }
+
   out_frame.SetPTS(av_rescale_q(in_frame.GetPTS(),
                                 AVRational{1, in_sample_rate_},
                                 AVRational{1, out_sample_rate_}));
