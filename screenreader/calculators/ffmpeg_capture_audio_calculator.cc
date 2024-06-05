@@ -133,7 +133,11 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
       // of the previous frame, the new frame will be discarded.
       if (prev_audio_timestamp_ < timestamp) {
         kOutAudio(cc).Send(std::move(audio_frame_.value()), timestamp);
+        prev_audio_timestamp_ = timestamp;
 
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
+        av_packet_unref(packet_);
+        return absl::OkStatus();
       } else {
         ABSL_LOG(WARNING) << "Unmonotonic timestamps " << prev_audio_timestamp_
                           << " and " << timestamp;
@@ -145,17 +149,13 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
 
   } else {
     ABSL_LOG(INFO) << "Failed to read a packet. " << status.message();
-
-    if (absl::IsFailedPrecondition(status)) {
-      // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
-      av_packet_unref(packet_);
-
-      ABSL_LOG(INFO) << "Got last frame";
-      return mediapipe::tool::StatusStop();
-    }
   }
 
-  return absl::OkStatus();
+  // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
+  av_packet_unref(packet_);
+
+  ABSL_LOG(INFO) << "Got last frame";
+  return mediapipe::tool::StatusStop();
 }
 
 } // namespace aikit
