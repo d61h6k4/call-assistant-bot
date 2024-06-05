@@ -119,15 +119,9 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
         start_timestamp_ = mediapipe::Timestamp(audio_frame_->c_frame()->pts);
       }
 
-      auto frame_timestamp = mediapipe::Timestamp(audio_frame_->c_frame()->pts);
+      auto timestamp = mediapipe::Timestamp(audio_frame_->c_frame()->pts);
       container_stream_context_->SetFramePTS(
-          (frame_timestamp - start_timestamp_).Microseconds(),
-          audio_frame_.value());
-
-      // Use microsecond as the unit of time.
-      mediapipe::Timestamp timestamp(
-          container_stream_context_->FramePTSInMicroseconds(
-              audio_frame_.value()));
+          (timestamp - start_timestamp_).Microseconds(), audio_frame_.value());
 
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
