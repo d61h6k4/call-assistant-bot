@@ -145,12 +145,17 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
 
   } else {
     ABSL_LOG(INFO) << "Failed to read a packet. " << status.message();
-  }
-  // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
-  av_packet_unref(packet_);
 
-  ABSL_LOG(INFO) << "Got last frame";
-  return mediapipe::tool::StatusStop();
+    if (absl::IsFailedPrecondition(status)) {
+      // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
+      av_packet_unref(packet_);
+
+      ABSL_LOG(INFO) << "Got last frame";
+      return mediapipe::tool::StatusStop();
+    }
+  }
+
+  return absl::OkStatus();
 }
 
 } // namespace aikit
