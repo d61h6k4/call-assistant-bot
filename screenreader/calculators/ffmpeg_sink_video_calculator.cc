@@ -126,7 +126,7 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
   // }
 
   if (gSignalStatus == SIGINT || gSignalStatus == SIGTERM) {
-    ABSL_LOG(WARNING) << "Got system singal. Stoping processing.";
+    ABSL_LOG(WARNING) << "Got system singal. Stopping processing.";
     return mediapipe::tool::StatusStop();
   }
 
