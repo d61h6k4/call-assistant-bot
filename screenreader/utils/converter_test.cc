@@ -92,8 +92,7 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
   EXPECT_TRUE(audio_frame_or);
 
   aikit::media::AudioStreamParameters out_audio_stream;
-  out_audio_stream.sample_rate = 48000;
-  // out_audio_stream.channel_layout = AV_CHANNEL_LAYOUT_STEREO;
+  out_audio_stream.sample_rate = 44100;
 
   auto write_container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(

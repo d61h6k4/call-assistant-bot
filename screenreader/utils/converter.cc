@@ -78,6 +78,16 @@ absl::Status AudioConverter::Convert(const AudioFrame *in_frame,
                          in_frame->c_frame()->nb_samples,
                      out_sample_rate_, in_sample_rate_, AV_ROUND_UP);
 
+  if (out_frame->c_frame()->nb_samples < dst_nb_samples) {
+    if (int ret = av_samples_alloc(
+            out_frame->c_frame()->data, out_frame->c_frame()->linesize,
+            out_frame->c_frame()->ch_layout.nb_channels, dst_nb_samples,
+            (AVSampleFormat)out_frame->c_frame()->format, 1);
+        ret < 0) {
+
+      return absl::AbortedError("Failed to reallocate out frame.");
+    }
+  }
   /* when we pass a frame to the encoder, it may keep a reference to it
    * internally;
    * make sure we do not overwrite it here
