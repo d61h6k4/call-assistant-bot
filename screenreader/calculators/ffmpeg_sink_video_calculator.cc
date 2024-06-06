@@ -63,7 +63,7 @@ absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
 
   auto container_stream_context_or =
       media::ContainerStreamContext::CreateWriterContainerStreamContext(
-          audio_stream_parameters, output_file_path);
+          write_audio_stream_parameters, output_file_path);
   if (!container_stream_context_or.ok()) {
     return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
            << "Failed to create container stream context";
