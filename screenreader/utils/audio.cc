@@ -54,14 +54,13 @@ AudioFrame::CreateAudioFrame(enum AVSampleFormat sample_fmt,
   return std::unique_ptr<AudioFrame>(new AudioFrame(c_frame));
 }
 
-AudioFrame::AudioFrame(AudioFrame &&o) noexcept : c_frame_(o.c_frame_) {
-  o.c_frame_ = nullptr;
+AudioFrame::AudioFrame(AudioFrame &&o) noexcept {
+  av_frame_move_ref(c_frame_, o.c_frame_);
 }
 
 AudioFrame &AudioFrame::operator=(AudioFrame &&o) noexcept {
   if (this != &o) {
-    c_frame_ = o.c_frame_;
-    o.c_frame_ = nullptr;
+    av_frame_move_ref(c_frame_, o.c_frame_);
   }
 }
 

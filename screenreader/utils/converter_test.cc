@@ -1,7 +1,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include <bsm/audit.h>
 #include <cstddef>
 #include <cstdint>
 #include <numbers>
@@ -115,10 +114,6 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
                                          out_audio_frame.get());
 
     EXPECT_TRUE(s.ok()) << s.message();
-
-    ABSL_LOG(INFO) << audio_frame_or->GetPTS() << " "
-                   << out_audio_frame->GetPTS();
-    ABSL_LOG(INFO) << audio_frame_or->c_frame()->pkt_dts << " " << out_audio_frame->c_frame()->pkt_dts;
 
     st = write_container->WriteFrame(write_packet, out_audio_frame.get());
     EXPECT_TRUE(st.ok());
