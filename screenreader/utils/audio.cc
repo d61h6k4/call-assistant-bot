@@ -79,15 +79,16 @@ absl::Status AudioFrame::FillAudioData(std::vector<float> &audio_data) {
         "convert the frame to the AV_SAMPLE_FMT_FLT format");
   }
 
-  c_frame_->nb_samples = audio_data.size();
-  if (auto ret = avcodec_fill_audio_frame(
-          c_frame_, 1, AV_SAMPLE_FMT_FLT, (uint8_t *)audio_data.data(),
-          audio_data.size() * sizeof(float) / sizeof(uint8_t), 1);
-      ret < 0) {
+  if (c_frame_->ch_layout.nb_channels != 1) {
     return absl::AbortedError(
-        absl::StrCat("Failed to fill audio frame with the given audio data. ",
-                     av_err2str(ret)));
+        "The existing frame expects more then 1 channel of data.");
   }
+
+  c_frame_->nb_samples = audio_data.size();
+  uint8_t *ptr = nullptr;
+  ptr = reinterpret_cast<uint8_t *>(audio_data.data());
+  av_samples_copy(c_frame_->extended_data, &ptr, 0, 0, audio_data.size(), 1,
+                  AV_SAMPLE_FMT_FLTP);
 
   return absl::OkStatus();
 }
