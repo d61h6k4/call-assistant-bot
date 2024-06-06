@@ -101,8 +101,7 @@ protected:
 
       auto microseconds = ix * 1000000.0;
       runner_.MutableInputs()->Tag("AUDIO").packets.push_back(
-          mediapipe::MakePacket<aikit::media::AudioFrame>(
-              std::move(audio_frame.value()))
+          mediapipe::Adopt(audio_frame.release())
               .At(mediapipe::Timestamp(static_cast<int64_t>(microseconds))));
     }
   }

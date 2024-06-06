@@ -251,11 +251,9 @@ ContainerStreamContext::~ContainerStreamContext() {
   }
 }
 
-absl::StatusOr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {
+std::unique_ptr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {
   if (!audio_stream_context_.has_value()) {
-    return absl::AbortedError("Failed to create audio frame. Container creates "
-                              "audio frame only according to audio stream in "
-                              "it, but container doesn't have audio stream.");
+    return nullptr;
   }
 
   auto audio_stream_params = GetAudioStreamParameters();
@@ -285,9 +283,9 @@ ContainerStreamContext::PacketToFrame(AVCodecContext *codec_context,
 }
 
 absl::Status ContainerStreamContext::PacketToFrame(AVPacket *packet,
-                                                   AudioFrame &frame) {
+                                                   AudioFrame *frame) {
   return PacketToFrame(audio_stream_context_->codec_context(), packet,
-                       frame.c_frame());
+                       frame->c_frame());
 }
 
 absl::Status ContainerStreamContext::ReadPacket(AVPacket *packet) {
@@ -349,14 +347,14 @@ absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
   return absl::OkStatus();
 }
 absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
-                                                const AudioFrame &frame) {
+                                                const AudioFrame *frame) {
   if (is_reader_) {
     return absl::AbortedError("The container stream context was created as "
                               "reader, writing is not allowed.");
   }
   return WriteFrame(format_context_, audio_stream_context_->codec_context(),
                     audio_stream_context_->stream_index(), packet,
-                    frame.c_frame());
+                    frame->c_frame());
 }
 
 absl::StatusOr<ContainerStreamContext>
@@ -369,14 +367,15 @@ ContainerStreamContext::CaptureDevice(const std::string &device_name,
   return CreateReaderContainerStreamContext(driver_url, input_format);
 }
 
-int64_t ContainerStreamContext::FramePTSInMicroseconds(AudioFrame &frame) {
-  return av_rescale_q(frame.GetPTS(), audio_stream_context_->time_base(),
+int64_t
+ContainerStreamContext::FramePTSInMicroseconds(const AudioFrame *frame) {
+  return av_rescale_q(frame->GetPTS(), audio_stream_context_->time_base(),
                       AVRational{1, 1000000});
 }
 
 void ContainerStreamContext::SetFramePTS(int64_t microseconds,
-                                         AudioFrame &frame) {
-  frame.SetPTS(av_rescale_q(microseconds, AVRational{1, 1000000},
+                                         AudioFrame *frame) {
+  frame->SetPTS(av_rescale_q(microseconds, AVRational{1, 1000000},
                             audio_stream_context_->time_base()));
 }
 

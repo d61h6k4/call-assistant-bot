@@ -25,7 +25,7 @@ public:
   AudioConverter &operator=(AudioConverter &&) noexcept;
   ~AudioConverter();
 
-  absl::Status Convert(const AudioFrame &in_frame, AudioFrame &out_frame);
+  absl::Status Convert(const AudioFrame *in_frame, AudioFrame *out_frame);
 
 private:
   AudioConverter() {};

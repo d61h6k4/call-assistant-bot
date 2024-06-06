@@ -19,8 +19,8 @@ extern "C" {
 #include "screenreader/utils/audio.h"
 #include "screenreader/utils/container.h"
 
-TEST(TestContainerUtils, DISABLED_CheckCreateReaderContianer) {
-  const std::string filename = "/tmp/test_audio_utils.mp4";
+TEST(TestContainerUtils, CheckCreateReaderContianer) {
+  const std::string filename = "testdata/testvideo.mp4";
 
   auto container =
       aikit::media::ContainerStreamContext::CreateReaderContainerStreamContext(
@@ -32,11 +32,11 @@ TEST(TestContainerUtils, DISABLED_CheckCreateReaderContianer) {
   EXPECT_TRUE(packet) << "failed to allocate memory for AVPacket";
 
   auto audio_frame_or = container->CreateAudioFrame();
-  EXPECT_TRUE(audio_frame_or.ok()) << audio_frame_or.status().message();
+  EXPECT_TRUE(audio_frame_or);
 
   for (absl::Status st = container->ReadPacket(packet); st.ok();
        st = container->ReadPacket(packet)) {
-    st = container->PacketToFrame(packet, audio_frame_or.value());
+    st = container->PacketToFrame(packet, audio_frame_or.get());
     EXPECT_TRUE(st.ok());
   }
 
@@ -74,17 +74,17 @@ TEST(TestContainerUtils, CheckCreateWriterContianer) {
   AVPacket *packet = av_packet_alloc();
   EXPECT_TRUE(packet) << "failed to allocate memory for AVPacket";
 
-  auto audio_frame_or = container->CreateAudioFrame();
-  EXPECT_TRUE(audio_frame_or.ok()) << audio_frame_or.status().message();
-
   absl::Status status;
-  for (auto i = 0; i < 17; ++i) {
+  for (auto i = 0; i < 17 * 10; ++i) {
+
+    auto audio_frame_or = container->CreateAudioFrame();
+    EXPECT_TRUE(audio_frame_or);
     audio_frame_or->c_frame()->pts = (i + 1) * params.frame_size;
     auto audio_data = GenerateAudioData(params.frame_size);
     auto status = audio_frame_or->FillAudioData(audio_data);
     EXPECT_TRUE(status.ok()) << status.message();
 
-    status = container->WriteFrame(packet, audio_frame_or.value());
+    status = container->WriteFrame(packet, audio_frame_or.get());
     EXPECT_TRUE(status.ok()) << status.message();
   }
 

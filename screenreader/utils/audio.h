@@ -29,7 +29,7 @@ struct AudioStreamParameters {
 
 class AudioFrame {
 public:
-  static absl::StatusOr<AudioFrame>
+  static std::unique_ptr<AudioFrame>
   CreateAudioFrame(enum AVSampleFormat sample_fmt,
                    const AVChannelLayout *channel_layout, int sample_rate,
                    int nb_samples);

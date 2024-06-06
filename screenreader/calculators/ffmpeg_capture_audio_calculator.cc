@@ -43,7 +43,6 @@ private:
   mediapipe::Timestamp prev_audio_timestamp_ = mediapipe::Timestamp::Unset();
   std::optional<media::ContainerStreamContext> container_stream_context_ =
       std::nullopt;
-  std::optional<media::AudioFrame> audio_frame_ = std::nullopt;
 
   // https://ffmpeg.org/doxygen/trunk/structAVPacket.html
   AVPacket *packet_ = nullptr;
@@ -69,14 +68,6 @@ FFMPEGCaptureAudioCalculator::Open(mediapipe::CalculatorContext *cc) {
            << container_stream_context_or.status().message();
   }
   container_stream_context_ = std::move(container_stream_context_or.value());
-
-  auto audio_frame_or = container_stream_context_->CreateAudioFrame();
-  if (!audio_frame_or.ok()) {
-    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-           << "failed to allocate memory for AVFrame. "
-           << audio_frame_or.status().message();
-  }
-  audio_frame_ = std::move(audio_frame_or.value());
 
   packet_ = av_packet_alloc();
   if (!packet_) {
@@ -110,23 +101,29 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
 
   auto status = container_stream_context_->ReadPacket(packet_);
   if (status.ok()) {
-    status =
-        container_stream_context_->PacketToFrame(packet_, audio_frame_.value());
-    if (status.ok()) {
 
+    auto audio_frame_or = container_stream_context_->CreateAudioFrame();
+    if (!audio_frame_or) {
+      return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+             << "failed to allocate memory for AVFrame. ";
+    }
+
+    status =
+        container_stream_context_->PacketToFrame(packet_, audio_frame_or.get());
+    if (status.ok()) {
       // Captured frame PTS is current global timestamp in microseconds
       if (start_timestamp_ == mediapipe::Timestamp::Unset()) {
-        start_timestamp_ = mediapipe::Timestamp(audio_frame_->c_frame()->pts);
+        start_timestamp_ = mediapipe::Timestamp(audio_frame_or->GetPTS());
       }
 
-      auto timestamp = mediapipe::Timestamp(audio_frame_->c_frame()->pts);
+      auto timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());
       container_stream_context_->SetFramePTS(
-          (timestamp - start_timestamp_).Microseconds(), audio_frame_.value());
+          (timestamp - start_timestamp_).Microseconds(), audio_frame_or.get());
 
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
       if (prev_audio_timestamp_ < timestamp) {
-        kOutAudio(cc).Send(std::move(audio_frame_.value()), timestamp);
+        kOutAudio(cc).Send(std::move(audio_frame_or), timestamp);
         prev_audio_timestamp_ = timestamp;
 
         // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2

@@ -67,37 +67,37 @@ AudioConverter::~AudioConverter() {
   }
 }
 
-absl::Status AudioConverter::Convert(const AudioFrame &in_frame,
-                                     AudioFrame &out_frame) {
+absl::Status AudioConverter::Convert(const AudioFrame *in_frame,
+                                     AudioFrame *out_frame) {
 
   /* convert samples from native format to destination codec format, using the
    * resampler */
   /* compute destination number of samples */
   int dst_nb_samples =
       av_rescale_rnd(swr_get_delay(sw_resample_context_, in_sample_rate_) +
-                         in_frame.c_frame()->nb_samples,
+                         in_frame->c_frame()->nb_samples,
                      out_sample_rate_, in_sample_rate_, AV_ROUND_UP);
 
   /* when we pass a frame to the encoder, it may keep a reference to it
    * internally;
    * make sure we do not overwrite it here
    */
-  if (int ret = av_frame_make_writable(out_frame.c_frame()); ret < 0) {
+  if (int ret = av_frame_make_writable(out_frame->c_frame()); ret < 0) {
     return absl::AbortedError("Could not make out frame writable");
   }
 
   /* convert to destination format */
-  if (int ret = swr_convert(sw_resample_context_, out_frame.c_frame()->data,
+  if (int ret = swr_convert(sw_resample_context_, out_frame->c_frame()->data,
                             dst_nb_samples,
-                            (const uint8_t **)in_frame.c_frame()->data,
-                            in_frame.c_frame()->nb_samples);
+                            (const uint8_t **)in_frame->c_frame()->data,
+                            in_frame->c_frame()->nb_samples);
       ret < 0) {
     return absl::AbortedError("Error while converting.");
   }
 
-  out_frame.SetPTS(av_rescale_q(in_frame.GetPTS(),
-                                AVRational{1, in_sample_rate_},
-                                AVRational{1, out_sample_rate_}));
+  out_frame->SetPTS(av_rescale_q(in_frame->GetPTS(),
+                                 AVRational{1, in_sample_rate_},
+                                 AVRational{1, out_sample_rate_}));
 
   return absl::OkStatus();
 }

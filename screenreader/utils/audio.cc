@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <memory>
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +15,6 @@ extern "C" {
 }
 #endif
 
-
 // Replacement of av_err2str, which causes
 // `error: taking address of temporary array`
 // https://github.com/joncampbell123/composite-video-simulator/issues/5
@@ -22,35 +22,36 @@ extern "C" {
 #undef av_err2str
 #include <string>
 av_always_inline std::string av_err2string(int errnum) {
-    char str[AV_ERROR_MAX_STRING_SIZE];
-    return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
+  char str[AV_ERROR_MAX_STRING_SIZE];
+  return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
 }
 #define av_err2str(err) av_err2string(err).c_str()
-#endif  // av_err2str
+#endif // av_err2str
 
 namespace aikit::media {
 
-absl::StatusOr<AudioFrame>
+std::unique_ptr<AudioFrame>
 AudioFrame::CreateAudioFrame(enum AVSampleFormat sample_fmt,
                              const AVChannelLayout *channel_layout,
                              int sample_rate, int nb_samples) {
 
-  auto audio_frame = AudioFrame(av_frame_alloc());
-  if (!audio_frame.c_frame_) {
-    return absl::AbortedError("Error allocating an audio frame.");
+  AVFrame *c_frame = av_frame_alloc();
+  if (!c_frame) {
+    return nullptr;
   }
-  audio_frame.c_frame_->format = sample_fmt;
-  av_channel_layout_copy(&audio_frame.c_frame_->ch_layout, channel_layout);
-  audio_frame.c_frame_->sample_rate = sample_rate;
-  audio_frame.c_frame_->nb_samples = nb_samples;
+
+  c_frame->format = sample_fmt;
+  av_channel_layout_copy(&c_frame->ch_layout, channel_layout);
+  c_frame->sample_rate = sample_rate;
+  c_frame->nb_samples = nb_samples;
 
   if (nb_samples) {
-    if (av_frame_get_buffer(audio_frame.c_frame_, 1) < 0) {
-      return absl::AbortedError("Error allocating an audio buffer.");
+    if (av_frame_get_buffer(c_frame, 1) < 0) {
+      return nullptr;
     }
   }
 
-  return audio_frame;
+  return std::unique_ptr<AudioFrame>(new AudioFrame(c_frame));
 }
 
 AudioFrame::AudioFrame(AudioFrame &&o) noexcept : c_frame_(o.c_frame_) {

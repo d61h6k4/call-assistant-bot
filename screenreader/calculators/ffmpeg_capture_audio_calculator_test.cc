@@ -41,10 +41,7 @@ TEST(FFMpegCaptureAudioCalculatorTest, AudioCheck) {
   auto &outputs = runner.Outputs();
   EXPECT_EQ(outputs.NumEntries(), 1);
   const auto &audio = outputs.Tag("AUDIO").packets[0].Get<aikit::media::AudioFrame>();
-
-  ABSL_LOG(INFO) << audio.GetPTS();
-  ABSL_LOG(INFO) << audio.c_frame()->pts;
-  // EXPECT_GT(audio.size(), 0);
+  EXPECT_GT(audio.GetPTS(), 0);
 }
 } // namespace
 } // namespace aikit
