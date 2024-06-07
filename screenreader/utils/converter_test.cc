@@ -54,20 +54,34 @@ TEST(TestConverterUtils, CheckAudioConvert) {
   aikit::media::AudioStreamParameters out_audio_stream;
   out_audio_stream.sample_rate = 44100;
   out_audio_stream.channel_layout = AV_CHANNEL_LAYOUT_STEREO;
-  auto out_audio_frame = aikit::media::AudioFrame::CreateAudioFrame(
-      out_audio_stream.format, &out_audio_stream.channel_layout,
-      out_audio_stream.sample_rate, out_audio_stream.frame_size);
-  EXPECT_TRUE(out_audio_frame);
 
   auto audio_converter_or = aikit::media::AudioConverter::CreateAudioConverter(
       in_audio_stream, out_audio_stream);
   EXPECT_TRUE(audio_converter_or.ok()) << audio_converter_or.status().message();
 
-  auto s =
-      audio_converter_or->Convert(in_audio_frame.get(), out_audio_frame.get());
+  auto s = audio_converter_or->Store(in_audio_frame.get());
+  EXPECT_TRUE(s.ok()) << s.message();
   EXPECT_EQ(in_audio_frame->GetPTS(), 1024);
-  EXPECT_EQ(out_audio_frame->GetPTS(),
-            static_cast<int64_t>(1024.0 / 16000.0 * 44100.0));
+
+  // We know that 16kHz 1024 samples -> 44.1kHz 2823 samples
+  // so we call load 2 times and 1 times LoadLast
+  auto out_audio_frame = aikit::media::AudioFrame::CreateAudioFrame(
+      out_audio_stream.format, &out_audio_stream.channel_layout,
+      out_audio_stream.sample_rate, out_audio_stream.frame_size);
+  EXPECT_TRUE(out_audio_frame);
+  s = audio_converter_or->Load(out_audio_frame.get());
+  EXPECT_TRUE(s.ok()) << s.message();
+  auto out_audio_frame2 = aikit::media::AudioFrame::CreateAudioFrame(
+      out_audio_stream.format, &out_audio_stream.channel_layout,
+      out_audio_stream.sample_rate, out_audio_stream.frame_size);
+  EXPECT_TRUE(out_audio_frame2);
+  s = audio_converter_or->Load(out_audio_frame2.get());
+  EXPECT_TRUE(s.ok()) << s.message();
+  auto out_audio_frame3 = aikit::media::AudioFrame::CreateAudioFrame(
+      out_audio_stream.format, &out_audio_stream.channel_layout,
+      out_audio_stream.sample_rate, out_audio_stream.frame_size);
+  EXPECT_TRUE(out_audio_frame3);
+  s = audio_converter_or->LoadLastFrame(out_audio_frame3.get());
   EXPECT_TRUE(s.ok()) << s.message();
 }
 
@@ -92,7 +106,12 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
   EXPECT_TRUE(audio_frame_or);
 
   aikit::media::AudioStreamParameters out_audio_stream;
-  out_audio_stream.sample_rate = 44100;
+  out_audio_stream.sample_rate = 48000;
+  // out_audio_stream.bit_rate = 96000;
+  // out_audio_stream.frame_size =
+  //     static_cast<int>(static_cast<float>(out_audio_stream.sample_rate) *
+  //                      static_cast<float>(in_audio_stream.frame_size) /
+  //                      static_cast<float>(in_audio_stream.sample_rate));
 
   auto write_container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
@@ -109,13 +128,16 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
     st = container->PacketToFrame(packet, audio_frame_or.get());
     EXPECT_TRUE(st.ok());
 
-    auto s = audio_converter_or->Convert(audio_frame_or.get(),
-                                         out_audio_frame.get());
+    auto s = audio_converter_or->Store(audio_frame_or.get());
+    EXPECT_TRUE(s.ok());
 
-    EXPECT_TRUE(s.ok()) << s.message();
-
-    st = write_container->WriteFrame(write_packet, out_audio_frame.get());
-    EXPECT_TRUE(st.ok());
+    s = audio_converter_or->Load(out_audio_frame.get());
+    if (s.ok()) {
+      st = write_container->WriteFrame(write_packet, out_audio_frame.get());
+      EXPECT_TRUE(st.ok()) << st.message();
+    } else {
+      EXPECT_TRUE(absl::IsFailedPrecondition(s)) << s.message();
+    }
   }
 
   av_packet_free(&packet);

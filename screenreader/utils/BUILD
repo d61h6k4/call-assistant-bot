@@ -87,6 +87,7 @@ cc_library(
         "//third_party:libffmpeg",
         "//third_party:libyuv",
         "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/log:absl_log",
     ],
 )
 

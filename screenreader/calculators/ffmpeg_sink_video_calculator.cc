@@ -1,13 +1,10 @@
 
 #include "mediapipe/framework/api2/node.h"
-#include "mediapipe/framework/formats/yuv_image.h"
 #include "screenreader/utils/audio.h"
 #include "screenreader/utils/container.h"
 #include "screenreader/utils/converter.h"
 #include <csignal>
-#include <cstdint>
 #include <optional>
-#include <vector>
 
 namespace aikit {
 
@@ -135,18 +132,23 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
   if (kInAudio(cc).IsConnected() && !kInAudio(cc).IsEmpty()) {
 
     const auto &audio_frame = kInAudio(cc).Get();
-    auto status =
-        audio_converter_->Convert(&audio_frame, write_audio_frame_.get());
+
+    auto status = audio_converter_->Store(&audio_frame);
     if (!status.ok()) {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
              << "Failed to convert frame. " << status.message();
     }
-
-    status = container_stream_context_->WriteFrame(packet_,
-                                                   write_audio_frame_.get());
-    if (!status.ok()) {
+    status = audio_converter_->Load(write_audio_frame_.get());
+    if (status.ok()) {
+      status = container_stream_context_->WriteFrame(packet_,
+                                                     write_audio_frame_.get());
+      if (!status.ok()) {
+        return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+               << "Failed to write frame. " << status.message();
+      }
+    } else if (!absl::IsFailedPrecondition(status)) {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-             << "Failed to write frame. " << status.message();
+             << "Failed to resample frame. " << status.message();
     }
   }
 
