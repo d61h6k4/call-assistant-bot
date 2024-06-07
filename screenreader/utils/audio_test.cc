@@ -9,7 +9,6 @@
 
 #include "screenreader/utils/audio.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,6 +16,20 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+// Replacement of av_err2str, which causes
+// `error: taking address of temporary array`
+// https://github.com/joncampbell123/composite-video-simulator/issues/5
+#ifdef av_err2str
+#undef av_err2str
+#include <string>
+av_always_inline std::string av_err2string(int errnum) {
+  char str[AV_ERROR_MAX_STRING_SIZE];
+  return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
+}
+#define av_err2str(err) av_err2string(err).c_str()
+#endif // av_err2str
+
 
 std::vector<float> GenerateAudioData(size_t nb_samples) {
   std::vector<float> audio_data(nb_samples);
@@ -42,7 +55,7 @@ TEST(TestAudioUtils, CheckFillAudioData) {
   AVChannelLayout in_channel_layout = AV_CHANNEL_LAYOUT_MONO;
   auto in_frame_or = aikit::media::AudioFrame::CreateAudioFrame(
       AV_SAMPLE_FMT_FLTP, &in_channel_layout, 16000, 16000);
-  EXPECT_TRUE(in_frame_or.ok()) << in_frame_or.status().message();
+  EXPECT_TRUE(in_frame_or) << "Failed to allocate audio frame";
   auto status = in_frame_or->FillAudioData(audio_data);
   EXPECT_TRUE(status.ok()) << status.message();
   EXPECT_EQ(in_frame_or->c_frame()->linesize[0], 64000);
@@ -54,7 +67,7 @@ TEST(TestAudioUtils, CheckAppendAudioData) {
   AVChannelLayout in_channel_layout = AV_CHANNEL_LAYOUT_MONO;
   auto in_frame_or = aikit::media::AudioFrame::CreateAudioFrame(
       AV_SAMPLE_FMT_FLT, &in_channel_layout, 16000, 16000);
-  EXPECT_TRUE(in_frame_or.ok()) << in_frame_or.status().message();
+  EXPECT_TRUE(in_frame_or);
   auto status = in_frame_or->FillAudioData(audio_data);
   EXPECT_TRUE(status.ok()) << status.message();
   EXPECT_EQ(in_frame_or->c_frame()->linesize[0], 64000);
@@ -116,7 +129,7 @@ TEST(TestAudioUtils, CheckSaveAudioData) {
 
   auto in_frame_or = aikit::media::AudioFrame::CreateAudioFrame(
       AV_SAMPLE_FMT_FLTP, &audio_channel_layout, 16000, 16000);
-  EXPECT_TRUE(in_frame_or.ok()) << in_frame_or.status().message();
+  EXPECT_TRUE(in_frame_or);
 
   for (auto i = 0; i < 16; ++i) {
     in_frame_or->c_frame()->pts = (i + 1) * 1024;

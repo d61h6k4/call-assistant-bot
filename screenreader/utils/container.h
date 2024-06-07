@@ -35,14 +35,14 @@ public:
 
   AudioStreamParameters GetAudioStreamParameters();
 
-  absl::StatusOr<AudioFrame> CreateAudioFrame();
-  int64_t FramePTSInMicroseconds(AudioFrame &frame);
-  void SetFramePTS(int64_t microseconds, AudioFrame &frame);
+  std::unique_ptr<AudioFrame> CreateAudioFrame();
+  int64_t FramePTSInMicroseconds(const AudioFrame *frame);
+  void SetFramePTS(int64_t microseconds, AudioFrame *frame);
 
   absl::Status ReadPacket(AVPacket *packet);
-  absl::Status PacketToFrame(AVPacket *packet, AudioFrame &frame);
+  absl::Status PacketToFrame(AVPacket *packet, AudioFrame *frame);
 
-  absl::Status WriteFrame(AVPacket *packet, AudioFrame &frame);
+  absl::Status WriteFrame(AVPacket *packet, const AudioFrame *frame);
 
   // Captures data from the device.
   // This operation is operating system dependent:
@@ -64,7 +64,7 @@ private:
   static absl::Status WriteFrame(AVFormatContext *format_context,
                                  AVCodecContext *codec_context,
                                  int stream_index, AVPacket *packet,
-                                 AVFrame *frame);
+                                 const AVFrame *frame);
 
 private:
   bool is_reader_ = true;

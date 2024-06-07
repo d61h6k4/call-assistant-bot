@@ -13,7 +13,6 @@ extern "C" {
 }
 #endif
 
-
 // Replacement of av_err2str, which causes
 // `error: taking address of temporary array`
 // https://github.com/joncampbell123/composite-video-simulator/issues/5
@@ -21,12 +20,11 @@ extern "C" {
 #undef av_err2str
 #include <string>
 av_always_inline std::string av_err2string(int errnum) {
-    char str[AV_ERROR_MAX_STRING_SIZE];
-    return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
+  char str[AV_ERROR_MAX_STRING_SIZE];
+  return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
 }
 #define av_err2str(err) av_err2string(err).c_str()
-#endif  // av_err2str
-
+#endif // av_err2str
 
 namespace aikit {
 namespace media {
@@ -157,7 +155,7 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
         avformat_new_stream(container_stream_context.format_context_, nullptr);
     stream->id = container_stream_context.format_context_->nb_streams - 1;
     // Here we define format of the output format
-    stream->codecpar->frame_size = audio_stream_parameters.frame_size;
+    // stream->codecpar->frame_size = audio_stream_parameters.frame_size;
     stream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     stream->codecpar->codec_id =
         container_stream_context.format_context_->oformat->audio_codec;
@@ -253,11 +251,9 @@ ContainerStreamContext::~ContainerStreamContext() {
   }
 }
 
-absl::StatusOr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {
+std::unique_ptr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {
   if (!audio_stream_context_.has_value()) {
-    return absl::AbortedError("Failed to create audio frame. Container creates "
-                              "audio frame only according to audio stream in "
-                              "it, but container doesn't have audio stream.");
+    return nullptr;
   }
 
   auto audio_stream_params = GetAudioStreamParameters();
@@ -287,9 +283,9 @@ ContainerStreamContext::PacketToFrame(AVCodecContext *codec_context,
 }
 
 absl::Status ContainerStreamContext::PacketToFrame(AVPacket *packet,
-                                                   AudioFrame &frame) {
+                                                   AudioFrame *frame) {
   return PacketToFrame(audio_stream_context_->codec_context(), packet,
-                       frame.c_frame());
+                       frame->c_frame());
 }
 
 absl::Status ContainerStreamContext::ReadPacket(AVPacket *packet) {
@@ -315,14 +311,14 @@ absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
                                                 AVCodecContext *codec_context,
                                                 int stream_index,
                                                 AVPacket *packet,
-                                                AVFrame *frame) {
+                                                const AVFrame *frame) {
   // send the frame to the encoder
-  if (auto ret = avcodec_send_frame(codec_context, frame); ret < 0) {
+  int ret = 0;
+  if (ret = avcodec_send_frame(codec_context, frame); ret < 0) {
     return absl::AbortedError(absl::StrCat(
         "Error sending a frame to the encoder: ", av_err2str(ret)));
   }
 
-  int ret = 0;
   while (ret >= 0) {
     ret = avcodec_receive_packet(codec_context, packet);
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
@@ -351,14 +347,14 @@ absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
   return absl::OkStatus();
 }
 absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
-                                                AudioFrame &frame) {
+                                                const AudioFrame *frame) {
   if (is_reader_) {
     return absl::AbortedError("The container stream context was created as "
                               "reader, writing is not allowed.");
   }
   return WriteFrame(format_context_, audio_stream_context_->codec_context(),
                     audio_stream_context_->stream_index(), packet,
-                    frame.c_frame());
+                    frame->c_frame());
 }
 
 absl::StatusOr<ContainerStreamContext>
@@ -371,15 +367,16 @@ ContainerStreamContext::CaptureDevice(const std::string &device_name,
   return CreateReaderContainerStreamContext(driver_url, input_format);
 }
 
-int64_t ContainerStreamContext::FramePTSInMicroseconds(AudioFrame &frame) {
-  return av_rescale_q(frame.c_frame()->pts, audio_stream_context_->time_base(),
+int64_t
+ContainerStreamContext::FramePTSInMicroseconds(const AudioFrame *frame) {
+  return av_rescale_q(frame->GetPTS(), audio_stream_context_->time_base(),
                       AVRational{1, 1000000});
 }
 
 void ContainerStreamContext::SetFramePTS(int64_t microseconds,
-                                         AudioFrame &frame) {
-  frame.c_frame()->pts = av_rescale_q(microseconds, AVRational{1, 1000000},
-                                      audio_stream_context_->time_base());
+                                         AudioFrame *frame) {
+  frame->SetPTS(av_rescale_q(microseconds, AVRational{1, 1000000},
+                            audio_stream_context_->time_base()));
 }
 
 AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {
@@ -388,8 +385,8 @@ AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {
   if (audio_stream_context_->codec_context()->codec->capabilities &
       AV_CODEC_CAP_VARIABLE_FRAME_SIZE) {
     params.frame_size = 16000;
-  } else if (audio_stream_context_->codec_context()->frame_size == 0) {
-    params.frame_size = 1024;
+  // } else if (audio_stream_context_->codec_context()->frame_size == 0) {
+    // params.frame_size = 1024;
   } else {
     params.frame_size = audio_stream_context_->codec_context()->frame_size;
   }
