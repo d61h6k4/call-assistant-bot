@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <memory>
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +15,6 @@ extern "C" {
 }
 #endif
 
-
 // Replacement of av_err2str, which causes
 // `error: taking address of temporary array`
 // https://github.com/joncampbell123/composite-video-simulator/issues/5
@@ -22,45 +22,45 @@ extern "C" {
 #undef av_err2str
 #include <string>
 av_always_inline std::string av_err2string(int errnum) {
-    char str[AV_ERROR_MAX_STRING_SIZE];
-    return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
+  char str[AV_ERROR_MAX_STRING_SIZE];
+  return av_make_error_string(str, AV_ERROR_MAX_STRING_SIZE, errnum);
 }
 #define av_err2str(err) av_err2string(err).c_str()
-#endif  // av_err2str
+#endif // av_err2str
 
 namespace aikit::media {
 
-absl::StatusOr<AudioFrame>
+std::unique_ptr<AudioFrame>
 AudioFrame::CreateAudioFrame(enum AVSampleFormat sample_fmt,
                              const AVChannelLayout *channel_layout,
                              int sample_rate, int nb_samples) {
 
-  auto audio_frame = AudioFrame(av_frame_alloc());
-  if (!audio_frame.c_frame_) {
-    return absl::AbortedError("Error allocating an audio frame.");
+  AVFrame *c_frame = av_frame_alloc();
+  if (!c_frame) {
+    return nullptr;
   }
-  audio_frame.c_frame_->format = sample_fmt;
-  av_channel_layout_copy(&audio_frame.c_frame_->ch_layout, channel_layout);
-  audio_frame.c_frame_->sample_rate = sample_rate;
-  audio_frame.c_frame_->nb_samples = nb_samples;
+
+  c_frame->format = sample_fmt;
+  av_channel_layout_copy(&c_frame->ch_layout, channel_layout);
+  c_frame->sample_rate = sample_rate;
+  c_frame->nb_samples = nb_samples;
 
   if (nb_samples) {
-    if (av_frame_get_buffer(audio_frame.c_frame_, 1) < 0) {
-      return absl::AbortedError("Error allocating an audio buffer.");
+    if (av_frame_get_buffer(c_frame, 1) < 0) {
+      return nullptr;
     }
   }
 
-  return audio_frame;
+  return std::unique_ptr<AudioFrame>(new AudioFrame(c_frame));
 }
 
-AudioFrame::AudioFrame(AudioFrame &&o) noexcept : c_frame_(o.c_frame_) {
-  o.c_frame_ = nullptr;
+AudioFrame::AudioFrame(AudioFrame &&o) noexcept {
+  av_frame_move_ref(c_frame_, o.c_frame_);
 }
 
 AudioFrame &AudioFrame::operator=(AudioFrame &&o) noexcept {
   if (this != &o) {
-    c_frame_ = o.c_frame_;
-    o.c_frame_ = nullptr;
+    av_frame_move_ref(c_frame_, o.c_frame_);
   }
 }
 
@@ -79,15 +79,16 @@ absl::Status AudioFrame::FillAudioData(std::vector<float> &audio_data) {
         "convert the frame to the AV_SAMPLE_FMT_FLT format");
   }
 
-  c_frame_->nb_samples = audio_data.size();
-  if (auto ret = avcodec_fill_audio_frame(
-          c_frame_, 1, AV_SAMPLE_FMT_FLT, (uint8_t *)audio_data.data(),
-          audio_data.size() * sizeof(float) / sizeof(uint8_t), 1);
-      ret < 0) {
+  if (c_frame_->ch_layout.nb_channels != 1) {
     return absl::AbortedError(
-        absl::StrCat("Failed to fill audio frame with the given audio data. ",
-                     av_err2str(ret)));
+        "The existing frame expects more then 1 channel of data.");
   }
+
+  c_frame_->nb_samples = audio_data.size();
+  uint8_t *ptr = nullptr;
+  ptr = reinterpret_cast<uint8_t *>(audio_data.data());
+  av_samples_copy(c_frame_->extended_data, &ptr, 0, 0, audio_data.size(), 1,
+                  AV_SAMPLE_FMT_FLTP);
 
   return absl::OkStatus();
 }

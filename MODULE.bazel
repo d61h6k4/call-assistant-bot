@@ -75,18 +75,18 @@ archive_override(
 )
 
 # sudo apt-get install yasm
-bazel_dep(name = "ffmpeg", version = "7.0.0")
+bazel_dep(name = "ffmpeg", version = "7.0.1")
 archive_override(
     module_name = "ffmpeg",
-    integrity = "sha256-nqTx6TSxZVyaba1Xn9UvopnNT2pfK4K+l9qpj/LnmNA=",
+    integrity = "sha256-75CuPnGURNopHjzB6nB+/lXADRYx3EELHbbmVP7VmvQ=",
     patches = [
         "//third_party/ffmpeg:BUILD.patch",
         "//third_party/ffmpeg:MODULE.bazel.patch",
         # Respect CC env variable
         "//third_party/ffmpeg:configure.patch",
     ],
-    strip_prefix = "FFmpeg-n7.0",
-    urls = "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.0.zip",
+    strip_prefix = "FFmpeg-n7.0.1",
+    urls = "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.0.1.zip",
 )
 
 bazel_dep(name = "iconv", version = "1.17.0", repo_name = "iconv")

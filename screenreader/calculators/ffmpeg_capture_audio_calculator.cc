@@ -2,12 +2,14 @@
 #include "mediapipe/framework/api2/packet.h"
 #include "screenreader/utils/audio.h"
 #include "screenreader/utils/container.h"
-#include "screenreader/utils/converter.h"
+#include <csignal>
 #include <optional>
-#include <vector>
-
 namespace aikit {
+namespace {
+volatile std::sig_atomic_t gSignalStatus;
 
+void SignalHandler(int signal) { gSignalStatus = signal; }
+} // namespace
 // This Calculator captures audio from audio driver and stream audio packets.
 // All streams and input side packets are specified using tags and all of them
 // are optional.
@@ -25,7 +27,7 @@ class FFMPEGCaptureAudioCalculator : public mediapipe::api2::Node {
 public:
   static constexpr mediapipe::api2::SideOutput<media::AudioStreamParameters>
       kOutAudioHeader{"AUDIO_HEADER"};
-  static constexpr mediapipe::api2::Output<std::vector<float>> kOutAudio{
+  static constexpr mediapipe::api2::Output<media::AudioFrame> kOutAudio{
       "AUDIO"};
   MEDIAPIPE_NODE_CONTRACT(
       kOutAudioHeader, kOutAudio,
@@ -37,12 +39,10 @@ public:
   absl::Status Close(mediapipe::CalculatorContext *cc) override;
 
 private:
+  mediapipe::Timestamp start_timestamp_ = mediapipe::Timestamp::Unset();
   mediapipe::Timestamp prev_audio_timestamp_ = mediapipe::Timestamp::Unset();
   std::optional<media::ContainerStreamContext> container_stream_context_ =
       std::nullopt;
-  std::optional<media::AudioFrame> audio_frame_ = std::nullopt;
-  std::optional<media::AudioFrame> out_audio_frame_ = std::nullopt;
-  std::optional<media::AudioConverter> audio_converter_ = std::nullopt;
 
   // https://ffmpeg.org/doxygen/trunk/structAVPacket.html
   AVPacket *packet_ = nullptr;
@@ -51,6 +51,9 @@ MEDIAPIPE_REGISTER_NODE(FFMPEGCaptureAudioCalculator);
 
 absl::Status
 FFMPEGCaptureAudioCalculator::Open(mediapipe::CalculatorContext *cc) {
+  // Register processing system signals
+  std::signal(SIGTERM, SignalHandler);
+  std::signal(SIGINT, SignalHandler);
 
 #if __APPLE__
   auto container_stream_context_or =
@@ -66,14 +69,6 @@ FFMPEGCaptureAudioCalculator::Open(mediapipe::CalculatorContext *cc) {
   }
   container_stream_context_ = std::move(container_stream_context_or.value());
 
-  auto audio_frame_or = container_stream_context_->CreateAudioFrame();
-  if (!audio_frame_or.ok()) {
-    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-           << "failed to allocate memory for AVFrame. "
-           << audio_frame_or.status().message();
-  }
-  audio_frame_ = std::move(audio_frame_or.value());
-
   packet_ = av_packet_alloc();
   if (!packet_) {
     return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
@@ -82,30 +77,9 @@ FFMPEGCaptureAudioCalculator::Open(mediapipe::CalculatorContext *cc) {
 
   const auto &in_audio_stream =
       container_stream_context_->GetAudioStreamParameters();
-  auto out_audio_stream = media::AudioStreamParameters();
-
-  auto out_audio_frame_or = media::AudioFrame::CreateAudioFrame(
-      out_audio_stream.format, &out_audio_stream.channel_layout,
-      out_audio_stream.sample_rate, out_audio_stream.frame_size);
-
-  if (!out_audio_frame_or.ok()) {
-    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-           << "failed to allocate memory for AVFrame. "
-           << out_audio_frame_or.status().message();
-  }
-  out_audio_frame_ = std::move(out_audio_frame_or.value());
-
-  auto audio_converter_or = media::AudioConverter::CreateAudioConverter(
-      in_audio_stream, out_audio_stream);
-  if (!audio_converter_or.ok()) {
-    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-           << "Failed to create audio converter. "
-           << audio_converter_or.status().message();
-  }
-  audio_converter_ = std::move(audio_converter_or.value());
 
   // Write audio header
-  kOutAudioHeader(cc).Set(out_audio_stream);
+  kOutAudioHeader(cc).Set(in_audio_stream);
 
   return absl::OkStatus();
 }
@@ -119,50 +93,42 @@ FFMPEGCaptureAudioCalculator::Close(mediapipe::CalculatorContext *cc) {
 
 absl::Status
 FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
+
+  if (gSignalStatus == SIGINT || gSignalStatus == SIGTERM) {
+    ABSL_LOG(WARNING) << "Got system singal. Stopping processing.";
+    return mediapipe::tool::StatusStop();
+  }
+
   auto status = container_stream_context_->ReadPacket(packet_);
   if (status.ok()) {
+
+    auto audio_frame_or = container_stream_context_->CreateAudioFrame();
+    if (!audio_frame_or) {
+      return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+             << "failed to allocate memory for AVFrame. ";
+    }
+
     status =
-        container_stream_context_->PacketToFrame(packet_, audio_frame_.value());
+        container_stream_context_->PacketToFrame(packet_, audio_frame_or.get());
     if (status.ok()) {
-      // Use microsecond as the unit of time.
-      mediapipe::Timestamp timestamp(
-          container_stream_context_->FramePTSInMicroseconds(
-              audio_frame_.value()));
+      // Captured frame PTS is current global timestamp in microseconds
+      if (start_timestamp_ == mediapipe::Timestamp::Unset()) {
+        start_timestamp_ = mediapipe::Timestamp(audio_frame_or->GetPTS());
+      }
+
+      auto timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());
+      container_stream_context_->SetFramePTS(
+          (timestamp - start_timestamp_).Microseconds(), audio_frame_or.get());
 
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
       if (prev_audio_timestamp_ < timestamp) {
+        kOutAudio(cc).Send(std::move(audio_frame_or), timestamp);
+        prev_audio_timestamp_ = timestamp;
 
-        status = audio_converter_->Convert(audio_frame_.value(),
-                                           out_audio_frame_.value());
-        if (status.ok()) {
-
-          std::vector<float> copied_audio_data;
-          status = out_audio_frame_->AppendAudioData(copied_audio_data);
-          if (status.ok()) {
-            // PTS depends on sample_rate, so input frame pts may be different
-            // then converted one.
-            kOutAudio(cc).Send(
-                copied_audio_data,
-                mediapipe::Timestamp(
-                    container_stream_context_->FramePTSInMicroseconds(
-                        out_audio_frame_.value())));
-
-            // Here we have input frame timestamp
-            prev_audio_timestamp_ = timestamp;
-
-            // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
-            av_packet_unref(packet_);
-            return absl::OkStatus();
-
-          } else {
-            ABSL_LOG(WARNING)
-                << "Failed to copy the audio data. " << status.message();
-          }
-        } else {
-          ABSL_LOG(WARNING)
-              << "Failed to convert the audio data. " << status.message();
-        }
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
+        av_packet_unref(packet_);
+        return absl::OkStatus();
       } else {
         ABSL_LOG(WARNING) << "Unmonotonic timestamps " << prev_audio_timestamp_
                           << " and " << timestamp;
@@ -175,6 +141,7 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
   } else {
     ABSL_LOG(INFO) << "Failed to read a packet. " << status.message();
   }
+
   // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
   av_packet_unref(packet_);
 

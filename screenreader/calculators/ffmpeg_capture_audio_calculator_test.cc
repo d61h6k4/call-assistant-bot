@@ -38,11 +38,10 @@ TEST(FFMpegCaptureAudioCalculatorTest, AudioCheck) {
 
   MP_ASSERT_OK(runner.Run());
 
-  const auto &outputs = runner.Outputs();
+  auto &outputs = runner.Outputs();
   EXPECT_EQ(outputs.NumEntries(), 1);
-  const auto &audio = outputs.Tag("AUDIO").packets[0].Get<std::vector<float>>();
-
-  EXPECT_GT(audio.size(), 0);
+  const auto &audio = outputs.Tag("AUDIO").packets[0].Get<aikit::media::AudioFrame>();
+  EXPECT_GT(audio.GetPTS(), 0);
 }
 } // namespace
 } // namespace aikit

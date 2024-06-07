@@ -69,6 +69,7 @@ cc_library(
 cc_test(
     name = "container_test",
     srcs = ["container_test.cc"],
+    data = ["//testdata:test_videos"],
     deps = [
         ":container",
         "@com_google_googletest//:gtest",
@@ -86,16 +87,20 @@ cc_library(
         "//third_party:libffmpeg",
         "//third_party:libyuv",
         "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/log:absl_log",
     ],
 )
 
 cc_test(
     name = "converter_test",
     srcs = ["converter_test.cc"],
+    data = ["//testdata:test_videos"],
     deps = [
         ":converter",
+        ":container",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+        "@com_google_absl//absl/log:absl_log",
     ],
 )
 
