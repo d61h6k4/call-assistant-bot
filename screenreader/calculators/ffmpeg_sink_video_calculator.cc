@@ -45,6 +45,8 @@ private:
 
   // https://ffmpeg.org/doxygen/trunk/structAVPacket.html
   AVPacket *packet_ = nullptr;
+
+  int pts_ = 0;
 };
 MEDIAPIPE_REGISTER_NODE(FFMPEGSinkVideoCalculator);
 
@@ -56,7 +58,8 @@ absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
   write_audio_stream_parameters.bit_rate = audio_stream_parameters.bit_rate;
   write_audio_stream_parameters.sample_rate =
       audio_stream_parameters.sample_rate;
-  write_audio_stream_parameters.frame_size = audio_stream_parameters.frame_size;
+  write_audio_stream_parameters.frame_size =
+      1024; // audio_stream_parameters.frame_size;
 
   auto container_stream_context_or =
       media::ContainerStreamContext::CreateWriterContainerStreamContext(
@@ -140,6 +143,9 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
     }
     status = audio_converter_->Load(write_audio_frame_.get());
     if (status.ok()) {
+      write_audio_frame_->SetPTS(pts_);
+      pts_ = pts_ + write_audio_frame_->c_frame()->nb_samples;
+
       status = container_stream_context_->WriteFrame(packet_,
                                                      write_audio_frame_.get());
       if (!status.ok()) {
