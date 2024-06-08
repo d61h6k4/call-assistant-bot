@@ -30,6 +30,9 @@ public:
   static constexpr mediapipe::api2::Input<media::AudioFrame>::Optional kInAudio{
       "AUDIO"};
 
+  // TODO(d61h6k4) Check the sinchronization rules, here we may want
+  // to use ImmediateInputStreamHandler.
+  // https://ai.google.dev/edge/mediapipe/framework/framework_concepts/synchronization
   MEDIAPIPE_NODE_CONTRACT(kInFilePath, kInAudioHeader, kInAudio);
 
   absl::Status Open(mediapipe::CalculatorContext *cc) override;
@@ -39,14 +42,8 @@ public:
 private:
   std::optional<media::ContainerStreamContext> container_stream_context_;
 
-  // AAC encoder support only FLTP format
-  std::unique_ptr<media::AudioFrame> write_audio_frame_ = nullptr;
-  std::optional<media::AudioConverter> audio_converter_ = std::nullopt;
-
   // https://ffmpeg.org/doxygen/trunk/structAVPacket.html
   AVPacket *packet_ = nullptr;
-
-  int pts_ = 0;
 };
 MEDIAPIPE_REGISTER_NODE(FFMPEGSinkVideoCalculator);
 
@@ -54,36 +51,14 @@ absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
   const auto &output_file_path = kInFilePath(cc).Get();
   const auto &audio_stream_parameters = kInAudioHeader(cc).Get();
 
-  auto write_audio_stream_parameters = media::AudioStreamParameters();
-  write_audio_stream_parameters.bit_rate = audio_stream_parameters.bit_rate;
-  write_audio_stream_parameters.sample_rate =
-      audio_stream_parameters.sample_rate;
-  write_audio_stream_parameters.frame_size =
-      1024; // audio_stream_parameters.frame_size;
-
   auto container_stream_context_or =
       media::ContainerStreamContext::CreateWriterContainerStreamContext(
-          write_audio_stream_parameters, output_file_path);
+          audio_stream_parameters, output_file_path);
   if (!container_stream_context_or.ok()) {
     return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
            << "Failed to create container stream context";
   }
   container_stream_context_ = std::move(container_stream_context_or.value());
-
-  write_audio_frame_ = container_stream_context_->CreateAudioFrame();
-  if (!write_audio_frame_) {
-    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-           << "failed to allocate memory for AVFrame. ";
-  }
-
-  auto audio_converter_or = media::AudioConverter::CreateAudioConverter(
-      audio_stream_parameters, write_audio_stream_parameters);
-  if (!audio_converter_or.ok()) {
-    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-           << "Failed to create audio converter. "
-           << audio_converter_or.status().message();
-  }
-  audio_converter_ = std::move(audio_converter_or.value());
 
   packet_ = av_packet_alloc();
   if (!packet_) {
@@ -135,26 +110,10 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
   if (kInAudio(cc).IsConnected() && !kInAudio(cc).IsEmpty()) {
 
     const auto &audio_frame = kInAudio(cc).Get();
-
-    auto status = audio_converter_->Store(&audio_frame);
+    auto status = container_stream_context_->WriteFrame(packet_, &audio_frame);
     if (!status.ok()) {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-             << "Failed to convert frame. " << status.message();
-    }
-    status = audio_converter_->Load(write_audio_frame_.get());
-    if (status.ok()) {
-      write_audio_frame_->SetPTS(pts_);
-      pts_ = pts_ + write_audio_frame_->c_frame()->nb_samples;
-
-      status = container_stream_context_->WriteFrame(packet_,
-                                                     write_audio_frame_.get());
-      if (!status.ok()) {
-        return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-               << "Failed to write frame. " << status.message();
-      }
-    } else if (!absl::IsFailedPrecondition(status)) {
-      return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-             << "Failed to resample frame. " << status.message();
+             << "Failed to write frame. " << status.message();
     }
   }
 

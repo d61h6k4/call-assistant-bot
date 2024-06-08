@@ -28,17 +28,14 @@ bazel_dep(name = "abseil-cpp", version = "20240116.2", repo_name = "com_google_a
 bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
 bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
-
 bazel_dep(name = "rules_python", version = "0.32.2")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
-
 pip.parse(
     hub_name = "pip",
     python_version = "3.11",
     requirements_lock = "//third_party:requirements_lock.txt",
 )
-
 use_repo(pip, "pip")
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")

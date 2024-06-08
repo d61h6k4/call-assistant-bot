@@ -7,6 +7,7 @@
 #include "absl/log/absl_log.h"
 #include "mediapipe/framework/api2/builder.h"
 #include "mediapipe/framework/calculator_graph.h"
+#include "screenreader/utils/audio.h"
 
 ABSL_FLAG(std::string, output_file_path, "", "Full path of video to save.");
 
@@ -18,14 +19,27 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   auto audio_header = capture_audio_node.SideOut("AUDIO_HEADER");
   auto audio_stream = capture_audio_node.Out("AUDIO");
 
+  // Convert to 16kHz FLT
+  auto &audio_converter_node = graph.AddNode("AudioConverterCalculator");
+  audio_header >> audio_converter_node.SideIn("IN_AUDIO_HEADER");
+  graph.SideIn("OUT_AUDIO_HEADER")
+          .SetName("out_audio_header")
+          .Cast<aikit::media::AudioStreamParameters>() >>
+      audio_converter_node.SideIn("OUT_AUDIO_HEADER");
+  audio_stream >> audio_converter_node.In("IN_AUDIO");
+  auto float_16kHz_audio_stream = audio_converter_node.Out("OUT_AUDIO");
+
   // Write audio
   auto &sink_video_node = graph.AddNode("FFMPEGSinkVideoCalculator");
   graph.SideIn("OUTPUT_FILE_PATH")
           .SetName("output_file_path")
           .Cast<std::string>() >>
       sink_video_node.SideIn("OUTPUT_FILE_PATH");
-  audio_header >> sink_video_node.SideIn("AUDIO_HEADER");
-  audio_stream >> sink_video_node.In("AUDIO");
+  graph.SideIn("OUT_AUDIO_HEADER")
+          .SetName("out_audio_header")
+          .Cast<aikit::media::AudioStreamParameters>() >>
+      sink_video_node.SideIn("AUDIO_HEADER");
+  float_16kHz_audio_stream >> sink_video_node.In("AUDIO");
 
   return graph.GetConfig();
 }
@@ -36,6 +50,12 @@ absl::Status RunMPPGraph() {
   std::map<std::string, mediapipe::Packet> input_side_packets;
   input_side_packets["output_file_path"] =
       mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_output_file_path));
+
+  // Whisper requires 16kHz float mono stream
+  aikit::media::AudioStreamParameters audio_stream_parameters;
+  input_side_packets["out_audio_header"] =
+      mediapipe::MakePacket<aikit::media::AudioStreamParameters>(
+          audio_stream_parameters);
 
   ABSL_LOG(INFO) << "Initialize the calculator graph.";
   mediapipe::CalculatorGraph graph;
