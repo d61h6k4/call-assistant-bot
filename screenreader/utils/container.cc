@@ -155,7 +155,7 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
         avformat_new_stream(container_stream_context.format_context_, nullptr);
     stream->id = container_stream_context.format_context_->nb_streams - 1;
     // Here we define format of the output format
-    // stream->codecpar->frame_size = audio_stream_parameters.frame_size;
+    stream->codecpar->frame_size = audio_stream_parameters.frame_size;
     stream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     stream->codecpar->codec_id =
         container_stream_context.format_context_->oformat->audio_codec;
@@ -385,8 +385,8 @@ AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {
   if (audio_stream_context_->codec_context()->codec->capabilities &
       AV_CODEC_CAP_VARIABLE_FRAME_SIZE) {
     params.frame_size = 16000;
-  // } else if (audio_stream_context_->codec_context()->frame_size == 0) {
-    // params.frame_size = 1024;
+  } else if (audio_stream_context_->codec_context()->frame_size == 0) {
+    params.frame_size = 1024;
   } else {
     params.frame_size = audio_stream_context_->codec_context()->frame_size;
   }
