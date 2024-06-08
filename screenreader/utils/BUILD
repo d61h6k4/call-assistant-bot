@@ -86,8 +86,8 @@ cc_library(
         ":audio",
         "//third_party:libffmpeg",
         "//third_party:libyuv",
-        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/status:statusor",
     ],
 )
 
@@ -96,11 +96,11 @@ cc_test(
     srcs = ["converter_test.cc"],
     data = ["//testdata:test_videos"],
     deps = [
-        ":converter",
         ":container",
+        ":converter",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-        "@com_google_absl//absl/log:absl_log",
     ],
 )
 
