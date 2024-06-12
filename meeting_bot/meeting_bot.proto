@@ -1,0 +1,13 @@
+
+syntax = "proto3";
+
+package aikit;
+
+service MeetingBot {
+    rpc Shutdown (ShutdownRequest) returns (ShutdownReply) {}
+}
+
+message ShutdownRequest {
+    string reason = 1;
+}
+message ShutdownReply {}
