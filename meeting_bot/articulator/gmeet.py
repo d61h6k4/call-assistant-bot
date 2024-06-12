@@ -1,12 +1,9 @@
 import asyncio
-import argparse
 import base64
-import datetime
 import nodriver
-import os
+import picologging as logging
 
 from pathlib import Path
-import picologging as logging
 
 
 class GoogleMeetOperator:
@@ -23,9 +20,7 @@ class GoogleMeetOperator:
         self.email = email
         self.password = password
         self.session_id = base64.b64encode(email.encode("utf8")).decode("utf8")
-        self.screenshots_dir = (
-            screenshots_dir / datetime.datetime.now().isoformat() / self.session_id
-        )
+        self.screenshots_dir = screenshots_dir / self.session_id
 
     async def join(self, url: str):
         self.logger.info(
@@ -39,10 +34,8 @@ class GoogleMeetOperator:
         await self.try_continue_wo_mic(tab)
         await self.ask_to_join(tab)
 
-        for tx in range(180):
-            screenshot_path = self.screenshots_dir / f"on_a_call_{tx}.jpg"
-            await tab.save_screenshot(filename=screenshot_path)
-            await tab.wait(t=10)
+        screenshot_path = self.screenshots_dir / "on_a_call.jpg"
+        await tab.save_screenshot(filename=screenshot_path)
 
     async def ask_to_join(self, tab: nodriver.Tab):
         """Click the button 'Ask to join'"""
@@ -260,78 +253,3 @@ class GoogleMeetOperator:
             )
             return
         await next_div.click()
-
-
-async def main(
-    gmeet_link: str,
-    email: str,
-    password: str,
-    logger: logging.Logger,
-    screenshots_dir: Path,
-):
-    logger.info(
-        {"message": "Joining Google Meeting", "gmeet_link": gmeet_link, "email": email}
-    )
-    browser_config = nodriver.Config(
-        headless=False,
-        sandbox=True,
-        browser_args=[
-            "--window-size=1024x768",
-            "--disable-gpu",
-            "--disable-extensions",
-            "--disable-application-cache",
-            "--disable-dev-shm-usage",
-        ],
-    )
-    logger.info(
-        {"message": "Configuration of the browser", "config": repr(browser_config)}
-    )
-
-    browser = await nodriver.start(config=browser_config)
-    await browser.wait()
-    await browser.grant_all_permissions()
-
-    agent = GoogleMeetOperator(browser, email, password, logger, screenshots_dir)
-    await agent.join(gmeet_link)
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--google_login",
-        default=os.environ.get("GOOGLE_LOGIN"),
-        help="Specify google account login",
-    )
-    parser.add_argument(
-        "--google_password",
-        default=os.environ.get("GOOGLE_PASSWORD"),
-        help="Specify the password of the google account",
-    )
-    parser.add_argument(
-        "--gmeet_link",
-        type=str,
-        required=True,
-        help="Specify the Google Meet link to connect",
-    )
-
-    return parser.parse_args()
-
-
-if __name__ == "__main__":
-    args = parse_args()
-
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger()
-
-    screenshots_dir = Path("/tmp/screenshots")
-
-    nodriver.loop().run_until_complete(
-        main(
-            args.gmeet_link,
-            args.google_login,
-            args.google_password,
-            logger,
-            screenshots_dir,
-        )
-    )

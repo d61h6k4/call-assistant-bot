@@ -14,7 +14,18 @@ class MeetingBotTest(unittest.TestCase):
 
     def test_shutdown(self):
         server_process = subprocess.Popen(
-            (_SERVER_PATH, "--address", self.meeting_bot_address)
+            (
+                _SERVER_PATH,
+                "--address",
+                self.meeting_bot_address,
+                "--gmeet_link",
+                "https://meet.google.com/dau-pztc-yad",
+            ),
+            env={
+                "GOOGLE_LOGIN": "login",
+                "GOOGLE_PASSWORD": "pwd",
+                "PATH": "/usr/local/bin",
+            },
         )
         try:
             server_process.wait(timeout=1)

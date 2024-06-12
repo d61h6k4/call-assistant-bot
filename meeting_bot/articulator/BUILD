@@ -22,6 +22,16 @@ py_grpc_library(
     deps = [":articulator_py_pb2"],
 )
 
+py_library(
+    name = "gmeet",
+    srcs = ["gmeet.py"],
+    visibility = ["//meeting_bot/articulator:__subpackages__"],
+    deps = [
+        "@pip//nodriver",
+        "@pip//picologging",
+    ],
+)
+
 py_binary(
     name = "articulator",
     srcs = ["articulator.py"],
@@ -30,8 +40,10 @@ py_binary(
     visibility = ["//meeting_bot:__subpackages__"],
     deps = [
         ":articulator_py_pb2_grpc",
+        ":gmeet",
         "@grpc//src/python/grpcio/grpc:grpcio",
         "@pip//grpcio_health_checking",
+        "@pip//nodriver",
         "@pip//picologging",
     ],
 )
