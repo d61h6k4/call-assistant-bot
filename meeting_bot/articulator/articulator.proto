@@ -1,0 +1,14 @@
+
+
+syntax = "proto3";
+
+package aikit.articulator;
+
+service Articulator {
+    rpc Shutdown (ShutdownRequest) returns (ShutdownReply) {}
+}
+
+message ShutdownRequest {
+    string reason = 1;
+}
+message ShutdownReply {}

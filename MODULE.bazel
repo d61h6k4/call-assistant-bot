@@ -10,7 +10,7 @@ module(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.5.0")
-bazel_dep(name = "platforms", version = "0.0.8")
+bazel_dep(name = "platforms", version = "0.0.9")
 bazel_dep(name = "apple_support", version = "1.11.1", repo_name = "build_bazel_apple_support")
 bazel_dep(name = "rules_apple", version = "3.1.1", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
@@ -23,9 +23,8 @@ git_override(
 )
 
 bazel_dep(name = "rules_proto", version = "6.0.0")
-bazel_dep(name = "rules_proto_grpc", version = "5.0.0-alpha2")
+bazel_dep(name = "protobuf", version = "27.1", repo_name = "com_google_protobuf")
 bazel_dep(name = "abseil-cpp", version = "20240116.2", repo_name = "com_google_absl")
-bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
 bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
 bazel_dep(name = "rules_python", version = "0.32.2")
@@ -37,6 +36,18 @@ pip.parse(
     requirements_lock = "//third_party:requirements_lock.txt",
 )
 use_repo(pip, "pip")
+
+bazel_dep(name = "grpc", version = "1.64.2")
+archive_override(
+    module_name = "grpc",
+    patch_strip = 1,
+    patches = [
+        "//third_party/grpc:adopt_bzlmod.patch",
+        "//third_party/grpc:add_module_bazel.patch",
+    ],
+    strip_prefix = "grpc-1.64.2",
+    urls = "https://github.com/grpc/grpc/archive/refs/tags/v1.64.2.tar.gz",
+)
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -138,6 +149,7 @@ archive_override(
 bazel_dep(name = "xorgproto", version = "2024.1")
 archive_override(
     module_name = "xorgproto",
+    integrity = "sha256-NyIl/UCBW4QjVH9diQxd68cuiLkQiPv7ExWMIElcy1k=",
     patches = [
         "//third_party/xorgproto:BUILD.patch",
         "//third_party/xorgproto:MODULE.bazel.patch",
