@@ -1,9 +1,14 @@
 from abc import abstractmethod, abstractproperty
+
 import asyncio
 import argparse
+import base64
 import uuid
 import shlex
 import signal
+import os
+import tempfile
+import shutil
 
 import grpc
 import sched
@@ -11,6 +16,7 @@ import time
 
 import picologging as logging
 
+from pathlib import Path
 from typing import Protocol, Sequence
 from meeting_bot import meeting_bot_pb2, meeting_bot_pb2_grpc  # noqa
 from meeting_bot.evaluator import evaluator_pb2, evaluator_pb2_grpc  # noqa
@@ -123,12 +129,16 @@ class Articulator(BotPart):
         )
 
     @staticmethod
-    async def create():
+    async def create(gmeet_link: str, working_dir: str):
         uuid.uuid4().hex
         articulator_address = "unix:///tmp/articulator.sock"
 
         r = runfiles.Create()
-        env = {}
+        env = {
+            "PATH": os.environ.get("PATH"),
+            "GOOGLE_LOGIN": os.environ.get("GOOGLE_LOGIN"),
+            "GOOGLE_PASSWORD": os.environ.get("GOOGLE_PASSWORD"),
+        }
         env.update(r.EnvVars())
         proc = await asyncio.create_subprocess_shell(
             shlex.join(
@@ -136,6 +146,10 @@ class Articulator(BotPart):
                     r.Rlocation(Articulator._ARTICULATOR_BIN),
                     "--address",
                     articulator_address,
+                    "--gmeet_link",
+                    gmeet_link,
+                    "--working_dir",
+                    working_dir,
                 ]
             ),
             env=env,
@@ -199,35 +213,53 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         parts: Sequence[BotPart],
         server: grpc.aio._server.Server,
         logger: logging.Logger,
+        meeting_name: str,
+        working_dir: tempfile.TemporaryDirectory,
     ):
         self.scheduler = sched.scheduler(time.time, asyncio.sleep)
         self.parts = parts
         self.server = server
         self.logger = logger
+        self.meeting_name = meeting_name
+        self.working_dir = working_dir
 
         # Register system signal catcher, so we can shutdown services and clean up
-        signal.signal(signal.SIGINT, self.exit_gracefullt)
-        signal.signal(signal.SIGTERM, self.exit_gracefullt)
+        loop = asyncio.get_running_loop()
+        loop.add_signal_handler(
+            signal.SIGINT, lambda: self.exit_gracefullt(signal.SIGINT)
+        )
+        loop.add_signal_handler(
+            signal.SIGTERM, lambda: self.exit_gracefullt(signal.SIGTERM)
+        )
 
     @classmethod
     async def create(
-        cls, address: str, server: grpc.aio._server.Server, logger: logging.Logger
+        cls,
+        gmeet_link: str,
+        address: str,
+        server: grpc.aio._server.Server,
+        logger: logging.Logger,
     ) -> "MeetingBotServicer":
-        articulator = await Articulator.create()
+        working_dir = tempfile.TemporaryDirectory()
+
+        articulator = await Articulator.create(
+            gmeet_link=gmeet_link, working_dir=working_dir.name
+        )
         perceiver = await Perceiver.create()
         evaluator = await Evaluator.create(address)
         return cls(
-            server=server, parts=[evaluator, articulator, perceiver], logger=logger
+            server=server,
+            parts=[evaluator, articulator, perceiver],
+            logger=logger,
+            meeting_name=base64.urlsafe_b64encode(gmeet_link.encode("utf8")).decode(
+                "ascii"
+            ),
+            working_dir=working_dir,
         )
 
-    def exit_gracefullt(self, signum, frame):
+    def exit_gracefullt(self, signum):
         self.logger.info({"message": "Got system signal", "signal": signum})
-        asyncio.create_task(
-            self.Shutdown(
-                meeting_bot_pb2.ShutdownRequest(reason=f"Got system signal. {signum}"),
-                None,
-            )
-        )
+        asyncio.create_task(self.shutdown())
 
     async def Shutdown(
         self, request: meeting_bot_pb2.ShutdownRequest, context
@@ -235,8 +267,14 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         self.logger.info(
             {"message": "Shutting down the meeting bot", "reason": request.reason}
         )
+        await self.shutdown()
+        return meeting_bot_pb2.ShutdownReply()
 
+    async def shutdown(self):
         for bot_part in self.parts:
+            self.logger.info(
+                {"message": f"Shutting down {bot_part.__class__.__name__}"}
+            )
             await bot_part.shutdown()
             await bot_part.close()
 
@@ -245,15 +283,29 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         loop = asyncio.get_running_loop()
         # call_later expects not corutine, so we wrap our corutine in create_task
         loop.call_later(1, asyncio.create_task, self.server.stop(1.0))
+        self.working_dir_cleanup()
 
-        return meeting_bot_pb2.ShutdownReply()
+    def working_dir_cleanup(self):
+        with tempfile.TemporaryDirectory() as archive_dir:
+            archive_path = Path(archive_dir) / self.meeting_name
+            shutil.make_archive(
+                str(archive_path),
+                "zip",
+                self.working_dir.name,
+                verbose=True,
+            )
+
+            # TODO(d61h6k4) upload to GCS
+            shutil.copy2(archive_path.with_suffix(".zip"), Path.home())
+
+        self.working_dir.cleanup()
 
 
 async def serve(args: argparse.Namespace):
     logger = logging.getLogger()
     server = grpc.aio.server()
     service = await MeetingBotServicer.create(
-        address=args.address, server=server, logger=logger
+        gmeet_link=args.gmeet_link, address=args.address, server=server, logger=logger
     )
 
     meeting_bot_pb2_grpc.add_MeetingBotServicer_to_server(
@@ -279,11 +331,29 @@ def parse_args():
         default="unix:///tmp/meeting_bot.sock",
     )
 
+    parser.add_argument(
+        "--gmeet_link",
+        type=str,
+        required=True,
+        help="Specify the Google Meet link to connect",
+    )
+
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
+
+    # we know articulator gmeet operator expects google login/password
+    # but to get them from env is safer than from cli args, so here
+    # we simply check them exists in env
+    assert args.gmeet_link is not None
+    assert (
+        os.getenv("GOOGLE_LOGIN") is not None
+    ), "Please set GOOGLE_LOGIN environment variable"
+    assert (
+        os.getenv("GOOGLE_PASSWORD") is not None
+    ), "Please set GOOGLE_PASSWORD environment variable"
 
     logging.basicConfig(level=logging.INFO)
     asyncio.run(serve(args))
