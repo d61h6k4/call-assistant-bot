@@ -317,10 +317,25 @@ async def prepare_env(logger: logging.Logger):
 
         logger.info({"message": "Start dbus"})
         subprocess.Popen(
-            "mkdir -p /run/dbus && chmod 755 /run/dbus && dbus-daemon --system --fork"
+            "mkdir -p /run/dbus && chmod 755 /run/dbus && dbus-daemon --system --fork",
+            shell=True,
         )
 
         logger.info({"message": "starting virtual audio drivers"})
+        pulseaudio_conf = r"""
+        <!DOCTYPE busconfig PUBLIC
+         "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+         "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+        <busconfig>
+                <policy user="pulse">
+                    <allow own="org.pulseaudio.Server"/>
+                    <allow send_destination="org.pulseaudio.Server"/>
+                    <allow receive_sender="org.pulseaudio.Server"/>
+                </policy>
+        </busconfig>
+        """
+        Path("/etc/dbus-1/system.d/pulseaudio.conf", "w").write_text(pulseaudio_conf)
+
         for cmd in [
             "rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse",
             "pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",

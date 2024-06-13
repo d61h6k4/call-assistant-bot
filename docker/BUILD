@@ -51,7 +51,7 @@ group(
         {
             "name": "pulse-access",
             "gid": "1001",
-            users = [
+            "users": [
                 "root"
             ]
         }
