@@ -7,6 +7,7 @@ import uuid
 import shlex
 import signal
 import os
+import sys
 import tempfile
 import shutil
 
@@ -52,7 +53,7 @@ class BotPart(Protocol):
 class Evaluator(BotPart):
     # Path to the evaluator binary, that will be executed as a subprocess
     # see py_binrary data option to find out more about getting this path
-    _EVALUATOR_BIN = "meeting_bot/meeting_bot/evaluator/evaluator"
+    _EVALUATOR_BIN = "_main/meeting_bot/evaluator/evaluator"
 
     def __init__(
         self,
@@ -102,7 +103,7 @@ class Evaluator(BotPart):
 
 
 class Articulator(BotPart):
-    _ARTICULATOR_BIN = "meeting_bot/meeting_bot/articulator/articulator"
+    _ARTICULATOR_BIN = "_main/meeting_bot/articulator/articulator"
 
     def __init__(
         self,
@@ -159,7 +160,7 @@ class Articulator(BotPart):
 
 
 class Perceiver(BotPart):
-    _PERCEIVER_BIN = "meeting_bot/meeting_bot/perceiver/perceiver"
+    _PERCEIVER_BIN = "_main/meeting_bot/perceiver/perceiver"
 
     def __init__(
         self,
@@ -303,8 +304,46 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         self.working_dir.cleanup()
 
 
+async def prepare_env(logger: logging.Logger):
+    if sys.platform == "linux":
+        import subprocess
+
+        logger.info({"message": "starting virtual audio drivers"})
+        # find audio source for specified browser
+        subprocess.check_output(
+            "sudo rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse", shell=True
+        )
+        subprocess.check_output(
+            "sudo pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit  >> /dev/null 2>&1",
+            shell=True,
+        )
+        subprocess.check_output(
+            'sudo pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
+            shell=True,
+        )
+        subprocess.check_output(
+            'sudo pactl load-module module-null-sink sink_name=MicOutput sink_properties=device.description="Virtual_Microphone_Output"',
+            shell=True,
+        )
+        subprocess.check_output(
+            "sudo pactl set-default-source MicOutput.monitor", shell=True
+        )
+        subprocess.check_output("sudo pactl set-default-sink MicOutput", shell=True)
+        subprocess.check_output(
+            "sudo pactl load-module module-virtual-source source_name=VirtualMic",
+            shell=True,
+        )
+        display = os.environ.get("DISPLAY")
+        subprocess.check_output(
+            f"Xvfb {display} -screen 0 1024x768x24", start_new_session=True, shell=True
+        )
+        logger.info({"message": f"Xvfb runs on {display}"})
+
+
 async def serve(args: argparse.Namespace):
     logger = logging.getLogger()
+    await prepare_env(logger)
+
     server = grpc.aio.server()
     service = await MeetingBotServicer.create(
         gmeet_link=args.gmeet_link, address=args.address, server=server, logger=logger
@@ -356,6 +395,9 @@ if __name__ == "__main__":
     assert (
         os.getenv("GOOGLE_PASSWORD") is not None
     ), "Please set GOOGLE_PASSWORD environment variable"
+    assert (
+        os.getenv("DISPLAY") is not None
+    ), "Please set DISPLAY value (e.g. DISPLAY=:99)"
 
     logging.basicConfig(level=logging.INFO)
     asyncio.run(serve(args))
