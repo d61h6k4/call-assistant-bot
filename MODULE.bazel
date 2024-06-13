@@ -27,6 +27,7 @@ bazel_dep(name = "protobuf", version = "27.1", repo_name = "com_google_protobuf"
 bazel_dep(name = "abseil-cpp", version = "20240116.2", repo_name = "com_google_absl")
 bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
+bazel_dep(name = "re2", version = "2024-06-01", repo_name = "com_googlesource_code_re2")
 bazel_dep(name = "rules_python", version = "0.32.2")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
@@ -88,6 +89,8 @@ http_archive(
         # Use local opencv and libyuv
         "//third_party/mediapipe:mediapipe_framework_port_build.patch",
         "//third_party/mediapipe:mediapipe_calculators_image_build.patch",
+        # Fix building re2.h
+        "//third_party/mediapipe:mediapipe_framework_deps_re2.patch",
     ],
     sha256 = "9d46fa5363f5c4e11c3d1faec71b0746f15c5aab7b5460d0e5655d7af93c6957",
     strip_prefix = "mediapipe-{}".format(_MEDIAPIPE_VERSION),

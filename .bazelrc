@@ -30,11 +30,28 @@ build:macos --cxxopt=-std=c++20
 build:macos --host_cxxopt=-std=c++20
 build:macos --copt=-w
 
+# Sets the default Apple platform to macOS.
+build --apple_platform_type=macos
+
+# Compile ObjC++ files with C++17
+build --per_file_copt=.*\.mm\$@-std=c++17
+
+# Allow debugging with XCODE
+build --apple_generate_dsym
+
 # https://github.com/bazelbuild/rules_foreign_cc/issues/1186
 build:macos --host_action_env=CXXFLAGS=-Wno-int-conversion
 build:macos --action_env=CXXFLAGS=-Wno-int-conversion
 build:macos --host_action_env=CFLAGS=-Wno-int-conversion
 build:macos --action_env=CFLAGS=-Wno-int-conversion
+
+
+build:darwin_arm64 --apple_platform_type=macos
+build:darwin_arm64 --macos_minimum_os=10.16
+build:darwin_arm64 --cpu=darwin_arm64
+
+# Turn off maximum stdout size
+build --experimental_ui_max_stdouterr_bytes=-1
 
 # Address sanitizer
 # To use it: bazel build --config asan
