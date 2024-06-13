@@ -47,10 +47,11 @@ archive_override(
     ],
     strip_prefix = "grpc-1.64.2",
     urls = "https://github.com/grpc/grpc/archive/refs/tags/v1.64.2.tar.gz",
+    integrity = "sha256-xoL8ObrvxugE1zXmtIFBFXtyE2Asxm2+C/N1uQTYtfk=",
 )
 
 bazel_dep(name = "rules_oci", version = "1.7.4")
-bazel_dep(name = "rules_pkg", version = "0.9.1")
+bazel_dep(name = "rules_pkg", version = "0.10.1")
 bazel_dep(name = "container_structure_test", version = "1.16.0")
 bazel_dep(name = "aspect_bazel_lib", version = "2.7.3")
 bazel_dep(name = "rules_distroless", version = "0.3.3")

@@ -26,3 +26,8 @@ commandTests:
     command: "head"
     args: ["-1", "/etc/ssl/certs/ca-certificates.crt"]
     expectedOutput: ["-----BEGIN CERTIFICATE-----"]
+  - name: "check application"
+    command: "meeting_bot/meeting_bot"
+    args: ["--help"]
+    expectedOutput:
+      - "meeting bot"

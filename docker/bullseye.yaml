@@ -34,3 +34,4 @@ packages:
   - "xvfb"
   - "pulseaudio"
   - "chromium"
+  - "python3"

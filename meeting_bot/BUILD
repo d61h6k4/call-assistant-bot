@@ -43,6 +43,7 @@ py_binary(
         "@pip//picologging",
         "@rules_python//python/runfiles",
     ],
+    visibility = ["//visibility:public"],
 )
 
 py_test(

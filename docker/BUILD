@@ -67,6 +67,7 @@ PACKAGES = [
     "@bullseye//xvfb",
     "@bullseye//pulseaudio",
     "@bullseye//chromium",
+    "@bullseye//python3",
 ]
 
 # Creates /var/lib/dpkg/status with installed package information.
@@ -85,7 +86,7 @@ dpkg_status(
 )
 
 pkg_tar(
-    name = "packages.tar",
+    name = "packages_tar",
     deps = select({
         "@platforms//cpu:arm64": [
             "%s/arm64" % package
@@ -95,7 +96,17 @@ pkg_tar(
             "%s/amd64" % package
             for package in PACKAGES
         ],
-    }) )
+    }),
+)
+
+pkg_tar(
+    name = "meeting_bot_tar",
+    srcs = [
+        "//meeting_bot"
+    ],
+    include_runfiles = True,
+    strip_prefix = ".",
+)
 
 oci_image(
     name = "apt",
@@ -110,8 +121,10 @@ oci_image(
         ":group",
         ":dpkg_status",
         ":cacerts",
-        ":packages.tar",
-    ]
+        ":packages_tar",
+        ":meeting_bot_tar",
+    ],
+    entrypoint = ["/meeting_bot/meeting_bot"],
 )
 
 oci_tarball(
