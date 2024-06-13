@@ -186,7 +186,7 @@ class Perceiver(BotPart):
         )
 
     @staticmethod
-    async def create():
+    async def create(working_dir: str):
         uuid.uuid4().hex
         perceiver_address = "unix:///tmp/perceiver.sock"
 
@@ -199,6 +199,8 @@ class Perceiver(BotPart):
                     r.Rlocation(Perceiver._PERCEIVER_BIN),
                     "--address",
                     perceiver_address,
+                    "--working_dir",
+                    working_dir,
                 ]
             ),
             env=env,
@@ -245,7 +247,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         articulator = await Articulator.create(
             gmeet_link=gmeet_link, working_dir=working_dir.name
         )
-        perceiver = await Perceiver.create()
+        perceiver = await Perceiver.create(working_dir=working_dir.name)
         evaluator = await Evaluator.create(address)
         return cls(
             server=server,
