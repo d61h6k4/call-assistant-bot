@@ -22,6 +22,14 @@ passwd(
             "shell": "/usr/sbin/nologin",
             "username": "pulse",
         },
+        {
+
+            "uid": 999,
+            "gid": 1000,
+            "home": "/home/messagebus",
+            "shell": "/usr/sbin/nologin",
+            "username": "messagebus",
+        }
     ],
 )
 
@@ -33,9 +41,20 @@ group(
             "gid": 0,
         },
         {
-            "name": "_apt",
+            "name": "audio",
             "gid": 65534,
         },
+        {
+            "name": "messagebus",
+            "gid": "1000",
+        },
+        {
+            "name": "pulse-access",
+            "gid": "1001",
+            users = [
+                "root"
+            ]
+        }
     ],
 )
 

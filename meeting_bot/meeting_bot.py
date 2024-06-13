@@ -315,6 +315,11 @@ async def prepare_env(logger: logging.Logger):
             shell=True,
         )
 
+        logger.info({"message": "Start dbus"})
+        subprocess.Popen(
+            "mkdir -p /run/dbus && chmod 755 /run/dbus && dbus-daemon --system --fork"
+        )
+
         logger.info({"message": "starting virtual audio drivers"})
         for cmd in [
             "rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse",
