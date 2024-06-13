@@ -1,0 +1,32 @@
+name: Testing AV transducer
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "av_transducer/**"
+
+jobs:
+  run-unit-tests:
+    name: Testing
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: "true"
+
+      - name: Mount bazel cache # Optional
+        uses: actions/cache@v4
+        with:
+          path: "~/.cache/bazel"
+          key: bazel-${{ hashFiles('.bazelrc', '.bazelversion', 'MODULE.bazel', 'MODULE.bazel.lock') }}
+          restore-keys: |
+            bazel-
+
+      - name: Run unit tests with Bazel
+        run: |
+          sudo apt install -y yasm automake libtool m4
+          bazel test --test_output=all  //av_transducer/utils:all
+          bazel test --test_output=all  //av_transducer/calculators:all
