@@ -4,6 +4,7 @@ load("@rules_distroless//apt:defs.bzl", "dpkg_status")
 load("@rules_distroless//distroless:defs.bzl", "cacerts", "flatten", "group", "passwd")
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("//docker:py_layer.bzl", "py_oci_image")
 
 passwd(
     name = "passwd",
@@ -108,13 +109,14 @@ pkg_tar(
     strip_prefix = ".",
 )
 
-oci_image(
+py_oci_image(
     name = "apt",
     architecture = select({
         "@platforms//cpu:arm64": "arm64",
         "@platforms//cpu:x86_64": "amd64",
     }),
     os = "linux",
+    binary = "//meeting_bot:meeting_bot",
     tars = [
         ":sh",
         ":passwd",
@@ -122,7 +124,6 @@ oci_image(
         ":dpkg_status",
         ":cacerts",
         ":packages_tar",
-        ":meeting_bot_tar",
     ],
     entrypoint = ["/meeting_bot/meeting_bot"],
 )
