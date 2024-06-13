@@ -41,7 +41,7 @@ group(
             "gid": 0,
         },
         {
-            "name": "audio",
+            "name": "pulse",
             "gid": 65534,
         },
         {
