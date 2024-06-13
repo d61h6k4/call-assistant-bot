@@ -309,30 +309,24 @@ async def prepare_env(logger: logging.Logger):
         import subprocess
 
         logger.info({"message": "starting virtual audio drivers"})
-        # find audio source for specified browser
-        subprocess.check_output(
-            "sudo rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse", shell=True
-        )
-        subprocess.check_output(
-            "sudo pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit  >> /dev/null 2>&1",
-            shell=True,
-        )
-        subprocess.check_output(
-            'sudo pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
-            shell=True,
-        )
-        subprocess.check_output(
-            'sudo pactl load-module module-null-sink sink_name=MicOutput sink_properties=device.description="Virtual_Microphone_Output"',
-            shell=True,
-        )
-        subprocess.check_output(
-            "sudo pactl set-default-source MicOutput.monitor", shell=True
-        )
-        subprocess.check_output("sudo pactl set-default-sink MicOutput", shell=True)
-        subprocess.check_output(
-            "sudo pactl load-module module-virtual-source source_name=VirtualMic",
-            shell=True,
-        )
+        for cmd in [
+            "rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse",
+            "pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",
+            'pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
+            'pactl load-module module-null-sink sink_name=MicOutput sink_properties=device.description="Virtual_Microphone_Output"',
+            "pactl set-default-source MicOutput.monitor",
+            "pactl set-default-sink MicOutput",
+            "pactl load-module module-virtual-source source_name=VirtualMic",
+        ]:
+            res = subprocess.check_output(cmd, shell=True)
+            logger.info(
+                {
+                    "message": "Calling command to setup virtual driver",
+                    "cmd": cmd,
+                    "output": res,
+                }
+            )
+
         display = os.environ.get("DISPLAY")
         subprocess.check_output(
             f"Xvfb {display} -screen 0 1024x768x24", start_new_session=True, shell=True
