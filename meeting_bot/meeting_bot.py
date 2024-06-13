@@ -308,6 +308,13 @@ async def prepare_env(logger: logging.Logger):
     if sys.platform == "linux":
         import subprocess
 
+        display = os.environ.get("DISPLAY")
+        logger.info({"message": f"Xvfb runs on {display}"})
+        subprocess.Popen(
+            f"Xvfb {display} -screen 0 1024x768x24",
+            shell=True,
+        )
+
         logger.info({"message": "starting virtual audio drivers"})
         for cmd in [
             "rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse",
@@ -326,12 +333,6 @@ async def prepare_env(logger: logging.Logger):
                     "output": res,
                 }
             )
-
-        display = os.environ.get("DISPLAY")
-        subprocess.check_output(
-            f"Xvfb {display} -screen 0 1024x768x24", start_new_session=True, shell=True
-        )
-        logger.info({"message": f"Xvfb runs on {display}"})
 
 
 async def serve(args: argparse.Namespace):
