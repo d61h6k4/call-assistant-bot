@@ -39,14 +39,15 @@ py_binary(
         "//meeting_bot/perceiver:perceiver_py_pb2",
         "//meeting_bot/perceiver:perceiver_py_pb2_grpc",
         "@grpc//src/python/grpcio/grpc:grpcio",
+        "@pip//grpcio_health_checking",
         "@pip//picologging",
         "@rules_python//python/runfiles",
-        "@pip//grpcio_health_checking",
     ],
 )
 
 py_test(
     name = "meeting_bot_test",
+    size = "small",
     srcs = ["meeting_bot_test.py"],
     data = [
         ":meeting_bot",
