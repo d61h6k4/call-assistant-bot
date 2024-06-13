@@ -19,12 +19,14 @@ from meeting_bot.articulator.gmeet import GoogleMeetOperator
 class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
     def __init__(
         self,
+        gmeet_operator: GoogleMeetOperator,
         browser: nodriver.Browser,
         server: grpc.aio._server.Server,
         logger: logging.Logger,
     ):
         self.scheduler = sched.scheduler(time.time, asyncio.sleep)
 
+        self.gmeet_operator = gmeet_operator
         self.browser = browser
         self.server = server
         self.logger = logger
@@ -79,6 +81,7 @@ class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
         await gmeet_operator.join(gmeet_link)
 
         return cls(
+            gmeet_operator=gmeet_operator,
             browser=browser,
             server=server,
             logger=logger,
@@ -91,6 +94,7 @@ class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
             {"message": "Shutting down the articulator", "reason": request.reason}
         )
 
+        await self.gmeet_operator.exit()
         self.browser.stop()
         # gRPC requires always reply to the request, so here
         # we schedule calling server stop for 1 second

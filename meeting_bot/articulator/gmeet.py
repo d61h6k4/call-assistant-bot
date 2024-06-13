@@ -22,20 +22,26 @@ class GoogleMeetOperator:
         self.session_id = base64.b64encode(email.encode("utf8")).decode("utf8")
         self.screenshots_dir = screenshots_dir / self.session_id
 
+        self.tab = None
+
     async def join(self, url: str):
         self.logger.info(
             {"message": "Joining the meeting", "session_id": self.session_id}
         )
-        tab = await self.browser.get(url)
-        await tab.wait()
+        self.tab = await self.browser.get(url)
+        await self.tab.wait()
 
-        await self.try_continue_wo_mic(tab)
-        await self.try_sign_in(tab)
-        await self.try_continue_wo_mic(tab)
-        await self.ask_to_join(tab)
+        await self.try_continue_wo_mic(self.tab)
+        await self.try_sign_in(self.tab)
+        await self.try_continue_wo_mic(self.tab)
+        await self.ask_to_join(self.tab)
 
         screenshot_path = self.screenshots_dir / "on_a_call.jpg"
-        await tab.save_screenshot(filename=screenshot_path)
+        await self.tab.save_screenshot(filename=screenshot_path)
+
+    async def exit(self):
+        if self.tab is not None:
+            await self.tab.close()
 
     async def ask_to_join(self, tab: nodriver.Tab):
         """Click the button 'Ask to join'"""

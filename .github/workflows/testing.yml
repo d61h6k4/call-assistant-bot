@@ -1,5 +1,4 @@
 name: Testing AV transducer
-
 on:
   workflow_dispatch:
   pull_request:
@@ -7,7 +6,6 @@ on:
       - "main"
     paths:
       - "av_transducer/**"
-
 jobs:
   run-unit-tests:
     name: Testing
@@ -16,7 +14,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: "true"
-
       - name: Mount bazel cache # Optional
         uses: actions/cache@v4
         with:
@@ -24,7 +21,6 @@ jobs:
           key: bazel-${{ hashFiles('.bazelrc', '.bazelversion', 'MODULE.bazel', 'MODULE.bazel.lock') }}
           restore-keys: |
             bazel-
-
       - name: Run unit tests with Bazel
         run: |
           sudo apt install -y yasm automake libtool m4
