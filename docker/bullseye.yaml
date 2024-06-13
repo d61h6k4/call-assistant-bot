@@ -32,6 +32,7 @@ packages:
   - "ca-certificates"
   # virtual display/speaker
   - "dbus"
+  - "dbus-x11"
   - "xvfb"
   - "pulseaudio"
   - "chromium"

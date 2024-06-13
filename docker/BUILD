@@ -84,6 +84,7 @@ PACKAGES = [
     "@bullseye//apt",
     "@bullseye//perl",
     "@bullseye//dbus",
+    "@bullseye//dbus-x11",
     "@bullseye//xvfb",
     "@bullseye//pulseaudio",
     "@bullseye//chromium",
