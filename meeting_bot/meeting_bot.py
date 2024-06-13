@@ -334,9 +334,10 @@ async def prepare_env(logger: logging.Logger):
                 </policy>
         </busconfig>
         """
-        Path("/etc/dbus-1/system.d/pulseaudio.conf", "w").write_text(pulseaudio_conf)
+        Path("/etc/dbus-1/system.d/pulseaudio.conf").write_text(pulseaudio_conf)
 
         for cmd in [
+            "dbus-uuidgen > /var/lib/dbus/machine-id",
             "rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse",
             "pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",
             'pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
