@@ -49,6 +49,28 @@ archive_override(
     urls = "https://github.com/grpc/grpc/archive/refs/tags/v1.64.2.tar.gz",
 )
 
+bazel_dep(name = "rules_oci", version = "1.7.4")
+bazel_dep(name = "rules_pkg", version = "0.9.1")
+bazel_dep(name = "container_structure_test", version = "1.16.0")
+bazel_dep(name = "aspect_bazel_lib", version = "2.7.3")
+bazel_dep(name = "rules_distroless", version = "0.3.3")
+
+# TODO(d61h6k4) Remove after merging PR:
+# https://github.com/GoogleContainerTools/rules_distroless/pull/50
+git_override(
+    module_name = "rules_distroless",
+    commit = "f06d81a716997253d5dff0b9db5c71d36e82cad3",
+    remote = "https://github.com/jacobshirley/rules_distroless",
+)
+
+apt = use_extension("@rules_distroless//apt:extensions.bzl", "apt")
+apt.deb_index(
+    name = "bullseye",
+    lock = "//docker:bullseye.lock.json",
+    manifest = "//docker:bullseye.yaml",
+)
+use_repo(apt, "bullseye")
+
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 _MEDIAPIPE_VERSION = "0.10.14"
