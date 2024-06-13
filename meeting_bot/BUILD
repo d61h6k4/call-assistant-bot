@@ -29,6 +29,7 @@ py_binary(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    visibility = ["//visibility:public"],
     deps = [
         ":meeting_bot_py_pb2",
         ":meeting_bot_py_pb2_grpc",
@@ -43,7 +44,6 @@ py_binary(
         "@pip//picologging",
         "@rules_python//python/runfiles",
     ],
-    visibility = ["//visibility:public"],
 )
 
 py_test(
