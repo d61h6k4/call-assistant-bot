@@ -1,7 +1,6 @@
 import asyncio
 import argparse
 import os
-import sys
 
 import sched
 import time
@@ -46,7 +45,7 @@ class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
     ) -> "ArticulatorServicer":
         browser_config = nodriver.Config(
             headless=False,
-            sandbox=False if sys.platform == "linux" else True,
+            sandbox=True,
             browser_args=[
                 "--window-size=1024x768",
                 "--disable-gpu",

@@ -1127,6 +1127,41 @@
 			"arch": "amd64",
 			"dependencies": [
 				{
+					"key": "libselinux1_3.4-1-p-b6_amd64",
+					"name": "libselinux1",
+					"version": "3.4-1+b6"
+				},
+				{
+					"key": "libpcre2-8-0_10.42-1_amd64",
+					"name": "libpcre2-8-0",
+					"version": "10.42-1"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_amd64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_amd64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_amd64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				}
+			],
+			"key": "findutils_4.9.0-4_amd64",
+			"name": "findutils",
+			"sha256": "5dd86bd0af4aa73f067dfd6b8339dd868f2dd84056aa79db29d1206d4fbc5e04",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/f/findutils/findutils_4.9.0-4_amd64.deb",
+			"version": "4.9.0-4"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [
+				{
 					"key": "libsystemd0_252.22-1_deb12u1_amd64",
 					"name": "libsystemd0",
 					"version": "252.22-1~deb12u1"
@@ -6795,6 +6830,41 @@
 			"sha256": "2caf08393ef6ea18a52e7e4609a7bd13811ff53733b4e45d2c7b0957e8d592cf",
 			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/g/grep/grep_3.8-5_arm64.deb",
 			"version": "3.8-5"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [
+				{
+					"key": "libselinux1_3.4-1-p-b6_arm64",
+					"name": "libselinux1",
+					"version": "3.4-1+b6"
+				},
+				{
+					"key": "libpcre2-8-0_10.42-1_arm64",
+					"name": "libpcre2-8-0",
+					"version": "10.42-1"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_arm64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_arm64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_arm64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				}
+			],
+			"key": "findutils_4.9.0-4_arm64",
+			"name": "findutils",
+			"sha256": "cc8792e769ff4a1280ff1a43b11a1858a72d858fb6eb871ec327ec8eebe99eaa",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/f/findutils/findutils_4.9.0-4_arm64.deb",
+			"version": "4.9.0-4"
 		},
 		{
 			"arch": "arm64",
