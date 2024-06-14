@@ -674,7 +674,28 @@
 		},
 		{
 			"arch": "amd64",
-			"dependencies": [],
+			"dependencies": [
+				{
+					"key": "libgcc-s1_10.2.1-6_amd64",
+					"name": "libgcc-s1",
+					"version": "10.2.1-6"
+				},
+				{
+					"key": "libc6_2.31-13-p-deb11u8_amd64",
+					"name": "libc6",
+					"version": "2.31-13+deb11u8"
+				},
+				{
+					"key": "libcrypt1_1-4.4.18-4_amd64",
+					"name": "libcrypt1",
+					"version": "1:4.4.18-4"
+				},
+				{
+					"key": "gcc-10-base_10.2.1-6_amd64",
+					"name": "gcc-10-base",
+					"version": "10.2.1-6"
+				}
+			],
 			"key": "libstdc-p--p-6_10.2.1-6_amd64",
 			"name": "libstdc++6",
 			"sha256": "5c155c58935870bf3b4bfe769116841c0d286a74f59eccfd5645693ac23f06b1",
@@ -1189,6 +1210,50 @@
 			"sha256": "04873d74cbe86bad3a9901f6e57f1150040eba9891b443c5c975a72a97238e35",
 			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/o/openssl/openssl_1.1.1w-0+deb11u1_amd64.deb",
 			"version": "1.1.1w-0+deb11u1"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [
+				{
+					"key": "libpcre3_2-8.39-13_amd64",
+					"name": "libpcre3",
+					"version": "2:8.39-13"
+				},
+				{
+					"key": "libc6_2.31-13-p-deb11u8_amd64",
+					"name": "libc6",
+					"version": "2.31-13+deb11u8"
+				},
+				{
+					"key": "libcrypt1_1-4.4.18-4_amd64",
+					"name": "libcrypt1",
+					"version": "1:4.4.18-4"
+				},
+				{
+					"key": "libgcc-s1_10.2.1-6_amd64",
+					"name": "libgcc-s1",
+					"version": "10.2.1-6"
+				},
+				{
+					"key": "gcc-10-base_10.2.1-6_amd64",
+					"name": "gcc-10-base",
+					"version": "10.2.1-6"
+				}
+			],
+			"key": "grep_3.6-1-p-deb11u1_amd64",
+			"name": "grep",
+			"sha256": "47d46c9cde2354724fb2d1e8fa1fa5204fdd751e87eadada7ff351b6355ace52",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/g/grep/grep_3.6-1+deb11u1_amd64.deb",
+			"version": "3.6-1+deb11u1"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "libpcre3_2-8.39-13_amd64",
+			"name": "libpcre3",
+			"sha256": "48efcf2348967c211cd9408539edf7ec3fa9d800b33041f6511ccaecc1ffa9d0",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/pcre3/libpcre3_8.39-13_amd64.deb",
+			"version": "2:8.39-13"
 		},
 		{
 			"arch": "amd64",
@@ -4047,15 +4112,6 @@
 		{
 			"arch": "amd64",
 			"dependencies": [],
-			"key": "libpcre3_2-8.39-13_amd64",
-			"name": "libpcre3",
-			"sha256": "48efcf2348967c211cd9408539edf7ec3fa9d800b33041f6511ccaecc1ffa9d0",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/pcre3/libpcre3_8.39-13_amd64.deb",
-			"version": "2:8.39-13"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
 			"key": "libmount1_2.36.1-8-p-deb11u1_amd64",
 			"name": "libmount1",
 			"sha256": "a3d8673804f32e9716e33111714e250b6f1092770a52e21fab99d0ab4b48c5d9",
@@ -6447,7 +6503,28 @@
 		},
 		{
 			"arch": "arm64",
-			"dependencies": [],
+			"dependencies": [
+				{
+					"key": "libgcc-s1_10.2.1-6_arm64",
+					"name": "libgcc-s1",
+					"version": "10.2.1-6"
+				},
+				{
+					"key": "libc6_2.31-13-p-deb11u8_arm64",
+					"name": "libc6",
+					"version": "2.31-13+deb11u8"
+				},
+				{
+					"key": "libcrypt1_1-4.4.18-4_arm64",
+					"name": "libcrypt1",
+					"version": "1:4.4.18-4"
+				},
+				{
+					"key": "gcc-10-base_10.2.1-6_arm64",
+					"name": "gcc-10-base",
+					"version": "10.2.1-6"
+				}
+			],
 			"key": "libstdc-p--p-6_10.2.1-6_arm64",
 			"name": "libstdc++6",
 			"sha256": "7869aa540cc46e9f3d4267d5bde2af0e5b429a820c1d6f1a4cfccfe788c31890",
@@ -6962,6 +7039,50 @@
 			"sha256": "d9159af073e95641e7eda440fa1d7623873b8c0034c9826a353f890bed107f3c",
 			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/o/openssl/openssl_1.1.1w-0+deb11u1_arm64.deb",
 			"version": "1.1.1w-0+deb11u1"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [
+				{
+					"key": "libpcre3_2-8.39-13_arm64",
+					"name": "libpcre3",
+					"version": "2:8.39-13"
+				},
+				{
+					"key": "libc6_2.31-13-p-deb11u8_arm64",
+					"name": "libc6",
+					"version": "2.31-13+deb11u8"
+				},
+				{
+					"key": "libcrypt1_1-4.4.18-4_arm64",
+					"name": "libcrypt1",
+					"version": "1:4.4.18-4"
+				},
+				{
+					"key": "libgcc-s1_10.2.1-6_arm64",
+					"name": "libgcc-s1",
+					"version": "10.2.1-6"
+				},
+				{
+					"key": "gcc-10-base_10.2.1-6_arm64",
+					"name": "gcc-10-base",
+					"version": "10.2.1-6"
+				}
+			],
+			"key": "grep_3.6-1-p-deb11u1_arm64",
+			"name": "grep",
+			"sha256": "ccebee26e336d07deebcf8aba1bba18a202e88da8262eecd3c76e4612db3d8ea",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/g/grep/grep_3.6-1+deb11u1_arm64.deb",
+			"version": "3.6-1+deb11u1"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [],
+			"key": "libpcre3_2-8.39-13_arm64",
+			"name": "libpcre3",
+			"sha256": "21cac4064a41dbc354295c437f37bf623f9004513a97a6fa030248566aa986e9",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/pcre3/libpcre3_8.39-13_arm64.deb",
+			"version": "2:8.39-13"
 		},
 		{
 			"arch": "arm64",
@@ -9774,15 +9895,6 @@
 			"sha256": "85f2a5833f8e7fb77c3bc71380ed3317d188177517cbbe32d46ab473913adc85",
 			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/g/glib2.0/libglib2.0-0_2.66.8-1+deb11u1_arm64.deb",
 			"version": "2.66.8-1+deb11u1"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "libpcre3_2-8.39-13_arm64",
-			"name": "libpcre3",
-			"sha256": "21cac4064a41dbc354295c437f37bf623f9004513a97a6fa030248566aa986e9",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/pcre3/libpcre3_8.39-13_arm64.deb",
-			"version": "2:8.39-13"
 		},
 		{
 			"arch": "arm64",

@@ -31,6 +31,8 @@ packages:
   # test cacerts() compatibility
   - "ca-certificates"
   # virtual display/speaker
+  - "grep"
+  - "libstdc++6"
   - "dbus"
   - "dbus-x11"
   - "xvfb"
