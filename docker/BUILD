@@ -138,6 +138,11 @@ oci_image(
     name = "apt",
     base = "@distroless_base",
     entrypoint = ["/meeting_bot/meeting_bot"],
+    env = {
+        "DISPLAY": ":1.0",
+        "XDG_RUNTIME_DIR": "/run/user/0",
+        "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket",
+    },
     tars = [
         ":sh",
         ":passwd",

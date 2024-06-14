@@ -316,8 +316,6 @@ async def prepare_env(logger: logging.Logger):
 
         logger.info({"message": "Start dbus"})
         for cmd in [
-            "export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket",
-            "export XDG_RUNTIME_DIR=/run/user/0",
             "mkdir -p /run/dbus",
             "chmod 755 /run/dbus",
             "rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse",
