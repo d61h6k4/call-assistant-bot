@@ -89,6 +89,11 @@ PACKAGES = [
     "@bookworm//grep",
     "@bookworm//chromium",
     "@bookworm//findutils",
+    "@bookworm//libfontconfig1",
+    "@bookworm//libfreetype6",
+    "@bookworm//xfonts-scalable",
+    "@bookworm//fonts-liberation",
+    "@bookworm//fonts-ipafont-gothic",
 ]
 
 # Creates /var/lib/dpkg/status with installed package information.

@@ -2060,7 +2060,38 @@
 		},
 		{
 			"arch": "amd64",
-			"dependencies": [],
+			"dependencies": [
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_amd64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_amd64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_amd64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_amd64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libpng16-16_1.6.39-2_amd64",
+					"name": "libpng16-16",
+					"version": "1.6.39-2"
+				},
+				{
+					"key": "libbrotli1_1.0.9-2-p-b6_amd64",
+					"name": "libbrotli1",
+					"version": "1.0.9-2+b6"
+				}
+			],
 			"key": "libfreetype6_2.12.1-p-dfsg-5_amd64",
 			"name": "libfreetype6",
 			"sha256": "72ef03236f1936e72a0faf86a547425b0eff3c5fd0b43f8669012182cf376354",
@@ -3726,7 +3757,53 @@
 		},
 		{
 			"arch": "amd64",
-			"dependencies": [],
+			"dependencies": [
+				{
+					"key": "fontconfig-config_2.14.1-4_amd64",
+					"name": "fontconfig-config",
+					"version": "2.14.1-4"
+				},
+				{
+					"key": "libfreetype6_2.12.1-p-dfsg-5_amd64",
+					"name": "libfreetype6",
+					"version": "2.12.1+dfsg-5"
+				},
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_amd64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_amd64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_amd64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_amd64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libpng16-16_1.6.39-2_amd64",
+					"name": "libpng16-16",
+					"version": "1.6.39-2"
+				},
+				{
+					"key": "libbrotli1_1.0.9-2-p-b6_amd64",
+					"name": "libbrotli1",
+					"version": "1.0.9-2+b6"
+				},
+				{
+					"key": "libexpat1_2.5.0-1_amd64",
+					"name": "libexpat1",
+					"version": "2.5.0-1"
+				}
+			],
 			"key": "libfontconfig1_2.14.1-4_amd64",
 			"name": "libfontconfig1",
 			"sha256": "16ee38d374e064f534116dc442b086ef26f9831f1c0af7e5fb4fe4512e700649",
@@ -5426,19 +5503,29 @@
 			"arch": "amd64",
 			"dependencies": [
 				{
-					"key": "libpython3-stdlib_3.11.2-1-p-b1_amd64",
-					"name": "libpython3-stdlib",
-					"version": "3.11.2-1+b1"
+					"key": "xfonts-utils_1-7.7-p-6_amd64",
+					"name": "xfonts-utils",
+					"version": "1:7.7+6"
 				},
 				{
-					"key": "libpython3.11-stdlib_3.11.2-6_amd64",
-					"name": "libpython3.11-stdlib",
-					"version": "3.11.2-6"
+					"key": "xfonts-encodings_1-1.0.4-2.2_amd64",
+					"name": "xfonts-encodings",
+					"version": "1:1.0.4-2.2"
 				},
 				{
-					"key": "libuuid1_2.38.1-5-p-b1_amd64",
-					"name": "libuuid1",
-					"version": "2.38.1-5+b1"
+					"key": "x11-common_1-7.7-p-23_amd64",
+					"name": "x11-common",
+					"version": "1:7.7+23"
+				},
+				{
+					"key": "lsb-base_11.6_amd64",
+					"name": "lsb-base",
+					"version": "11.6"
+				},
+				{
+					"key": "sysvinit-utils_3.06-4_amd64",
+					"name": "sysvinit-utils",
+					"version": "3.06-4"
 				},
 				{
 					"key": "libc6_2.36-9-p-deb12u4_amd64",
@@ -5456,135 +5543,67 @@
 					"version": "12.2.0-14"
 				},
 				{
-					"key": "libtirpc3_1.3.3-p-ds-1_amd64",
-					"name": "libtirpc3",
-					"version": "1.3.3+ds-1"
-				},
-				{
-					"key": "libtirpc-common_1.3.3-p-ds-1_amd64",
-					"name": "libtirpc-common",
-					"version": "1.3.3+ds-1"
-				},
-				{
-					"key": "libgssapi-krb5-2_1.20.1-2-p-deb12u1_amd64",
-					"name": "libgssapi-krb5-2",
-					"version": "1.20.1-2+deb12u1"
-				},
-				{
-					"key": "libkrb5support0_1.20.1-2-p-deb12u1_amd64",
-					"name": "libkrb5support0",
-					"version": "1.20.1-2+deb12u1"
-				},
-				{
-					"key": "libkrb5-3_1.20.1-2-p-deb12u1_amd64",
-					"name": "libkrb5-3",
-					"version": "1.20.1-2+deb12u1"
-				},
-				{
-					"key": "libssl3_3.0.11-1_deb12u2_amd64",
-					"name": "libssl3",
-					"version": "3.0.11-1~deb12u2"
-				},
-				{
-					"key": "libkeyutils1_1.6.3-2_amd64",
-					"name": "libkeyutils1",
-					"version": "1.6.3-2"
-				},
-				{
-					"key": "libk5crypto3_1.20.1-2-p-deb12u1_amd64",
-					"name": "libk5crypto3",
-					"version": "1.20.1-2+deb12u1"
-				},
-				{
-					"key": "libcom-err2_1.47.0-2_amd64",
-					"name": "libcom-err2",
-					"version": "1.47.0-2"
-				},
-				{
-					"key": "libtinfo6_6.4-4_amd64",
-					"name": "libtinfo6",
-					"version": "6.4-4"
-				},
-				{
-					"key": "libsqlite3-0_3.40.1-2_amd64",
-					"name": "libsqlite3-0",
-					"version": "3.40.1-2"
-				},
-				{
-					"key": "libreadline8_8.2-1.3_amd64",
-					"name": "libreadline8",
-					"version": "8.2-1.3"
-				},
-				{
-					"key": "readline-common_8.2-1.3_amd64",
-					"name": "readline-common",
-					"version": "8.2-1.3"
-				},
-				{
-					"key": "libnsl2_1.3.0-2_amd64",
-					"name": "libnsl2",
-					"version": "1.3.0-2"
-				},
-				{
-					"key": "libncursesw6_6.4-4_amd64",
-					"name": "libncursesw6",
-					"version": "6.4-4"
-				},
-				{
-					"key": "liblzma5_5.4.1-0.2_amd64",
-					"name": "liblzma5",
-					"version": "5.4.1-0.2"
-				},
-				{
-					"key": "libffi8_3.4.4-1_amd64",
-					"name": "libffi8",
-					"version": "3.4.4-1"
-				},
-				{
-					"key": "libdb5.3_5.3.28-p-dfsg2-1_amd64",
-					"name": "libdb5.3",
-					"version": "5.3.28+dfsg2-1"
-				},
-				{
-					"key": "libcrypt1_1-4.4.33-2_amd64",
-					"name": "libcrypt1",
-					"version": "1:4.4.33-2"
-				},
-				{
-					"key": "libbz2-1.0_1.0.8-5-p-b1_amd64",
-					"name": "libbz2-1.0",
-					"version": "1.0.8-5+b1"
-				},
-				{
-					"key": "libpython3.11-minimal_3.11.2-6_amd64",
-					"name": "libpython3.11-minimal",
-					"version": "3.11.2-6"
-				},
-				{
-					"key": "python3.11_3.11.2-6_amd64",
-					"name": "python3.11",
-					"version": "3.11.2-6"
-				},
-				{
-					"key": "python3.11-minimal_3.11.2-6_amd64",
-					"name": "python3.11-minimal",
-					"version": "3.11.2-6"
-				},
-				{
 					"key": "zlib1g_1-1.2.13.dfsg-1_amd64",
 					"name": "zlib1g",
 					"version": "1:1.2.13.dfsg-1"
 				},
 				{
-					"key": "libexpat1_2.5.0-1_amd64",
-					"name": "libexpat1",
-					"version": "2.5.0-1"
+					"key": "libfreetype6_2.12.1-p-dfsg-5_amd64",
+					"name": "libfreetype6",
+					"version": "2.12.1+dfsg-5"
 				},
 				{
-					"key": "python3-minimal_3.11.2-1-p-b1_amd64",
-					"name": "python3-minimal",
-					"version": "3.11.2-1+b1"
+					"key": "libpng16-16_1.6.39-2_amd64",
+					"name": "libpng16-16",
+					"version": "1.6.39-2"
 				},
+				{
+					"key": "libbrotli1_1.0.9-2-p-b6_amd64",
+					"name": "libbrotli1",
+					"version": "1.0.9-2+b6"
+				},
+				{
+					"key": "libfontenc1_1-1.1.4-1_amd64",
+					"name": "libfontenc1",
+					"version": "1:1.1.4-1"
+				}
+			],
+			"key": "xfonts-scalable_1-1.0.3-1.3_amd64",
+			"name": "xfonts-scalable",
+			"sha256": "0371d7944a7c972c715efa1e7635b636320508f433777ed575e5281de61f20cf",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3_all.deb",
+			"version": "1:1.0.3-1.3"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "xfonts-utils_1-7.7-p-6_amd64",
+			"name": "xfonts-utils",
+			"sha256": "20b290277caff5bae41298c4e171fb81c29560294f60f5eeb47ef50863efc0d7",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/x/xfonts-utils/xfonts-utils_7.7+6_amd64.deb",
+			"version": "1:7.7+6"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "xfonts-encodings_1-1.0.4-2.2_amd64",
+			"name": "xfonts-encodings",
+			"sha256": "56143f317d241b6dee0275aa1066df936a776810d3bb83fe58563965d9bbe3d3",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.4-2.2_all.deb",
+			"version": "1:1.0.4-2.2"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "fonts-liberation_1-1.07.4-11_amd64",
+			"name": "fonts-liberation",
+			"sha256": "efd381517f958b01969343634ffcbdd60056be7779af84c6f53a005090430204",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/f/fonts-liberation/fonts-liberation_1.07.4-11_all.deb",
+			"version": "1:1.07.4-11"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [
 				{
 					"key": "dpkg_1.21.22_amd64",
 					"name": "dpkg",
@@ -5606,9 +5625,29 @@
 					"version": "10.42-1"
 				},
 				{
+					"key": "libc6_2.36-9-p-deb12u4_amd64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_amd64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_amd64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
 					"key": "libacl1_2.3.1-3_amd64",
 					"name": "libacl1",
 					"version": "2.3.1-3"
+				},
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_amd64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
 				},
 				{
 					"key": "libzstd1_1.5.4-p-dfsg2-5_amd64",
@@ -5619,94 +5658,23 @@
 					"key": "libmd0_1.0.4-2_amd64",
 					"name": "libmd0",
 					"version": "1.0.4-2"
+				},
+				{
+					"key": "liblzma5_5.4.1-0.2_amd64",
+					"name": "liblzma5",
+					"version": "5.4.1-0.2"
+				},
+				{
+					"key": "libbz2-1.0_1.0.8-5-p-b1_amd64",
+					"name": "libbz2-1.0",
+					"version": "1.0.8-5+b1"
 				}
 			],
-			"key": "python3_3.11.2-1-p-b1_amd64",
-			"name": "python3",
-			"sha256": "33f6dafbd1a6902d9063172ec7dbd4b2225e12009e0d7ec5c933a72c2f5f3b74",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3-defaults/python3_3.11.2-1+b1_amd64.deb",
-			"version": "3.11.2-1+b1"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
-			"key": "libpython3-stdlib_3.11.2-1-p-b1_amd64",
-			"name": "libpython3-stdlib",
-			"sha256": "4e58891d5c951a1e360ed9eaa814413cb5e84deadce3f08e801ac680434c786e",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3-defaults/libpython3-stdlib_3.11.2-1+b1_amd64.deb",
-			"version": "3.11.2-1+b1"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
-			"key": "libpython3.11-stdlib_3.11.2-6_amd64",
-			"name": "libpython3.11-stdlib",
-			"sha256": "67eec0eb4df58b93e1bf97c402c2cbeb361bf9c5af44fa3a02ff1c723c791ca2",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3.11/libpython3.11-stdlib_3.11.2-6_amd64.deb",
-			"version": "3.11.2-6"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
-			"key": "libreadline8_8.2-1.3_amd64",
-			"name": "libreadline8",
-			"sha256": "e02ebbd3701cf468dbf98d6d917fbe0325e881f07fe8b316150c8d2a64486e66",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/r/readline/libreadline8_8.2-1.3_amd64.deb",
-			"version": "8.2-1.3"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
-			"key": "readline-common_8.2-1.3_amd64",
-			"name": "readline-common",
-			"sha256": "69317523fe56429aa361545416ad339d138c1500e5a604856a80dd9074b4e35c",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/r/readline/readline-common_8.2-1.3_all.deb",
-			"version": "8.2-1.3"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
-			"key": "libncursesw6_6.4-4_amd64",
-			"name": "libncursesw6",
-			"sha256": "98fa7a53dc565a38b65fb70422ad08001bf5361d8fbc74255280c329996a6bec",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/n/ncurses/libncursesw6_6.4-4_amd64.deb",
-			"version": "6.4-4"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
-			"key": "libpython3.11-minimal_3.11.2-6_amd64",
-			"name": "libpython3.11-minimal",
-			"sha256": "6fc5ab5858781ab90c68b4deea09f21871fd7b55dc1a0764ad7116ac4c86574d",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3.11/libpython3.11-minimal_3.11.2-6_amd64.deb",
-			"version": "3.11.2-6"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
-			"key": "python3.11_3.11.2-6_amd64",
-			"name": "python3.11",
-			"sha256": "9d1d4ba9ac38a7ae48567bfbd0bec88e02a5ccd941a48a76709a131197ea6570",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3.11/python3.11_3.11.2-6_amd64.deb",
-			"version": "3.11.2-6"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
-			"key": "python3.11-minimal_3.11.2-6_amd64",
-			"name": "python3.11-minimal",
-			"sha256": "a72247ba64bcd1d0ace2ea8eefd7bcfaca84204def9495269526c25dd9fddc0c",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3.11/python3.11-minimal_3.11.2-6_amd64.deb",
-			"version": "3.11.2-6"
-		},
-		{
-			"arch": "amd64",
-			"dependencies": [],
-			"key": "python3-minimal_3.11.2-1-p-b1_amd64",
-			"name": "python3-minimal",
-			"sha256": "30f9618670e686d781afbfc713eb0830c29d2819e9cb2a0488800dad6bb99faa",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3-defaults/python3-minimal_3.11.2-1+b1_amd64.deb",
-			"version": "3.11.2-1+b1"
+			"key": "fonts-ipafont-gothic_00303-23_amd64",
+			"name": "fonts-ipafont-gothic",
+			"sha256": "5f8e0270654fec6577fffa96015067352440065c0b49bbc8b076745a6b4bf3d3",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/f/fonts-ipafont/fonts-ipafont-gothic_00303-23_all.deb",
+			"version": "00303-23"
 		},
 		{
 			"arch": "arm64",
@@ -7758,7 +7726,38 @@
 		},
 		{
 			"arch": "arm64",
-			"dependencies": [],
+			"dependencies": [
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_arm64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_arm64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_arm64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_arm64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libpng16-16_1.6.39-2_arm64",
+					"name": "libpng16-16",
+					"version": "1.6.39-2"
+				},
+				{
+					"key": "libbrotli1_1.0.9-2-p-b6_arm64",
+					"name": "libbrotli1",
+					"version": "1.0.9-2+b6"
+				}
+			],
 			"key": "libfreetype6_2.12.1-p-dfsg-5_arm64",
 			"name": "libfreetype6",
 			"sha256": "051561d8901fd5e2c38a4903ce734df28450e41601b6c5d6ce0fdee7ea0f7973",
@@ -9392,7 +9391,53 @@
 		},
 		{
 			"arch": "arm64",
-			"dependencies": [],
+			"dependencies": [
+				{
+					"key": "fontconfig-config_2.14.1-4_arm64",
+					"name": "fontconfig-config",
+					"version": "2.14.1-4"
+				},
+				{
+					"key": "libfreetype6_2.12.1-p-dfsg-5_arm64",
+					"name": "libfreetype6",
+					"version": "2.12.1+dfsg-5"
+				},
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_arm64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_arm64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_arm64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_arm64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libpng16-16_1.6.39-2_arm64",
+					"name": "libpng16-16",
+					"version": "1.6.39-2"
+				},
+				{
+					"key": "libbrotli1_1.0.9-2-p-b6_arm64",
+					"name": "libbrotli1",
+					"version": "1.0.9-2+b6"
+				},
+				{
+					"key": "libexpat1_2.5.0-1_arm64",
+					"name": "libexpat1",
+					"version": "2.5.0-1"
+				}
+			],
 			"key": "libfontconfig1_2.14.1-4_arm64",
 			"name": "libfontconfig1",
 			"sha256": "4836d9deca824883f0de33d4f8f3718ba776c6e7c80cd7c418b5a0f86c009b9e",
@@ -11082,19 +11127,29 @@
 			"arch": "arm64",
 			"dependencies": [
 				{
-					"key": "libpython3-stdlib_3.11.2-1-p-b1_arm64",
-					"name": "libpython3-stdlib",
-					"version": "3.11.2-1+b1"
+					"key": "xfonts-utils_1-7.7-p-6_arm64",
+					"name": "xfonts-utils",
+					"version": "1:7.7+6"
 				},
 				{
-					"key": "libpython3.11-stdlib_3.11.2-6_arm64",
-					"name": "libpython3.11-stdlib",
-					"version": "3.11.2-6"
+					"key": "xfonts-encodings_1-1.0.4-2.2_arm64",
+					"name": "xfonts-encodings",
+					"version": "1:1.0.4-2.2"
 				},
 				{
-					"key": "libuuid1_2.38.1-5-p-b1_arm64",
-					"name": "libuuid1",
-					"version": "2.38.1-5+b1"
+					"key": "x11-common_1-7.7-p-23_arm64",
+					"name": "x11-common",
+					"version": "1:7.7+23"
+				},
+				{
+					"key": "lsb-base_11.6_arm64",
+					"name": "lsb-base",
+					"version": "11.6"
+				},
+				{
+					"key": "sysvinit-utils_3.06-4_arm64",
+					"name": "sysvinit-utils",
+					"version": "3.06-4"
 				},
 				{
 					"key": "libc6_2.36-9-p-deb12u4_arm64",
@@ -11112,135 +11167,67 @@
 					"version": "12.2.0-14"
 				},
 				{
-					"key": "libtirpc3_1.3.3-p-ds-1_arm64",
-					"name": "libtirpc3",
-					"version": "1.3.3+ds-1"
-				},
-				{
-					"key": "libtirpc-common_1.3.3-p-ds-1_arm64",
-					"name": "libtirpc-common",
-					"version": "1.3.3+ds-1"
-				},
-				{
-					"key": "libgssapi-krb5-2_1.20.1-2-p-deb12u1_arm64",
-					"name": "libgssapi-krb5-2",
-					"version": "1.20.1-2+deb12u1"
-				},
-				{
-					"key": "libkrb5support0_1.20.1-2-p-deb12u1_arm64",
-					"name": "libkrb5support0",
-					"version": "1.20.1-2+deb12u1"
-				},
-				{
-					"key": "libkrb5-3_1.20.1-2-p-deb12u1_arm64",
-					"name": "libkrb5-3",
-					"version": "1.20.1-2+deb12u1"
-				},
-				{
-					"key": "libssl3_3.0.11-1_deb12u2_arm64",
-					"name": "libssl3",
-					"version": "3.0.11-1~deb12u2"
-				},
-				{
-					"key": "libkeyutils1_1.6.3-2_arm64",
-					"name": "libkeyutils1",
-					"version": "1.6.3-2"
-				},
-				{
-					"key": "libk5crypto3_1.20.1-2-p-deb12u1_arm64",
-					"name": "libk5crypto3",
-					"version": "1.20.1-2+deb12u1"
-				},
-				{
-					"key": "libcom-err2_1.47.0-2_arm64",
-					"name": "libcom-err2",
-					"version": "1.47.0-2"
-				},
-				{
-					"key": "libtinfo6_6.4-4_arm64",
-					"name": "libtinfo6",
-					"version": "6.4-4"
-				},
-				{
-					"key": "libsqlite3-0_3.40.1-2_arm64",
-					"name": "libsqlite3-0",
-					"version": "3.40.1-2"
-				},
-				{
-					"key": "libreadline8_8.2-1.3_arm64",
-					"name": "libreadline8",
-					"version": "8.2-1.3"
-				},
-				{
-					"key": "readline-common_8.2-1.3_arm64",
-					"name": "readline-common",
-					"version": "8.2-1.3"
-				},
-				{
-					"key": "libnsl2_1.3.0-2_arm64",
-					"name": "libnsl2",
-					"version": "1.3.0-2"
-				},
-				{
-					"key": "libncursesw6_6.4-4_arm64",
-					"name": "libncursesw6",
-					"version": "6.4-4"
-				},
-				{
-					"key": "liblzma5_5.4.1-0.2_arm64",
-					"name": "liblzma5",
-					"version": "5.4.1-0.2"
-				},
-				{
-					"key": "libffi8_3.4.4-1_arm64",
-					"name": "libffi8",
-					"version": "3.4.4-1"
-				},
-				{
-					"key": "libdb5.3_5.3.28-p-dfsg2-1_arm64",
-					"name": "libdb5.3",
-					"version": "5.3.28+dfsg2-1"
-				},
-				{
-					"key": "libcrypt1_1-4.4.33-2_arm64",
-					"name": "libcrypt1",
-					"version": "1:4.4.33-2"
-				},
-				{
-					"key": "libbz2-1.0_1.0.8-5-p-b1_arm64",
-					"name": "libbz2-1.0",
-					"version": "1.0.8-5+b1"
-				},
-				{
-					"key": "libpython3.11-minimal_3.11.2-6_arm64",
-					"name": "libpython3.11-minimal",
-					"version": "3.11.2-6"
-				},
-				{
-					"key": "python3.11_3.11.2-6_arm64",
-					"name": "python3.11",
-					"version": "3.11.2-6"
-				},
-				{
-					"key": "python3.11-minimal_3.11.2-6_arm64",
-					"name": "python3.11-minimal",
-					"version": "3.11.2-6"
-				},
-				{
 					"key": "zlib1g_1-1.2.13.dfsg-1_arm64",
 					"name": "zlib1g",
 					"version": "1:1.2.13.dfsg-1"
 				},
 				{
-					"key": "libexpat1_2.5.0-1_arm64",
-					"name": "libexpat1",
-					"version": "2.5.0-1"
+					"key": "libfreetype6_2.12.1-p-dfsg-5_arm64",
+					"name": "libfreetype6",
+					"version": "2.12.1+dfsg-5"
 				},
 				{
-					"key": "python3-minimal_3.11.2-1-p-b1_arm64",
-					"name": "python3-minimal",
-					"version": "3.11.2-1+b1"
+					"key": "libpng16-16_1.6.39-2_arm64",
+					"name": "libpng16-16",
+					"version": "1.6.39-2"
 				},
+				{
+					"key": "libbrotli1_1.0.9-2-p-b6_arm64",
+					"name": "libbrotli1",
+					"version": "1.0.9-2+b6"
+				},
+				{
+					"key": "libfontenc1_1-1.1.4-1_arm64",
+					"name": "libfontenc1",
+					"version": "1:1.1.4-1"
+				}
+			],
+			"key": "xfonts-scalable_1-1.0.3-1.3_arm64",
+			"name": "xfonts-scalable",
+			"sha256": "0371d7944a7c972c715efa1e7635b636320508f433777ed575e5281de61f20cf",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3_all.deb",
+			"version": "1:1.0.3-1.3"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [],
+			"key": "xfonts-utils_1-7.7-p-6_arm64",
+			"name": "xfonts-utils",
+			"sha256": "d6decd33203119e5a373749033716a4a0d1ed3f0cc14bd34ae7ad5043c9e97e2",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/x/xfonts-utils/xfonts-utils_7.7+6_arm64.deb",
+			"version": "1:7.7+6"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [],
+			"key": "xfonts-encodings_1-1.0.4-2.2_arm64",
+			"name": "xfonts-encodings",
+			"sha256": "56143f317d241b6dee0275aa1066df936a776810d3bb83fe58563965d9bbe3d3",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.4-2.2_all.deb",
+			"version": "1:1.0.4-2.2"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [],
+			"key": "fonts-liberation_1-1.07.4-11_arm64",
+			"name": "fonts-liberation",
+			"sha256": "efd381517f958b01969343634ffcbdd60056be7779af84c6f53a005090430204",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/f/fonts-liberation/fonts-liberation_1.07.4-11_all.deb",
+			"version": "1:1.07.4-11"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [
 				{
 					"key": "dpkg_1.21.22_arm64",
 					"name": "dpkg",
@@ -11262,9 +11249,29 @@
 					"version": "10.42-1"
 				},
 				{
+					"key": "libc6_2.36-9-p-deb12u4_arm64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_arm64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_arm64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
 					"key": "libacl1_2.3.1-3_arm64",
 					"name": "libacl1",
 					"version": "2.3.1-3"
+				},
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_arm64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
 				},
 				{
 					"key": "libzstd1_1.5.4-p-dfsg2-5_arm64",
@@ -11275,94 +11282,23 @@
 					"key": "libmd0_1.0.4-2_arm64",
 					"name": "libmd0",
 					"version": "1.0.4-2"
+				},
+				{
+					"key": "liblzma5_5.4.1-0.2_arm64",
+					"name": "liblzma5",
+					"version": "5.4.1-0.2"
+				},
+				{
+					"key": "libbz2-1.0_1.0.8-5-p-b1_arm64",
+					"name": "libbz2-1.0",
+					"version": "1.0.8-5+b1"
 				}
 			],
-			"key": "python3_3.11.2-1-p-b1_arm64",
-			"name": "python3",
-			"sha256": "d31a6f8bdea49711f221baee0e27197c314d0cbe748c020262d32650aca5f017",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3-defaults/python3_3.11.2-1+b1_arm64.deb",
-			"version": "3.11.2-1+b1"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "libpython3-stdlib_3.11.2-1-p-b1_arm64",
-			"name": "libpython3-stdlib",
-			"sha256": "3ceea13a9d2eff6e850d47b4f03ebd0162acb2aa5646a84ccbe77783be104302",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3-defaults/libpython3-stdlib_3.11.2-1+b1_arm64.deb",
-			"version": "3.11.2-1+b1"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "libpython3.11-stdlib_3.11.2-6_arm64",
-			"name": "libpython3.11-stdlib",
-			"sha256": "1af0700762fc1ca17000e124a456e50f6a769808ea1a6a0d0e941ec87647fb3a",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3.11/libpython3.11-stdlib_3.11.2-6_arm64.deb",
-			"version": "3.11.2-6"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "libreadline8_8.2-1.3_arm64",
-			"name": "libreadline8",
-			"sha256": "f3b162b7c1e05430607e792ebdbfc417cbd1f1d32cf83664133ae63d811a72d2",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/r/readline/libreadline8_8.2-1.3_arm64.deb",
-			"version": "8.2-1.3"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "readline-common_8.2-1.3_arm64",
-			"name": "readline-common",
-			"sha256": "69317523fe56429aa361545416ad339d138c1500e5a604856a80dd9074b4e35c",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/r/readline/readline-common_8.2-1.3_all.deb",
-			"version": "8.2-1.3"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "libncursesw6_6.4-4_arm64",
-			"name": "libncursesw6",
-			"sha256": "cf32cb6751718872c6def448b82211eec494f688e2f1a3e6c71bfdaf6b0722c5",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/n/ncurses/libncursesw6_6.4-4_arm64.deb",
-			"version": "6.4-4"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "libpython3.11-minimal_3.11.2-6_arm64",
-			"name": "libpython3.11-minimal",
-			"sha256": "399271d141a1e08479c80f7832921ddf5fdb46c15c8b0dd3172c52c74b79b197",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3.11/libpython3.11-minimal_3.11.2-6_arm64.deb",
-			"version": "3.11.2-6"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "python3.11_3.11.2-6_arm64",
-			"name": "python3.11",
-			"sha256": "0d2e0b2f1dca43053298c2bd1d279af152f820ffd8c4554d19ecee7b47f2c316",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3.11/python3.11_3.11.2-6_arm64.deb",
-			"version": "3.11.2-6"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "python3.11-minimal_3.11.2-6_arm64",
-			"name": "python3.11-minimal",
-			"sha256": "6e83406f07fb2f567aa12d57e51c24c40c42d7f144970ed9a05f0be25a1b1241",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3.11/python3.11-minimal_3.11.2-6_arm64.deb",
-			"version": "3.11.2-6"
-		},
-		{
-			"arch": "arm64",
-			"dependencies": [],
-			"key": "python3-minimal_3.11.2-1-p-b1_arm64",
-			"name": "python3-minimal",
-			"sha256": "f01c94963ace8a6fec59300427c95fc4ac204d752567dd2e4b36ee930755110f",
-			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/python3-defaults/python3-minimal_3.11.2-1+b1_arm64.deb",
-			"version": "3.11.2-1+b1"
+			"key": "fonts-ipafont-gothic_00303-23_arm64",
+			"name": "fonts-ipafont-gothic",
+			"sha256": "5f8e0270654fec6577fffa96015067352440065c0b49bbc8b076745a6b4bf3d3",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/f/fonts-ipafont/fonts-ipafont-gothic_00303-23_all.deb",
+			"version": "00303-23"
 		}
 	],
 	"version": 1

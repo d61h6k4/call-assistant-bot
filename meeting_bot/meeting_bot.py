@@ -311,14 +311,31 @@ async def prepare_env(logger: logging.Logger):
 
         display = os.environ.get("DISPLAY")
         logger.info({"message": f"Xvfb runs on {display}"})
-        vdisplay = Xvfb(width=1024, height=768, colordepth=24, display=display)
+        vdisplay = Xvfb(width=1024, height=768, colordepth=24)
         vdisplay.start()
 
         logger.info({"message": "Start dbus"})
-        subprocess.Popen(
-            "mkdir -p /run/dbus && chmod 755 /run/dbus && dbus-daemon --system --fork",
-            shell=True,
-        )
+        for cmd in [
+            "export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket",
+            "export XDG_RUNTIME_DIR=/run/user/0",
+            "mkdir -p /run/dbus",
+            "chmod 755 /run/dbus",
+            "rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse",
+            "dbus-daemon --system --fork",
+            "mkdir -p /var/run/dbus",
+            "dbus-uuidgen > /var/lib/dbus/machine-id",
+            "touch /root/.Xauthority",
+            "chmod 600 /root/.Xauthority",
+            "rm /run/dbus/pid",
+        ]:
+            res = subprocess.check_output(cmd, shell=True)
+            logger.info(
+                {
+                    "message": "Calling command to setup dbus",
+                    "cmd": cmd,
+                    "output": res,
+                }
+            )
 
         logger.info({"message": "starting virtual audio drivers"})
         pulseaudio_conf = r"""
@@ -336,8 +353,6 @@ async def prepare_env(logger: logging.Logger):
         Path("/etc/dbus-1/system.d/pulseaudio.conf").write_text(pulseaudio_conf)
 
         for cmd in [
-            "dbus-uuidgen > /var/lib/dbus/machine-id",
-            "rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse",
             "pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",
             'pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
             'pactl load-module module-null-sink sink_name=MicOutput sink_properties=device.description="Virtual_Microphone_Output"',
