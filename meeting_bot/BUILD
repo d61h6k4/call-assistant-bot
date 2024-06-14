@@ -19,6 +19,11 @@ py_grpc_library(
     deps = [":meeting_bot_py_pb2"],
 )
 
+py_library(
+    name = "xvfbwrapper",
+    srcs = ["xvfbwrapper.py"],
+)
+
 py_binary(
     name = "meeting_bot",
     srcs = ["meeting_bot.py"],
@@ -31,7 +36,6 @@ py_binary(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        ":xvfbwrapper",
         ":meeting_bot_py_pb2",
         ":meeting_bot_py_pb2_grpc",
         "//meeting_bot/articulator:articulator_py_pb2",
@@ -43,7 +47,7 @@ py_binary(
         "@grpc//src/python/grpcio/grpc:grpcio",
         "@pip//grpcio_health_checking",
         "@pip//picologging",
-        "@pip//xvfbwrapper",
+        ":xvfbwrapper",
         "@rules_python//python/runfiles",
     ],
 )

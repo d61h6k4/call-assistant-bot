@@ -307,9 +307,10 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
 async def prepare_env(logger: logging.Logger):
     if sys.platform == "linux":
         import subprocess
-        from xvfbwrapper import Xvfb
+        from meeting_bot.xvfbwrapper import Xvfb
 
-        vdisplay = Xvfb(width=1024, height=768, colordepth=24)
+        display = os.environ.get("DISPLAY")
+        vdisplay = Xvfb(width=1024, height=768, colordepth=24, display=display[1:])
         vdisplay.start()
         logger.info({"message": f"Xvfb runs on {vdisplay.new_display}"})
 
