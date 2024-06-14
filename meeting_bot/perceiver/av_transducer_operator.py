@@ -8,7 +8,7 @@ from python.runfiles import runfiles  # noqa
 
 
 class AVTransducerOperator:
-    _AV_TRANSDUCER_BIN = "av_transducer/av_transducer"
+    _AV_TRANSDUCER_BIN = "_main/av_transducer/av_transducer"
 
     def __init__(self, proc: asyncio.subprocess.Process, logger: logging.Logger):
         self.proc = proc
