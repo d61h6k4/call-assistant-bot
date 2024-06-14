@@ -19,12 +19,6 @@ py_grpc_library(
     deps = [":meeting_bot_py_pb2"],
 )
 
-# TODO(d61h6k4) 3-d party dep
-py_library(
-    name = "xvfbwrapper",
-    srcs = ["xvfbwrapper.py"]
-)
-
 py_binary(
     name = "meeting_bot",
     srcs = ["meeting_bot.py"],
