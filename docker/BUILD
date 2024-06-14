@@ -89,6 +89,8 @@ PACKAGES = [
     "@bullseye//pulseaudio",
     "@bullseye//chromium",
     "@bullseye//python3",
+    "@bullseye//grep",
+    "@bullseye//libstdc++6",
 ]
 
 # Creates /var/lib/dpkg/status with installed package information.
