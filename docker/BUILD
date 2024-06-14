@@ -23,13 +23,12 @@ passwd(
             "username": "pulse",
         },
         {
-
             "uid": 999,
             "gid": 1000,
             "home": "/home/messagebus",
             "shell": "/usr/sbin/nologin",
             "username": "messagebus",
-        }
+        },
     ],
 )
 
@@ -52,9 +51,9 @@ group(
             "name": "pulse-access",
             "gid": "1001",
             "users": [
-                "root"
-            ]
-        }
+                "root",
+            ],
+        },
     ],
 )
 
@@ -89,6 +88,7 @@ PACKAGES = [
     "@bookworm//pulseaudio",
     "@bookworm//grep",
     "@bookworm//chromium",
+    "@bookworm//findutils",
 ]
 
 # Creates /var/lib/dpkg/status with installed package information.
@@ -131,12 +131,8 @@ pkg_tar(
 
 oci_image(
     name = "apt",
-    architecture = select({
-        "@platforms//cpu:arm64": "arm64",
-        "@platforms//cpu:x86_64": "amd64",
-    }),
+    base = "@distroless_base",
     entrypoint = ["/meeting_bot/meeting_bot"],
-    os = "linux",
     tars = [
         ":sh",
         ":passwd",

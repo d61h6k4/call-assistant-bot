@@ -32,6 +32,7 @@ packages:
   - "ca-certificates"
   # virtual display/speaker
   - "grep"
+  - "findutils"
   - "libstdc++6"
   - "dbus"
   - "dbus-x11"
