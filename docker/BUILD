@@ -69,28 +69,26 @@ tar(
 cacerts(
     name = "cacerts",
     package = select({
-        "@platforms//cpu:arm64": "@bullseye//ca-certificates/arm64:data",
-        "@platforms//cpu:x86_64": "@bullseye//ca-certificates/amd64:data",
+        "@platforms//cpu:arm64": "@bookworm//ca-certificates/arm64:data",
+        "@platforms//cpu:x86_64": "@bookworm//ca-certificates/amd64:data",
     }),
 )
 
 PACKAGES = [
-    "@bullseye//ncurses-base",
-    "@bullseye//libncurses6",
-    "@bullseye//tzdata",
-    "@bullseye//bash",
-    "@bullseye//coreutils",
-    "@bullseye//dpkg",
-    "@bullseye//apt",
-    "@bullseye//perl",
-    "@bullseye//dbus",
-    "@bullseye//dbus-x11",
-    "@bullseye//xvfb",
-    "@bullseye//pulseaudio",
-    "@bullseye//chromium",
-    "@bullseye//python3",
-    "@bullseye//grep",
-    "@bullseye//libstdc++6",
+    "@bookworm//ncurses-base",
+    "@bookworm//libncurses6",
+    "@bookworm//tzdata",
+    "@bookworm//bash",
+    "@bookworm//coreutils",
+    "@bookworm//dpkg",
+    "@bookworm//apt",
+    "@bookworm//perl",
+    "@bookworm//dbus",
+    "@bookworm//dbus-x11",
+    "@bookworm//xvfb",
+    "@bookworm//pulseaudio",
+    "@bookworm//grep",
+    "@bookworm//chromium",
 ]
 
 # Creates /var/lib/dpkg/status with installed package information.

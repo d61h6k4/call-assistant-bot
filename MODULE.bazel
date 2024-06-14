@@ -51,7 +51,24 @@ archive_override(
     urls = "https://github.com/grpc/grpc/archive/refs/tags/v1.64.2.tar.gz",
 )
 
-bazel_dep(name = "rules_oci", version = "1.7.4")
+bazel_dep(name = "rules_oci", version = "1.7.6")
+# For testing, we also recommend https://registry.bazel.build/modules/container_structure_test
+
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+
+# Declare external images you need to pull, for example:
+oci.pull(
+    name = "distroless_base",
+    # 'latest' is not reproducible, but it's convenient.
+    # During the build we print a WARNING message that includes recommended 'digest' and 'platforms'
+    # values which you can use here in place of 'tag' to pin for reproducibility.
+    tag = "latest",
+    image = "gcr.io/distroless/python3-debian12",
+    platforms = ["linux/amd64", "linux/arm64"],
+)
+
+# For each oci.pull call, repeat the "name" here to expose them as dependencies.
+use_repo(oci, "distroless_base")
 bazel_dep(name = "rules_pkg", version = "1.0.0")
 
 # TODO(d61h6l4) Remove after PR merged:
@@ -76,11 +93,11 @@ git_override(
 
 apt = use_extension("@rules_distroless//apt:extensions.bzl", "apt")
 apt.deb_index(
-    name = "bullseye",
-    lock = "//docker:bullseye.lock.json",
-    manifest = "//docker:bullseye.yaml",
+    name = "bookworm",
+    lock = "//docker:bookworm.lock.json",
+    manifest = "//docker:bookworm.yaml",
 )
-use_repo(apt, "bullseye")
+use_repo(apt, "bookworm")
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 

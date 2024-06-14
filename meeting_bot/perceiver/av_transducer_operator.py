@@ -4,6 +4,8 @@ import logging
 
 from pathlib import Path
 
+from python.runfiles import runfiles  # noqa
+
 
 class AVTransducerOperator:
     _AV_TRANSDUCER_BIN = "av_transducer/av_transducer"
@@ -17,10 +19,14 @@ class AVTransducerOperator:
         working_dir: Path, logger: logging.Logger
     ) -> "AVTransducerOperator":
         logger.info({"message": "Launching AV transducer"})
+
+        r = runfiles.Create()
+        env = {}
+        env.update(r.EnvVars())
         proc = await asyncio.create_subprocess_shell(
             shlex.join(
                 [
-                    AVTransducerOperator._AV_TRANSDUCER_BIN,
+                    r.Rlocation(AVTransducerOperator._AV_TRANSDUCER_BIN),
                     "--output_file_path",
                     str(working_dir / "meeting_record.m4a"),
                 ]
