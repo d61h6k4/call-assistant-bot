@@ -42,6 +42,7 @@ py_binary(
         "@grpc//src/python/grpcio/grpc:grpcio",
         "@pip//grpcio_health_checking",
         "@pip//picologging",
+        "@pip//xvfbwrapper",
         "@rules_python//python/runfiles",
     ],
 )

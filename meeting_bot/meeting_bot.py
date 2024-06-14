@@ -307,13 +307,12 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
 async def prepare_env(logger: logging.Logger):
     if sys.platform == "linux":
         import subprocess
+        from xvfbwrapper import Xvfb
 
         display = os.environ.get("DISPLAY")
         logger.info({"message": f"Xvfb runs on {display}"})
-        subprocess.Popen(
-            f"Xvfb {display} -screen 0 1024x768x24",
-            shell=True,
-        )
+        vdisplay = Xvfb(width=1024, height=768, depth=24, display=display)
+        vdisplay.start()
 
         logger.info({"message": "Start dbus"})
         subprocess.Popen(
