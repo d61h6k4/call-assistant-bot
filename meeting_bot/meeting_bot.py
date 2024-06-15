@@ -3,6 +3,7 @@ from abc import abstractmethod, abstractproperty
 import asyncio
 import argparse
 import base64
+from subprocess import CalledProcessError
 import uuid
 import shlex
 import signal
@@ -315,17 +316,16 @@ async def prepare_env(logger: logging.Logger):
         logger.info({"message": f"Xvfb runs on {vdisplay.new_display}"})
 
         logger.info({"message": "Start dbus"})
-
         # dbus needs it
-        Path(os.environ.get("XDG_RUNTIME_DIR")).mkdir()
-        dbus_session_address = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
+        Path(os.environ.get("XDG_RUNTIME_DIR")).mkdir(exist_ok=True)
+        dbus_session_address = Path(os.environ.get("DBUS_SESSION_BUS_ADDRESS"))
         # here we pre create folder to store dbus socket
-        dbus_session_address.parent.mkdir(parent=True)
+        dbus_session_address.parent.mkdir(parents=True)
         # usually this is done by systemd
         import socket
 
         s = socket.socket(socket.AF_UNIX)
-        s.bind(dbus_session_address)
+        s.bind(str(dbus_session_address))
         for cmd in [
             f"dbus-daemon --session --fork --nosyslog --nopidfile --address={str(dbus_session_address)}",
             # pulse audio requires
@@ -333,7 +333,18 @@ async def prepare_env(logger: logging.Logger):
             # chrome needs this
             "ln -s /var/lib/dbus/machine-id /etc/machine-id",
         ]:
-            res = subprocess.check_output(cmd, shell=True)
+            try:
+                res = subprocess.check_output(cmd, shell=True)
+            except CalledProcessError as e:
+                logger.error(
+                    {
+                        "message": "Failed to execute the command",
+                        "cmd": cmd,
+                        "res": res,
+                        "error": repr(e),
+                    }
+                )
+
             logger.info(
                 {
                     "message": "Calling command to setup dbus",
