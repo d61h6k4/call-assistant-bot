@@ -317,10 +317,14 @@ async def prepare_env(logger: logging.Logger):
 
         logger.info({"message": "Start dbus"})
         # dbus needs it
-        Path(os.environ.get("XDG_RUNTIME_DIR")).mkdir(exist_ok=True)
-        dbus_session_address = Path(os.environ.get("DBUS_SESSION_BUS_ADDRESS"))
+        xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
+        Path(xdg_runtime_dir).mkdir(exist_ok=True)
+        logger.info({"message": "Created XDG runtime dir", "path": xdg_runtime_dir})
+        bus_address_path = os.environ.get("DBUS_SESSION_BUS_ADDRESS").split("=")[1]
+        dbus_session_address = Path(bus_address_path)
         # here we pre create folder to store dbus socket
         dbus_session_address.parent.mkdir(parents=True)
+        logger.info({"message": "Created DBUS working dir", "path": bus_address_path})
         # usually this is done by systemd
         import socket
 
@@ -340,10 +344,10 @@ async def prepare_env(logger: logging.Logger):
                     {
                         "message": "Failed to execute the command",
                         "cmd": cmd,
-                        "res": res,
                         "error": repr(e),
                     }
                 )
+                raise RuntimeError("Failed to prepare env")
 
             logger.info(
                 {
