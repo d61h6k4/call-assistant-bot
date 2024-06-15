@@ -325,7 +325,7 @@ async def prepare_env(logger: logging.Logger):
         bus_address_path = bus_address.split("=")[1]
         dbus_session_address = Path(bus_address_path)
         # here we pre create folder to store dbus socket
-        dbus_session_address.parent.mkdir(parents=True)
+        dbus_session_address.parent.mkdir(parents=True, mode=755)
         logger.info({"message": "Created DBUS working dir", "path": bus_address_path})
         # usually this is done by systemd
         import socket
@@ -359,6 +359,8 @@ async def prepare_env(logger: logging.Logger):
                 }
             )
 
+        Path("/root/.Xauthority").touch(mode=600)
+
         logger.info({"message": "starting virtual audio drivers"})
         pulseaudio_conf = r"""
         <!DOCTYPE busconfig PUBLIC
@@ -376,14 +378,25 @@ async def prepare_env(logger: logging.Logger):
 
         for cmd in [
             "rm /etc/dbus-1/system.d/pulseaudio-system.conf",
-            "pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",
+            "sudo pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",
             'sudo pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
             'sudo pactl load-module module-null-sink sink_name=MicOutput sink_properties=device.description="Virtual_Microphone_Output"',
             "sudo pactl set-default-source MicOutput.monitor",
             "sudo pactl set-default-sink MicOutput",
             "sudo pactl load-module module-virtual-source source_name=VirtualMic",
         ]:
-            res = subprocess.check_output(cmd, shell=True)
+            try:
+                res = subprocess.check_output(cmd, shell=True)
+            except CalledProcessError as e:
+                logger.error(
+                    {
+                        "message": "Failed to execute the command",
+                        "cmd": cmd,
+                        "error": repr(e),
+                    }
+                )
+                raise RuntimeError("Failed to prepare env")
+
             logger.info(
                 {
                     "message": "Calling command to setup virtual driver",
