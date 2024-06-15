@@ -128,29 +128,13 @@ cacerts(
 )
 
 PACKAGES = [
-    # "@bookworm//ncurses-base",
-    # "@bookworm//libncurses6",
-    # "@bookworm//tzdata",
     "@bookworm//bash",
     "@bookworm//coreutils",
-    # "@bookworm//dpkg",
-    # "@bookworm//apt",
-    # "@bookworm//perl",
-    "@bookworm//dbus",
-    "@bookworm//dbus-x11",
     "@bookworm//xvfb",
-    "@bookworm//libxcb1",
-    "@bookworm//xauth",
+    "@bookworm//fluxbox",
+    "@bookworm//x11-apps",
     "@bookworm//pulseaudio",
-    # "@bookworm//grep",
     "@bookworm//chromium-driver",
-    # "@bookworm//findutils",
-    "@bookworm//libfontconfig1",
-    "@bookworm//libfreetype6",
-    "@bookworm//xfonts-scalable",
-    "@bookworm//fonts-liberation",
-    "@bookworm//fonts-ipafont-gothic",
-    # to run services
     "@bookworm//sudo",
     "@bookworm//python3",
 ]

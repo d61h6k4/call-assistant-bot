@@ -315,6 +315,18 @@ async def prepare_env(logger: logging.Logger):
         vdisplay.start()
         logger.info({"message": f"Xvfb runs on {vdisplay.new_display}"})
 
+        with open(os.devnull, "w") as fnull:
+            fluxbox = subprocess.Popen(
+                ["fluxbox", "-screen", "0"], stdout=fnull, stderr=fnull, close_fds=True
+            )
+
+        ret_code = fluxbox.poll()
+        if ret_code is None:
+            logger.info({"message": "Fluxbox is running"})
+        else:
+            logger.error({"message": "Failed to run fluxbox", "return_code": ret_code})
+            raise RuntimeError("Could not prepare env")
+
         logger.info({"message": "Start dbus"})
         # dbus needs it
         xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
@@ -358,8 +370,6 @@ async def prepare_env(logger: logging.Logger):
                     "output": res,
                 }
             )
-
-        Path("/root/.Xauthority").touch(mode=600)
 
         logger.info({"message": "starting virtual audio drivers"})
         pulseaudio_conf = r"""
