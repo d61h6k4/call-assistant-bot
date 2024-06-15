@@ -320,7 +320,9 @@ async def prepare_env(logger: logging.Logger):
         xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
         Path(xdg_runtime_dir).mkdir(exist_ok=True)
         logger.info({"message": "Created XDG runtime dir", "path": xdg_runtime_dir})
-        bus_address_path = os.environ.get("DBUS_SESSION_BUS_ADDRESS").split("=")[1]
+        # address has format unix:path=/<actual_path>
+        bus_address = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
+        bus_address_path = bus_address.split("=")[1]
         dbus_session_address = Path(bus_address_path)
         # here we pre create folder to store dbus socket
         dbus_session_address.parent.mkdir(parents=True)
@@ -331,7 +333,7 @@ async def prepare_env(logger: logging.Logger):
         s = socket.socket(socket.AF_UNIX)
         s.bind(str(dbus_session_address))
         for cmd in [
-            f"dbus-daemon --session --fork --nosyslog --nopidfile --address={str(dbus_session_address)}",
+            f"dbus-daemon --session --fork --nosyslog --nopidfile --address={bus_address}",
             # pulse audio requires
             "dbus-uuidgen > /var/lib/dbus/machine-id",
             # chrome needs this
