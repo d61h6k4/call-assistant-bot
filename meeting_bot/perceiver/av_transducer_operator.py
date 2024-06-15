@@ -1,6 +1,8 @@
 import asyncio
+import copy
 import shlex
 import logging
+import os
 
 from pathlib import Path
 
@@ -21,7 +23,7 @@ class AVTransducerOperator:
         logger.info({"message": "Launching AV transducer"})
 
         r = runfiles.Create()
-        env = {}
+        env = copy.deepcopy(os.environ)
         env.update(r.EnvVars())
         proc = await asyncio.create_subprocess_shell(
             shlex.join(
@@ -30,7 +32,8 @@ class AVTransducerOperator:
                     "--output_file_path",
                     str(working_dir / "meeting_record.m4a"),
                 ]
-            )
+            ),
+            env=env,
         )
         return AVTransducerOperator(proc=proc, logger=logger)
 

@@ -18,6 +18,7 @@ sources:
 
 archs:
   - "amd64"
+  - "arm64"
 packages:
   - "bash"
   - "coreutils" # for commands like `ls`
@@ -29,7 +30,10 @@ packages:
   - "fluxbox"
   - "x11-apps"
   - "pulseaudio"
+  - "pavucontrol"
   # end xvfb
   - "chromium-driver"
   - "sudo"
   - "python3"
+  - "dbus"
+  - "dbus-x11"

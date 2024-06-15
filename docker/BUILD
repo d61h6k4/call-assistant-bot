@@ -134,9 +134,12 @@ PACKAGES = [
     "@bookworm//fluxbox",
     "@bookworm//x11-apps",
     "@bookworm//pulseaudio",
+    "@bookworm//pavucontrol",
     "@bookworm//chromium-driver",
     "@bookworm//sudo",
     "@bookworm//python3",
+    "@bookworm//dbus",
+    "@bookworm//dbus-x11",
 ]
 
 # Creates /var/lib/dpkg/status with installed package information.

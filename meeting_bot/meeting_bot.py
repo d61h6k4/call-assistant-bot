@@ -3,7 +3,7 @@ from abc import abstractmethod, abstractproperty
 import asyncio
 import argparse
 import base64
-from subprocess import CalledProcessError
+import copy
 import uuid
 import shlex
 import signal
@@ -19,6 +19,7 @@ import time
 import picologging as logging
 
 from pathlib import Path
+from subprocess import CalledProcessError
 from typing import Protocol, Sequence
 from meeting_bot import meeting_bot_pb2, meeting_bot_pb2_grpc  # noqa
 from meeting_bot.evaluator import evaluator_pb2, evaluator_pb2_grpc  # noqa
@@ -85,7 +86,7 @@ class Evaluator(BotPart):
         evaluator_address = "unix:///tmp/evaluator.sock"
 
         r = runfiles.Create()
-        env = {}
+        env = copy.deepcopy(os.environ)
         env.update(r.EnvVars())
         proc = await asyncio.create_subprocess_shell(
             shlex.join(
@@ -136,11 +137,7 @@ class Articulator(BotPart):
         articulator_address = "unix:///tmp/articulator.sock"
 
         r = runfiles.Create()
-        env = {
-            "PATH": os.environ.get("PATH"),
-            "GOOGLE_LOGIN": os.environ.get("GOOGLE_LOGIN"),
-            "GOOGLE_PASSWORD": os.environ.get("GOOGLE_PASSWORD"),
-        }
+        env = copy.deepcopy(os.environ)
         env.update(r.EnvVars())
         proc = await asyncio.create_subprocess_shell(
             shlex.join(
@@ -193,7 +190,7 @@ class Perceiver(BotPart):
         perceiver_address = "unix:///tmp/perceiver.sock"
 
         r = runfiles.Create()
-        env = {}
+        env = copy.deepcopy(os.environ)
         env.update(r.EnvVars())
         proc = await asyncio.create_subprocess_shell(
             shlex.join(
@@ -345,11 +342,9 @@ async def prepare_env(logger: logging.Logger):
         s = socket.socket(socket.AF_UNIX)
         s.bind(str(dbus_session_address))
         for cmd in [
-            f"dbus-daemon --session --fork --nosyslog --nopidfile --address={bus_address}",
             # pulse audio requires
             "dbus-uuidgen > /var/lib/dbus/machine-id",
-            # chrome needs this
-            "ln -s /var/lib/dbus/machine-id /etc/machine-id",
+            f"dbus-daemon --session --fork --nosyslog --nopidfile --address={bus_address}",
         ]:
             try:
                 res = subprocess.check_output(cmd, shell=True)
