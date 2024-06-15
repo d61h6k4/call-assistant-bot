@@ -5,7 +5,6 @@
 
 """Run a headless display inside X virtual framebuffer (Xvfb)"""
 
-
 import fcntl
 import os
 import subprocess
@@ -26,14 +25,14 @@ except NameError:
 
 
 class Xvfb(object):
-
     # Maximum value to use for a display. 32-bit maxint is the
     # highest Xvfb currently supports
     MAX_DISPLAY = 2147483647
     SLEEP_TIME_BEFORE_START = 0.1
 
-    def __init__(self, width=800, height=680, colordepth=24, tempdir=None, display=None,
-                 **kwargs):
+    def __init__(
+        self, width=800, height=680, colordepth=24, tempdir=None, display=None, **kwargs
+    ):
         self.width = width
         self.height = height
         self.colordepth = colordepth
@@ -41,17 +40,27 @@ class Xvfb(object):
         self.new_display = display
 
         if not self.xvfb_exists():
-            msg = 'Can not find Xvfb. Please install it and try again.'
+            msg = "Can not find Xvfb. Please install it and try again."
             raise EnvironmentError(msg)
 
-        self.extra_xvfb_args = ['-screen', '0', '{}x{}x{}'.format(
-                                self.width, self.height, self.colordepth)]
+        self.extra_xvfb_args = [
+            "-screen",
+            "0",
+            "{}x{}x{}".format(self.width, self.height, self.colordepth),
+            "-ac",
+            "-nolisten",
+            "tcp",
+            "-dpi",
+            "96",
+            "+extension",
+            "RANDR",
+        ]
 
         for key, value in kwargs.items():
-            self.extra_xvfb_args += ['-{}'.format(key), value]
+            self.extra_xvfb_args += ["-{}".format(key), value]
 
-        if 'DISPLAY' in os.environ:
-            self.orig_display = os.environ['DISPLAY'].split(':')[1]
+        if "DISPLAY" in os.environ:
+            self.orig_display = os.environ["DISPLAY"].split(":")[1]
         else:
             self.orig_display = None
 
@@ -70,13 +79,12 @@ class Xvfb(object):
                 raise ValueError("Could not lock display :{0}".format(self.new_display))
         else:
             self.new_display = self._get_next_unused_display()
-        display_var = ':{}'.format(self.new_display)
-        self.xvfb_cmd = ['Xvfb', display_var] + self.extra_xvfb_args
-        with open(os.devnull, 'w') as fnull:
-            self.proc = subprocess.Popen(self.xvfb_cmd,
-                                         stdout=fnull,
-                                         stderr=fnull,
-                                         close_fds=True)
+        display_var = ":{}".format(self.new_display)
+        self.xvfb_cmd = ["Xvfb", display_var] + self.extra_xvfb_args
+        with open(os.devnull, "w") as fnull:
+            self.proc = subprocess.Popen(
+                self.xvfb_cmd, stdout=fnull, stderr=fnull, close_fds=True
+            )
         # give Xvfb time to start
         time.sleep(self.__class__.SLEEP_TIME_BEFORE_START)
         ret_code = self.proc.poll()
@@ -84,13 +92,14 @@ class Xvfb(object):
             self._set_display_var(self.new_display)
         else:
             self._cleanup_lock_file()
-            raise RuntimeError('Xvfb did not start ({0}): {1}'
-                               .format(ret_code, self.xvfb_cmd))
+            raise RuntimeError(
+                "Xvfb did not start ({0}): {1}".format(ret_code, self.xvfb_cmd)
+            )
 
     def stop(self):
         try:
             if self.orig_display is None:
-                del os.environ['DISPLAY']
+                del os.environ["DISPLAY"]
             else:
                 self._set_display_var(self.orig_display)
             if self.proc is not None:
@@ -105,12 +114,11 @@ class Xvfb(object):
 
     def xvfb_exists(self):
         """Check that Xvfb is available on PATH and is executable."""
-        paths = os.environ['PATH'].split(os.pathsep)
-        return any(os.access(os.path.join(path, 'Xvfb'), os.X_OK)
-                   for path in paths)
+        paths = os.environ["PATH"].split(os.pathsep)
+        return any(os.access(os.path.join(path, "Xvfb"), os.X_OK) for path in paths)
 
     def _cleanup_lock_file(self):
-        '''
+        """
         This should always get called if the process exits safely
         with Xvfb.stop() (whether called explicitly, or by __exit__).
 
@@ -119,7 +127,7 @@ class Xvfb(object):
         Xvfb.stop() in a finally block, or use Xvfb as a context manager
         to ensure lock files are purged.
 
-        '''
+        """
         self._lock_display_file.close()
         try:
             os.remove(self._lock_display_file.name)
@@ -127,33 +135,32 @@ class Xvfb(object):
             pass
 
     def _get_lock_for_display(self, display):
-        '''
+        """
         In order to ensure multi-process safety, this method attempts
         to acquire an exclusive lock on a temporary file whose name
         contains the display number for Xvfb.
-        '''
-        tempfile_path = os.path.join(self._tempdir, '.X{0}-lock'.format(display))
+        """
+        tempfile_path = os.path.join(self._tempdir, ".X{0}-lock".format(display))
         try:
-            self._lock_display_file = open(tempfile_path, 'w')
+            self._lock_display_file = open(tempfile_path, "w")
         except PermissionError as e:
             if PY2 and e.errno != EACCES:
                 raise
             return False
         else:
             try:
-                fcntl.flock(self._lock_display_file,
-                            fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(self._lock_display_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
                 return False
             else:
                 return True
 
     def _get_next_unused_display(self):
-        '''
+        """
         Randomly chooses a display number and tries to acquire a lock for this number.
         If the lock could be acquired, returns this number, otherwise choses a new one.
         :return: free display number
-        '''
+        """
         while True:
             rand = randint(1, self.__class__.MAX_DISPLAY)
             if self._get_lock_for_display(rand):
@@ -162,4 +169,4 @@ class Xvfb(object):
                 continue
 
     def _set_display_var(self, display):
-        os.environ['DISPLAY'] = ':{}'.format(display)
+        os.environ["DISPLAY"] = ":{}".format(display)

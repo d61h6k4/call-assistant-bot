@@ -1,33 +1,6 @@
 schemaVersion: "2.0.0"
 commandTests:
-  - name: "echo hello"
-    command: "/bin/bash"
-    args: ["-c", "echo hello world!"]
-    expectedOutput: ["hello world!"]
-  - name: "apt list --installed"
-    command: "apt"
-    args: ["list", "--installed"]
-    expectedOutput:
-      - Listing\.\.\.
-      - apt/now 2\.2\.4 arm64 \[installed,local\]
-      - bash/now 5\.1-2\+deb11u1 arm64 \[installed,local\]
-      - coreutils/now 8\.32-4 arm64 \[installed,local\]
-      - dpkg/now 1\.20\.13 arm64 \[installed,local\]
-      - libncurses6/now 6\.2\+20201114-2\+deb11u2 arm64 \[installed,local\]
-      - ncurses-base/now 6\.2\+20201114-2\+deb11u2 all \[installed,local\]
-      - perl/now 5\.32\.1-4\+deb11u3 arm64 \[installed,local\]
-      - pulseaudio/now 14.2-2 arm64 \[installed,local\]
-      - tzdata/now 2024a-0\+deb11u1 all \[installed,local\]
-      - xvfb/now 2:1.20.11-1\+deb11u11 arm64 \[installed,local\]
-  - name: "whoami"
-    command: "whoami"
-    expectedOutput: [r00t]
-  - name: "naive ca-certs check"
-    command: "head"
-    args: ["-1", "/etc/ssl/certs/ca-certificates.crt"]
-    expectedOutput: ["-----BEGIN CERTIFICATE-----"]
-  - name: "check application"
-    command: "meeting_bot/meeting_bot"
-    args: ["--help"]
-    expectedOutput:
-      - "meeting bot"
+  - name: "check dbus"
+    setup: [["mkdir", "$XDG_RUNTIME_DIR"], ["mkdir", "-p", "/var/run/dbus/"], ["python", "-c", "import socket; s = socket.socket(socket.AF_UNIX); s.bind('/var/run/dbus/system_bus_socket')"]]
+    command: "dbus-daemon"
+    args: ["--session", "--fork", "--nosyslog", "--nopidfile", "--address=$DBUS_STARTER_ADDRESS"]

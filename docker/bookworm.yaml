@@ -36,11 +36,17 @@ packages:
   - "libstdc++6"
   - "dbus"
   - "dbus-x11"
+  # xvfb
   - "xvfb"
+  - "libxcb1"
+  - "xauth"
   - "pulseaudio"
-  - "chromium"
+  # end xvfb
+  - "chromium-driver"
   - "libfontconfig1"
   - "libfreetype6"
   - "xfonts-scalable"
   - "fonts-liberation"
   - "fonts-ipafont-gothic"
+  - "sudo"
+  - "python3"

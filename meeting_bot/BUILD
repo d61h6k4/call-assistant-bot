@@ -38,6 +38,7 @@ py_binary(
     deps = [
         ":meeting_bot_py_pb2",
         ":meeting_bot_py_pb2_grpc",
+        ":xvfbwrapper",
         "//meeting_bot/articulator:articulator_py_pb2",
         "//meeting_bot/articulator:articulator_py_pb2_grpc",
         "//meeting_bot/evaluator:evaluator_py_pb2",
@@ -47,7 +48,6 @@ py_binary(
         "@grpc//src/python/grpcio/grpc:grpcio",
         "@pip//grpcio_health_checking",
         "@pip//picologging",
-        ":xvfbwrapper",
         "@rules_python//python/runfiles",
     ],
 )

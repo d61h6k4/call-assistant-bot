@@ -315,16 +315,23 @@ async def prepare_env(logger: logging.Logger):
         logger.info({"message": f"Xvfb runs on {vdisplay.new_display}"})
 
         logger.info({"message": "Start dbus"})
+
+        # dbus needs it
+        Path(os.environ.get("XDG_RUNTIME_DIR")).mkdir()
+        dbus_session_address = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
+        # here we pre create folder to store dbus socket
+        dbus_session_address.parent.mkdir(parent=True)
+        # usually this is done by systemd
+        import socket
+
+        s = socket.socket(socket.AF_UNIX)
+        s.bind(dbus_session_address)
         for cmd in [
-            "mkdir -p /run/dbus",
-            "chmod 755 /run/dbus",
-            "rm -rf /var/run/pulse /var/lib/pulse /root/.config/pulse",
-            "dbus-daemon --system --fork",
-            "mkdir -p /var/run/dbus",
+            f"dbus-daemon --session --fork --nosyslog --nopidfile --address={str(dbus_session_address)}",
+            # pulse audio requires
             "dbus-uuidgen > /var/lib/dbus/machine-id",
-            "touch /root/.Xauthority",
-            "chmod 600 /root/.Xauthority",
-            "rm /run/dbus/pid",
+            # chrome needs this
+            "ln -s /var/lib/dbus/machine-id /etc/machine-id",
         ]:
             res = subprocess.check_output(cmd, shell=True)
             logger.info(
@@ -351,12 +358,13 @@ async def prepare_env(logger: logging.Logger):
         Path("/etc/dbus-1/system.d/pulseaudio.conf").write_text(pulseaudio_conf)
 
         for cmd in [
+            "rm /etc/dbus-1/system.d/pulseaudio-system.conf",
             "pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",
-            'pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
-            'pactl load-module module-null-sink sink_name=MicOutput sink_properties=device.description="Virtual_Microphone_Output"',
-            "pactl set-default-source MicOutput.monitor",
-            "pactl set-default-sink MicOutput",
-            "pactl load-module module-virtual-source source_name=VirtualMic",
+            'sudo pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
+            'sudo pactl load-module module-null-sink sink_name=MicOutput sink_properties=device.description="Virtual_Microphone_Output"',
+            "sudo pactl set-default-source MicOutput.monitor",
+            "sudo pactl set-default-sink MicOutput",
+            "sudo pactl load-module module-virtual-source source_name=VirtualMic",
         ]:
             res = subprocess.check_output(cmd, shell=True)
             logger.info(

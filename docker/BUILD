@@ -1,7 +1,7 @@
 load("@aspect_bazel_lib//lib:tar.bzl", "tar")
 load("@container_structure_test//:defs.bzl", "container_structure_test")
 load("@rules_distroless//apt:defs.bzl", "dpkg_status")
-load("@rules_distroless//distroless:defs.bzl", "cacerts", "flatten", "group", "passwd")
+load("@rules_distroless//distroless:defs.bzl", "cacerts", "group", "home", "passwd")
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
@@ -16,18 +16,25 @@ passwd(
             "username": "root",
         },
         {
-            "uid": 100,
-            "gid": 65534,
-            "home": "/home/pulse",
-            "shell": "/usr/sbin/nologin",
-            "username": "pulse",
+            "uid": 1000,
+            "gid": 1000,
+            "home": "/home/nonroot",
+            "shell": "/bin/bash",
+            "username": "nonroot",
         },
         {
-            "uid": 999,
-            "gid": 1000,
-            "home": "/home/messagebus",
-            "shell": "/usr/sbin/nologin",
+            "uid": 106,
+            "gid": 110,
             "username": "messagebus",
+            "home": "/var/run/dbus",
+            "shell": "/bin/false",
+        },
+        {
+            "uid": 107,
+            "gid": 107,
+            "username": "pulse",
+            "home": "/var/run/pulse",
+            "shell": "/bin/false",
         },
     ],
 )
@@ -40,19 +47,66 @@ group(
             "gid": 0,
         },
         {
-            "name": "pulse",
-            "gid": 65534,
+            "name": "messagebus",
+            "gid": 110,
+            "users": [
+                "root",
+                "nonroot",
+                "messagebus",
+            ],
         },
         {
-            "name": "messagebus",
-            "gid": "1000",
+            "name": "pulse",
+            "gid": 107,
+            "users": [
+                "root",
+                "pulse",
+                "nonroot",
+            ],
         },
         {
             "name": "pulse-access",
-            "gid": "1001",
+            "gid": 108,
             "users": [
                 "root",
+                "pulse",
+                "nonroot",
             ],
+        },
+        {
+            "name": "sudo",
+            "gid": 112,
+            "users": [
+                "nonroot",
+            ],
+        },
+        {
+            "name": "audio",
+            "gid": 1,
+            "users": [
+                "nonroot",
+                "root",
+                "pulse",
+            ],
+        },
+        {
+            "name": "video",
+            "gid": 2,
+            "users": [
+                "nonroot",
+                "root",
+            ],
+        },
+    ],
+)
+
+home(
+    name = "home",
+    dirs = [
+        {
+            "home": "/home/nonroot",
+            "uid": 1000,
+            "gid": 1000,
         },
     ],
 )
@@ -74,26 +128,31 @@ cacerts(
 )
 
 PACKAGES = [
-    "@bookworm//ncurses-base",
-    "@bookworm//libncurses6",
-    "@bookworm//tzdata",
+    # "@bookworm//ncurses-base",
+    # "@bookworm//libncurses6",
+    # "@bookworm//tzdata",
     "@bookworm//bash",
     "@bookworm//coreutils",
-    "@bookworm//dpkg",
-    "@bookworm//apt",
-    "@bookworm//perl",
+    # "@bookworm//dpkg",
+    # "@bookworm//apt",
+    # "@bookworm//perl",
     "@bookworm//dbus",
     "@bookworm//dbus-x11",
     "@bookworm//xvfb",
+    "@bookworm//libxcb1",
+    "@bookworm//xauth",
     "@bookworm//pulseaudio",
-    "@bookworm//grep",
-    "@bookworm//chromium",
-    "@bookworm//findutils",
+    # "@bookworm//grep",
+    "@bookworm//chromium-driver",
+    # "@bookworm//findutils",
     "@bookworm//libfontconfig1",
     "@bookworm//libfreetype6",
     "@bookworm//xfonts-scalable",
     "@bookworm//fonts-liberation",
     "@bookworm//fonts-ipafont-gothic",
+    # to run services
+    "@bookworm//sudo",
+    "@bookworm//python3",
 ]
 
 # Creates /var/lib/dpkg/status with installed package information.
@@ -140,18 +199,21 @@ oci_image(
     entrypoint = ["/meeting_bot/meeting_bot"],
     env = {
         "DISPLAY": ":1.0",
-        "XDG_RUNTIME_DIR": "/run/user/0",
+        # tells any program you run where to find a nonroot-specific directory
+        # in which it can store small temporary files.
+        "XDG_RUNTIME_DIR": "/home/nonroot/0",
+        "DBUS_STARTER_BUS_TYPE": "session",
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket",
     },
     tars = [
         ":sh",
         ":passwd",
         ":group",
-        ":dpkg_status",
-        ":cacerts",
+        ":home",
         ":packages_tar",
         ":meeting_bot_tar",
     ],
+    user = "root",
 )
 
 oci_tarball(
