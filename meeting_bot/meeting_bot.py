@@ -383,7 +383,7 @@ async def prepare_env(logger: logging.Logger):
 
         for cmd in [
             "rm /etc/dbus-1/system.d/pulseaudio-system.conf",
-            "sudo pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",
+            "pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",
             'sudo pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
             'sudo pactl load-module module-null-sink sink_name=MicOutput sink_properties=device.description="Virtual_Microphone_Output"',
             "sudo pactl set-default-source MicOutput.monitor",
