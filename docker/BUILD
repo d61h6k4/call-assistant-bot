@@ -157,7 +157,7 @@ pkg_tar(
 )
 
 oci_image(
-    name = "apt",
+    name = "image",
     base = "@base",
     entrypoint = ["/meeting_bot/meeting_bot"],
     env = {
@@ -180,11 +180,17 @@ oci_image(
     user = "root",
 )
 
+# Build: bazel run //docker:tarball
+# Run: docker run --rm -e GOOGLE_LOGIN=d61h6k4a1k1tt3st@gmail.com \
+#                      -e GOOGLE_PASSWORD=*** \
+#                      --volume `pwd`/output:/root \
+#                      aikit/meetingbot:latest \
+#                      --gmeet_link=https://meet.google.com/rof-kvpv-yue
 oci_tarball(
     name = "tarball",
-    image = ":apt",
+    image = ":image",
     repo_tags = [
-        "distroless/test:latest",
+        "aikit/meetingbot:latest",
     ],
 )
 
@@ -194,5 +200,5 @@ container_structure_test(
         "@platforms//cpu:arm64": ["test_linux_arm64.yaml"],
         "@platforms//cpu:x86_64": ["test_linux_amd64.yaml"],
     }),
-    image = ":apt",
+    image = ":image",
 )
