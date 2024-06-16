@@ -23,8 +23,6 @@ archs:
   - "arm64"
 
 packages:
-  - "bash"
-  - "coreutils" # for commands like `ls`
   - "ca-certificates"
   # xvfb
   - "x11-apps"

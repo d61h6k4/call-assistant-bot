@@ -68,7 +68,6 @@ oci.pull(
     # During the build we print a WARNING message that includes recommended 'digest' and 'platforms'
     # values which you can use here in place of 'tag' to pin for reproducibility.
     tag = "24.04",
-    digest = "sha256:a92ed51e0996d8e9de041ca05ce623d2c491444df6a535a566dabd5cb8336946",
 )
 
 # For each oci.pull call, repeat the "name" here to expose them as dependencies.

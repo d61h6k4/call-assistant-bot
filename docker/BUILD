@@ -120,8 +120,6 @@ cacerts(
 )
 
 PACKAGES = [
-    "@noble//bash",
-    "@noble//coreutils",
     "@noble//xvfb",
     "@noble//fluxbox",
     "@noble//x11-apps",
@@ -173,7 +171,6 @@ oci_image(
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket",
     },
     tars = [
-        ":sh",
         ":passwd",
         ":group",
         ":home",
