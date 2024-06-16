@@ -1,6 +1,6 @@
---- /dev/null	2024-06-03 11:48:53
-+++ BUILD	2024-06-03 11:48:47
-@@ -0,0 +1,61 @@
+--- /dev/null	2024-06-16 15:39:29
++++ BUILD	2024-06-16 15:39:05
+@@ -0,0 +1,75 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +
 +filegroup(
@@ -14,7 +14,8 @@
 +    name = "libffmpeg",
 +    args = ["-j `nproc`"],
 +    configure_options = [
-+        "--disable-programs",
++        "--disable-ffplay",
++        "--disable-ffprobe",
 +        "--disable-doc",
 +        "--disable-lzma",
 +        "--disable-htmlpages",
@@ -40,6 +41,9 @@
 +        },
 +    }),
 +    lib_source = ":ffmpeg_srcs",
++    out_binaries = [
++        "ffmpeg",
++    ],
 +    out_static_libs = [
 +        "libavcodec.a",
 +        "libavdevice.a",
@@ -61,4 +65,14 @@
 +        ],
 +        "//conditions:default": [],
 +    }),
++)
++
++
++# Explanation of how it works
++# https://www.hdlfactory.com/post/2023/06/13/how-to-use-the-make-rule-from-rules_foreign_cc-repository-for-bazel/
++filegroup(
++    name = "ffmpeg_bin",
++    visibility = ["//visibility:public"],
++    srcs = [":libffmpeg"],
++    output_group = "ffmpeg"
 +)

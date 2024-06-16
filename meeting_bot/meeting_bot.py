@@ -3,10 +3,12 @@ from abc import abstractmethod, abstractproperty
 import asyncio
 import argparse
 import base64
+import copy
 import uuid
 import shlex
 import signal
 import os
+import sys
 import tempfile
 import shutil
 
@@ -17,6 +19,7 @@ import time
 import picologging as logging
 
 from pathlib import Path
+from subprocess import CalledProcessError
 from typing import Protocol, Sequence
 from meeting_bot import meeting_bot_pb2, meeting_bot_pb2_grpc  # noqa
 from meeting_bot.evaluator import evaluator_pb2, evaluator_pb2_grpc  # noqa
@@ -52,7 +55,7 @@ class BotPart(Protocol):
 class Evaluator(BotPart):
     # Path to the evaluator binary, that will be executed as a subprocess
     # see py_binrary data option to find out more about getting this path
-    _EVALUATOR_BIN = "meeting_bot/meeting_bot/evaluator/evaluator"
+    _EVALUATOR_BIN = "_main/meeting_bot/evaluator/evaluator"
 
     def __init__(
         self,
@@ -83,7 +86,7 @@ class Evaluator(BotPart):
         evaluator_address = "unix:///tmp/evaluator.sock"
 
         r = runfiles.Create()
-        env = {}
+        env = copy.deepcopy(os.environ)
         env.update(r.EnvVars())
         proc = await asyncio.create_subprocess_shell(
             shlex.join(
@@ -102,7 +105,7 @@ class Evaluator(BotPart):
 
 
 class Articulator(BotPart):
-    _ARTICULATOR_BIN = "meeting_bot/meeting_bot/articulator/articulator"
+    _ARTICULATOR_BIN = "_main/meeting_bot/articulator/articulator"
 
     def __init__(
         self,
@@ -134,11 +137,7 @@ class Articulator(BotPart):
         articulator_address = "unix:///tmp/articulator.sock"
 
         r = runfiles.Create()
-        env = {
-            "PATH": os.environ.get("PATH"),
-            "GOOGLE_LOGIN": os.environ.get("GOOGLE_LOGIN"),
-            "GOOGLE_PASSWORD": os.environ.get("GOOGLE_PASSWORD"),
-        }
+        env = copy.deepcopy(os.environ)
         env.update(r.EnvVars())
         proc = await asyncio.create_subprocess_shell(
             shlex.join(
@@ -159,7 +158,7 @@ class Articulator(BotPart):
 
 
 class Perceiver(BotPart):
-    _PERCEIVER_BIN = "meeting_bot/meeting_bot/perceiver/perceiver"
+    _PERCEIVER_BIN = "_main/meeting_bot/perceiver/perceiver"
 
     def __init__(
         self,
@@ -191,7 +190,7 @@ class Perceiver(BotPart):
         perceiver_address = "unix:///tmp/perceiver.sock"
 
         r = runfiles.Create()
-        env = {}
+        env = copy.deepcopy(os.environ)
         env.update(r.EnvVars())
         proc = await asyncio.create_subprocess_shell(
             shlex.join(
@@ -303,8 +302,122 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         self.working_dir.cleanup()
 
 
+async def prepare_env(logger: logging.Logger):
+    if sys.platform == "linux":
+        import subprocess
+        from meeting_bot.xvfbwrapper import Xvfb
+
+        display = os.environ.get("DISPLAY")
+        vdisplay = Xvfb(width=1024, height=768, colordepth=24, display=display[1:])
+        vdisplay.start()
+        logger.info({"message": f"Xvfb runs on {vdisplay.new_display}"})
+
+        with open(os.devnull, "w") as fnull:
+            fluxbox = subprocess.Popen(
+                ["fluxbox", "-screen", "0"], stdout=fnull, stderr=fnull, close_fds=True
+            )
+
+        ret_code = fluxbox.poll()
+        if ret_code is None:
+            logger.info({"message": "Fluxbox is running"})
+        else:
+            logger.error({"message": "Failed to run fluxbox", "return_code": ret_code})
+            raise RuntimeError("Could not prepare env")
+
+        logger.info({"message": "Start dbus"})
+        # dbus needs it
+        xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
+        Path(xdg_runtime_dir).mkdir(exist_ok=True)
+        logger.info({"message": "Created XDG runtime dir", "path": xdg_runtime_dir})
+        # address has format unix:path=/<actual_path>
+        bus_address = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
+        bus_address_path = bus_address.split("=")[1]
+        dbus_session_address = Path(bus_address_path)
+        # here we pre create folder to store dbus socket
+        dbus_session_address.parent.mkdir(parents=True, mode=755)
+        logger.info({"message": "Created DBUS working dir", "path": bus_address_path})
+        # usually this is done by systemd
+        import socket
+
+        s = socket.socket(socket.AF_UNIX)
+        s.bind(str(dbus_session_address))
+        for cmd in [
+            # pulse audio requires
+            "dbus-uuidgen > /var/lib/dbus/machine-id",
+            f"dbus-daemon --session --fork --nosyslog --nopidfile --address={bus_address}",
+        ]:
+            try:
+                res = subprocess.check_output(cmd, shell=True)
+            except CalledProcessError as e:
+                logger.error(
+                    {
+                        "message": "Failed to execute the command",
+                        "cmd": cmd,
+                        "error": repr(e),
+                    }
+                )
+                raise RuntimeError("Failed to prepare env")
+
+            logger.info(
+                {
+                    "message": "Calling command to setup dbus",
+                    "cmd": cmd,
+                    "output": res,
+                }
+            )
+
+        logger.info({"message": "starting virtual audio drivers"})
+        pulseaudio_conf = r"""
+        <!DOCTYPE busconfig PUBLIC
+         "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+         "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+        <busconfig>
+                <policy user="pulse">
+                    <allow own="org.pulseaudio.Server"/>
+                    <allow send_destination="org.pulseaudio.Server"/>
+                    <allow receive_sender="org.pulseaudio.Server"/>
+                </policy>
+        </busconfig>
+        """
+        Path("/etc/dbus-1/system.d/pulseaudio.conf").write_text(pulseaudio_conf)
+
+        for cmd in [
+            "rm /etc/dbus-1/system.d/pulseaudio-system.conf",
+            "pulseaudio -D --verbose --exit-idle-time=-1 --system --disallow-exit",
+            'sudo pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"',
+            'sudo pactl load-module module-null-sink sink_name=MicOutput sink_properties=device.description="Virtual_Microphone_Output"',
+            "sudo pactl set-default-source MicOutput.monitor",
+            "sudo pactl set-default-sink MicOutput",
+            "sudo pactl load-module module-virtual-source source_name=VirtualMic",
+            # set volume
+            "sudo pactl set-sink-volume MicOutput 150%",
+            "sudo pactl set-source-volume MicOutput.monitor 150%",
+        ]:
+            try:
+                res = subprocess.check_output(cmd, shell=True)
+            except CalledProcessError as e:
+                logger.error(
+                    {
+                        "message": "Failed to execute the command",
+                        "cmd": cmd,
+                        "error": repr(e),
+                    }
+                )
+                raise RuntimeError("Failed to prepare env")
+
+            logger.info(
+                {
+                    "message": "Calling command to setup virtual driver",
+                    "cmd": cmd,
+                    "output": res,
+                }
+            )
+
+
 async def serve(args: argparse.Namespace):
     logger = logging.getLogger()
+    await prepare_env(logger)
+
     server = grpc.aio.server()
     service = await MeetingBotServicer.create(
         gmeet_link=args.gmeet_link, address=args.address, server=server, logger=logger
@@ -356,6 +469,9 @@ if __name__ == "__main__":
     assert (
         os.getenv("GOOGLE_PASSWORD") is not None
     ), "Please set GOOGLE_PASSWORD environment variable"
+    assert (
+        os.getenv("DISPLAY") is not None
+    ), "Please set DISPLAY value (e.g. DISPLAY=:99)"
 
     logging.basicConfig(level=logging.INFO)
     asyncio.run(serve(args))

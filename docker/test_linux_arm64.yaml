@@ -1,0 +1,6 @@
+schemaVersion: "2.0.0"
+commandTests:
+  - name: "check dbus"
+    setup: [["mkdir", "$XDG_RUNTIME_DIR"], ["mkdir", "-p", "/var/run/dbus/"], ["python", "-c", "import socket; s = socket.socket(socket.AF_UNIX); s.bind('/var/run/dbus/system_bus_socket')"]]
+    command: "dbus-daemon"
+    args: ["--session", "--fork", "--nosyslog", "--nopidfile", "--address=$DBUS_STARTER_ADDRESS"]

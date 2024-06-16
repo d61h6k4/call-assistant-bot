@@ -27,6 +27,7 @@ bazel_dep(name = "protobuf", version = "27.1", repo_name = "com_google_protobuf"
 bazel_dep(name = "abseil-cpp", version = "20240116.2", repo_name = "com_google_absl")
 bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
+bazel_dep(name = "re2", version = "2024-06-01", repo_name = "com_googlesource_code_re2")
 bazel_dep(name = "rules_python", version = "0.32.2")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
@@ -40,6 +41,7 @@ use_repo(pip, "pip")
 bazel_dep(name = "grpc", version = "1.64.2")
 archive_override(
     module_name = "grpc",
+    integrity = "sha256-xoL8ObrvxugE1zXmtIFBFXtyE2Asxm2+C/N1uQTYtfk=",
     patch_strip = 1,
     patches = [
         "//third_party/grpc:adopt_bzlmod.patch",
@@ -48,6 +50,58 @@ archive_override(
     strip_prefix = "grpc-1.64.2",
     urls = "https://github.com/grpc/grpc/archive/refs/tags/v1.64.2.tar.gz",
 )
+
+bazel_dep(name = "rules_oci", version = "1.7.6")
+# For testing, we also recommend https://registry.bazel.build/modules/container_structure_test
+
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+
+# Declare external images you need to pull, for example:
+oci.pull(
+    name = "distroless_base",
+    image = "debian",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64/v8",
+    ],
+    # 'latest' is not reproducible, but it's convenient.
+    # During the build we print a WARNING message that includes recommended 'digest' and 'platforms'
+    # values which you can use here in place of 'tag' to pin for reproducibility.
+    tag = "bookworm-20240612",
+)
+
+# For each oci.pull call, repeat the "name" here to expose them as dependencies.
+use_repo(oci, "distroless_base")
+
+bazel_dep(name = "rules_pkg", version = "1.0.0")
+
+# TODO(d61h6l4) Remove after PR merged:
+# https://github.com/bazelbuild/bazel-central-registry/pull/2180
+archive_override(
+    module_name = "rules_pkg",
+    strip_prefix = "rules_pkg-1.0.0",
+    urls = "https://github.com/bazelbuild/rules_pkg/archive/refs/tags/1.0.0.tar.gz",
+)
+
+bazel_dep(name = "container_structure_test", version = "1.16.0")
+bazel_dep(name = "aspect_bazel_lib", version = "2.7.3")
+bazel_dep(name = "rules_distroless", version = "0.3.3")
+
+# TODO(d61h6k4) Remove after merging PR:
+# https://github.com/GoogleContainerTools/rules_distroless/pull/50
+git_override(
+    module_name = "rules_distroless",
+    commit = "f06d81a716997253d5dff0b9db5c71d36e82cad3",
+    remote = "https://github.com/jacobshirley/rules_distroless",
+)
+
+apt = use_extension("@rules_distroless//apt:extensions.bzl", "apt")
+apt.deb_index(
+    name = "bookworm",
+    lock = "//docker:bookworm.lock.json",
+    manifest = "//docker:bookworm.yaml",
+)
+use_repo(apt, "bookworm")
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -65,6 +119,8 @@ http_archive(
         # Use local opencv and libyuv
         "//third_party/mediapipe:mediapipe_framework_port_build.patch",
         "//third_party/mediapipe:mediapipe_calculators_image_build.patch",
+        # Fix building re2.h
+        "//third_party/mediapipe:mediapipe_framework_deps_re2.patch",
     ],
     sha256 = "9d46fa5363f5c4e11c3d1faec71b0746f15c5aab7b5460d0e5655d7af93c6957",
     strip_prefix = "mediapipe-{}".format(_MEDIAPIPE_VERSION),
