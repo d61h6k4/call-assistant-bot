@@ -15,7 +15,6 @@ sources:
     url: https://snapshot-cloudflare.debian.org/archive/debian-security/20240210T223313Z
   - channel: bookworm-updates main
     url: https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/
-
 archs:
   - "amd64"
   - "arm64"

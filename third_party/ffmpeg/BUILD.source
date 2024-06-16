@@ -11,7 +11,8 @@ configure_make(
     name = "libffmpeg",
     args = ["-j `nproc`"],
     configure_options = [
-        "--disable-programs",
+        "--disable-ffplay",
+        "--disable-ffprobe",
         "--disable-doc",
         "--disable-lzma",
         "--disable-htmlpages",
@@ -37,6 +38,9 @@ configure_make(
         },
     }),
     lib_source = ":ffmpeg_srcs",
+    out_binaries = [
+        "ffmpeg",
+    ],
     out_static_libs = [
         "libavcodec.a",
         "libavdevice.a",
@@ -58,4 +62,14 @@ configure_make(
         ],
         "//conditions:default": [],
     }),
+)
+
+
+# Explanation of how it works
+# https://www.hdlfactory.com/post/2023/06/13/how-to-use-the-make-rule-from-rules_foreign_cc-repository-for-bazel/
+filegroup(
+    name = "ffmpeg_bin",
+    visibility = ["//visibility:public"],
+    srcs = [":libffmpeg"],
+    output_group = "ffmpeg"
 )

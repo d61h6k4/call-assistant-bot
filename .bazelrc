@@ -30,6 +30,24 @@ build:macos --cxxopt=-std=c++20
 build:macos --host_cxxopt=-std=c++20
 build:macos --copt=-w
 
+# Suppress most C++ compiler warnings to reduce log size but allow
+# for specific warnings to still be present.
+build:linux --copt="-Wno-all"
+build:linux --copt="-Wno-extra"
+build:linux --copt="-Wno-deprecated"
+build:linux --copt="-Wno-deprecated-declarations"
+build:linux --copt="-Wno-ignored-attributes"
+build:linux --copt="-Wno-array-bounds"
+
+# Add unused-result as an error on Linux.
+build:linux --copt="-Wunused-result"
+build:linux --copt="-Werror=unused-result"
+# Add switch as an error on Linux.
+build:linux --copt="-Wswitch"
+build:linux --copt="-Werror=switch"
+# Required for building with clang
+build:linux --copt="-Wno-error=unused-but-set-variable"
+
 # Sets the default Apple platform to macOS.
 build --apple_platform_type=macos
 
