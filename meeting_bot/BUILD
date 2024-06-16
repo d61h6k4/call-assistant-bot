@@ -19,6 +19,11 @@ py_grpc_library(
     deps = [":meeting_bot_py_pb2"],
 )
 
+py_library(
+    name = "xvfbwrapper",
+    srcs = ["xvfbwrapper.py"],
+)
+
 py_binary(
     name = "meeting_bot",
     srcs = ["meeting_bot.py"],
@@ -29,9 +34,11 @@ py_binary(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    visibility = ["//visibility:public"],
     deps = [
         ":meeting_bot_py_pb2",
         ":meeting_bot_py_pb2_grpc",
+        ":xvfbwrapper",
         "//meeting_bot/articulator:articulator_py_pb2",
         "//meeting_bot/articulator:articulator_py_pb2_grpc",
         "//meeting_bot/evaluator:evaluator_py_pb2",

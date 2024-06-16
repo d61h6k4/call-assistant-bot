@@ -23,7 +23,7 @@ struct AudioStreamParameters {
   AVChannelLayout channel_layout;
 
   AudioStreamParameters()
-      : frame_size(1024), sample_rate(16000), bit_rate(64000),
+      : frame_size(1024), sample_rate(48000), bit_rate(192000),
         format(AV_SAMPLE_FMT_FLTP), channel_layout(AV_CHANNEL_LAYOUT_MONO) {}
 };
 

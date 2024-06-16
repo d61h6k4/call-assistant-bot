@@ -19,7 +19,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   auto audio_header = capture_audio_node.SideOut("AUDIO_HEADER");
   auto audio_stream = capture_audio_node.Out("AUDIO");
 
-  // Convert to 16kHz FLT
+  // Convert to 48kHz FLT
   auto &audio_converter_node = graph.AddNode("AudioConverterCalculator");
   audio_header >> audio_converter_node.SideIn("IN_AUDIO_HEADER");
   graph.SideIn("OUT_AUDIO_HEADER")
@@ -27,7 +27,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .Cast<aikit::media::AudioStreamParameters>() >>
       audio_converter_node.SideIn("OUT_AUDIO_HEADER");
   audio_stream >> audio_converter_node.In("IN_AUDIO");
-  auto float_16kHz_audio_stream = audio_converter_node.Out("OUT_AUDIO");
+  auto float_48kHz_audio_stream = audio_converter_node.Out("OUT_AUDIO");
 
   // Write audio
   auto &sink_video_node = graph.AddNode("FFMPEGSinkVideoCalculator");
@@ -39,7 +39,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .SetName("out_audio_header")
           .Cast<aikit::media::AudioStreamParameters>() >>
       sink_video_node.SideIn("AUDIO_HEADER");
-  float_16kHz_audio_stream >> sink_video_node.In("AUDIO");
+  float_48kHz_audio_stream >> sink_video_node.In("AUDIO");
 
   return graph.GetConfig();
 }
