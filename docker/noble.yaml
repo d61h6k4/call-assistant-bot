@@ -9,30 +9,32 @@
 # See debian_package_index at WORKSPACE.bazel
 version: 1
 sources:
-  - channel: bookworm main
-    url: https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z
-  - channel: bookworm-security main
-    url: https://snapshot-cloudflare.debian.org/archive/debian-security/20240210T223313Z
-  - channel: bookworm-updates main
-    url: https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/
+  - channel: noble main
+    url: https://snapshot.ubuntu.com/ubuntu/20240301T030400Z
+  - channel: noble-security main
+    url: https://snapshot.ubuntu.com/ubuntu/20240301T030400Z
+  - channel: noble-updates main
+    url: https://snapshot.ubuntu.com/ubuntu/20240301T030400Z
+  - channel: noble universe
+    url: https://snapshot.ubuntu.com/ubuntu/20240301T030400Z
+
 archs:
   - "amd64"
   - "arm64"
+
 packages:
   - "bash"
   - "coreutils" # for commands like `ls`
-  # for apt list --installed
-  # test cacerts() compatibility
   - "ca-certificates"
   # xvfb
-  - "xvfb"
-  - "fluxbox"
   - "x11-apps"
   - "pulseaudio"
   - "pavucontrol"
   # end xvfb
-  - "chromium-driver"
+  - "chromium-chromedriver"
   - "sudo"
   - "python3"
   - "dbus"
   - "dbus-x11"
+  - "xvfb"
+  - "fluxbox"

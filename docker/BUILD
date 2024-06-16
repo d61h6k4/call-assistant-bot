@@ -111,14 +111,6 @@ home(
     ],
 )
 
-tar(
-    name = "sh",
-    mtree = [
-        # needed as dpkg assumes sh is installed in a typical debian installation.
-        "./bin/sh type=link link=/bin/bash",
-    ],
-)
-
 cacerts(
     name = "cacerts",
     package = select({
@@ -128,34 +120,20 @@ cacerts(
 )
 
 PACKAGES = [
-    "@bookworm//bash",
-    "@bookworm//coreutils",
-    "@bookworm//xvfb",
-    "@bookworm//fluxbox",
-    "@bookworm//x11-apps",
-    "@bookworm//pulseaudio",
-    "@bookworm//pavucontrol",
-    "@bookworm//chromium-driver",
-    "@bookworm//sudo",
-    "@bookworm//python3",
-    "@bookworm//dbus",
-    "@bookworm//dbus-x11",
+    "@noble//bash",
+    "@noble//coreutils",
+    "@noble//xvfb",
+    "@noble//fluxbox",
+    "@noble//x11-apps",
+    "@noble//pulseaudio",
+    "@noble//pavucontrol",
+    "@noble//chromium-chromedriver",
+    "@noble//sudo",
+    "@noble//python3",
+    "@noble//dbus",
+    "@noble//dbus-x11",
 ]
 
-# Creates /var/lib/dpkg/status with installed package information.
-dpkg_status(
-    name = "dpkg_status",
-    controls = select({
-        "@platforms//cpu:arm64": [
-            "%s/arm64:control" % package
-            for package in PACKAGES
-        ],
-        "@platforms//cpu:x86_64": [
-            "%s/amd64:control" % package
-            for package in PACKAGES
-        ],
-    }),
-)
 
 pkg_tar(
     name = "packages_tar",
@@ -182,7 +160,7 @@ pkg_tar(
 
 oci_image(
     name = "apt",
-    base = "@distroless_base",
+    base = "@base",
     entrypoint = ["/meeting_bot/meeting_bot"],
     env = {
         "DISPLAY": ":1.0",
