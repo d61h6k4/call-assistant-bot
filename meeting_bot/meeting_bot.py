@@ -18,6 +18,7 @@ import time
 
 import picologging as logging
 
+from datetime import datetime
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Protocol, Sequence
@@ -27,6 +28,7 @@ from meeting_bot.articulator import articulator_pb2, articulator_pb2_grpc  # noq
 from meeting_bot.perceiver import perceiver_pb2, perceiver_pb2_grpc  # noqa
 from grpc_health.v1 import health_pb2, health_pb2_grpc
 
+from meeting_bot.google_cloud import upload_blob
 from python.runfiles import runfiles  # noqa
 
 
@@ -252,9 +254,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             server=server,
             parts=[evaluator, articulator, perceiver],
             logger=logger,
-            meeting_name=base64.urlsafe_b64encode(gmeet_link.encode("utf8")).decode(
-                "ascii"
-            ),
+            meeting_name=gmeet_link,
             working_dir=working_dir,
         )
 
@@ -288,7 +288,10 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
 
     def working_dir_cleanup(self):
         with tempfile.TemporaryDirectory() as archive_dir:
-            archive_path = Path(archive_dir) / self.meeting_name
+            archive_name = base64.urlsafe_b64encode(
+                self.meeting_name.encode("utf8")
+            ).decode("ascii")
+            archive_path = Path(archive_dir) / archive_name
             shutil.make_archive(
                 str(archive_path),
                 "zip",
@@ -296,8 +299,19 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
                 verbose=True,
             )
 
-            # TODO(d61h6k4) upload to GCS
-            shutil.copy2(archive_path.with_suffix(".zip"), Path.home())
+            zip_archive_path = archive_path.with_suffix(".zip")
+            destination_blob_name = str(
+                Path(datetime.now().strftime("%Y/%m/%d")) / zip_archive_path.name
+            )
+
+            upload_blob(zip_archive_path.absolute(), destination_blob_name)
+            self.logger.info(
+                {
+                    "message": f"Artifacts of the meeting {self.meeting_name} uploaded to {destination_blob_name}",
+                    "meeting_name": self.meeting_name,
+                    "destination": destination_blob_name,
+                }
+            )
 
         self.working_dir.cleanup()
 
