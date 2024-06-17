@@ -18,7 +18,7 @@ mss==9.0.1
 nodriver==0.29rc2
 picologging==0.9.3
 proto-plus==1.23.0
-protobuf==4.25.3
+protobuf==5.27.1
 pyasn1==0.6.0
 pyasn1_modules==0.4.0
 requests==2.32.3
