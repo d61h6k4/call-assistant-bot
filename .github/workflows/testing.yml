@@ -13,13 +13,13 @@ jobs:
     container:
       image: debian:bookworm-20240612
     steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: "true"
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y live-build git
+          sudo apt install -y live-build git git-lfs
+      - uses: actions/checkout@v4
+        with:
+          lfs: "true"
       - name: Mount bazel cache # Optional
         uses: actions/cache@v4
         with:
