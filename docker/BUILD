@@ -141,7 +141,6 @@ PACKAGES = [
     "@bookworm//dbus-x11",
 ]
 
-
 pkg_tar(
     name = "packages_tar",
     deps = select({
