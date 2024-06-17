@@ -41,7 +41,7 @@ To install and set up the AI Call Assistant Bot, follow these steps:
 
 
 ### Prerequisite
-Install git and bazel.
+Install python, git and bazel.
 #### MacOS
 Install XCode
 
@@ -50,29 +50,36 @@ Install XCode
 sudo apt install -y yasm automake libtool m4 g++
 ```
 
+### Steps to install
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/AI-Call-Assistant-Bot.git
-   cd AI-Call-Assistant-Bot
+   git clone https://github.com/d61h6k4/call-assistant-bot.git
+   cd call-assistant-bot
    ```
-
-2. Install the required dependencies:
+   
+2. Run the initial setup:
    ```sh
-   pip install -r requirements.txt
-   ```
-
-3. Run the initial setup:
-   ```sh
-   python setup.py
+   bazel build //meeting_bot
    ```
 
 ## Usage
 
+> [!NOTE]
+>  MacOS: Screen capturing is not fully implemented yet, even if user
+> allows terminal to capture the screen, program will take only 1
+> frame of screen and audio.
+
 To start the AI Call Assistant Bot, execute the following command:
 
 ```sh
-python main.py
+export GOOGLE_LOGIN=<...>
+export GOOGLE_PASSWORD=<...>
+export DISPLAY=:99
+bazel run //meeting_bot -- --gmeet_link=<google meet link>
 ```
+
+> [!CAUTION]
+> On Linux meeting_bot will start Xvfb and PulseAudio demons.
 
 You can configure the system by modifying the configuration file `config.json`.
 
