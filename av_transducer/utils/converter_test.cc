@@ -42,6 +42,7 @@ TEST(TestConverterUtils, CheckCreateAudioConverter) {
 
 TEST(TestConverterUtils, CheckAudioConvert) {
   aikit::media::AudioStreamParameters in_audio_stream;
+  in_audio_stream.sample_rate = 16000;
   auto in_audio_frame = aikit::media::AudioFrame::CreateAudioFrame(
       in_audio_stream.format, &in_audio_stream.channel_layout,
       in_audio_stream.sample_rate, in_audio_stream.frame_size);

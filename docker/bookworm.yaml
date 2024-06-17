@@ -29,7 +29,6 @@ packages:
   - "fluxbox"
   - "x11-apps"
   - "pulseaudio"
-  - "pavucontrol"
   # end xvfb
   - "chromium-driver"
   - "sudo"
