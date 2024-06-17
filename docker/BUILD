@@ -120,16 +120,15 @@ cacerts(
 )
 
 PACKAGES = [
-    "@noble//xvfb",
-    "@noble//fluxbox",
-    "@noble//x11-apps",
-    "@noble//pulseaudio",
-    "@noble//pavucontrol",
-    "@noble//chromium-chromedriver",
-    "@noble//sudo",
-    "@noble//python3",
-    "@noble//dbus",
-    "@noble//dbus-x11",
+    "@bookworm//xvfb",
+    "@bookworm//fluxbox",
+    "@bookworm//x11-apps",
+    "@bookworm//pulseaudio",
+    "@bookworm//chromium-driver",
+    "@bookworm//sudo",
+    "@bookworm//python3",
+    "@bookworm//dbus",
+    "@bookworm//dbus-x11",
 ]
 
 

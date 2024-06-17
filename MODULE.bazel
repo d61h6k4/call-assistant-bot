@@ -10,9 +10,9 @@ module(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.5.0")
-bazel_dep(name = "platforms", version = "0.0.9")
-bazel_dep(name = "apple_support", version = "1.11.1", repo_name = "build_bazel_apple_support")
-bazel_dep(name = "rules_apple", version = "3.1.1", repo_name = "build_bazel_rules_apple")
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "rules_apple", version = "3.5.1", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
 git_override(
     module_name = "rules_foreign_cc",
@@ -59,7 +59,7 @@ oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
 # Declare external images you need to pull, for example:
 oci.pull(
     name = "base",
-    image = "ubuntu",
+    image = "debian",
     platforms = [
         "linux/amd64",
         "linux/arm64/v8",
@@ -67,7 +67,7 @@ oci.pull(
     # 'latest' is not reproducible, but it's convenient.
     # During the build we print a WARNING message that includes recommended 'digest' and 'platforms'
     # values which you can use here in place of 'tag' to pin for reproducibility.
-    tag = "24.04",
+    tag = "bookworm-20240612",
 )
 
 # For each oci.pull call, repeat the "name" here to expose them as dependencies.
@@ -97,11 +97,11 @@ git_override(
 
 apt = use_extension("@rules_distroless//apt:extensions.bzl", "apt")
 apt.deb_index(
-    name = "noble",
-    lock = "//docker:noble.lock.json",
-    manifest = "//docker:noble.yaml",
+    name = "bookworm",
+    lock = "//docker:bookworm.lock.json",
+    manifest = "//docker:bookworm.yaml",
 )
-use_repo(apt, "noble")
+use_repo(apt, "bookworm")
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 

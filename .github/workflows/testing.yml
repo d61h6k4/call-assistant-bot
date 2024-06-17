@@ -10,6 +10,8 @@ jobs:
   run-unit-tests:
     name: Testing
     runs-on: ubuntu-22.04
+    container:
+      image: debian:bookworm-20240612
     steps:
       - uses: actions/checkout@v4
         with:
