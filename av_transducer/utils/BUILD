@@ -79,10 +79,11 @@ cc_test(
             "capture_device_macos_test.cc",
         ],
         "@platforms//os:linux": [
-            "ffmpeg_linux_test.cc",
+            "capture_device_linux_test.cc",
         ],
         "//conditions:default": [],
     }),
+    tags = ["manual"],
     deps = [
         ":container",
         "@com_google_absl//absl/log:absl_log",

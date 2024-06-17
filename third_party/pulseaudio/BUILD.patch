@@ -1,6 +1,6 @@
---- /dev/null	2024-06-14 14:38:08
-+++ BUILD	2024-06-14 14:37:40
-@@ -0,0 +1,102 @@
+--- /dev/null	2024-06-17 09:27:49
++++ BUILD	2024-06-17 09:27:43
+@@ -0,0 +1,103 @@
 +
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "meson")
 +
@@ -17,6 +17,7 @@
 +    options = {
 +        "doxygen": "false",
 +        "man": "false",
++        "libdir": "lib64",
 +    },
 +    copts = [
 +        "-fPIC",

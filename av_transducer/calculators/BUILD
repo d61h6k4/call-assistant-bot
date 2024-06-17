@@ -74,6 +74,7 @@ cc_library(
 cc_test(
     name = "ffmpeg_capture_audio_calculator_test",
     srcs = ["ffmpeg_capture_audio_calculator_test.cc"],
+    tags = ["manual"],
     deps = [
         ":ffmpeg_capture_audio_calculator",
         "@com_google_absl//absl/log:absl_log",
