@@ -24,6 +24,17 @@ py_library(
     srcs = ["xvfbwrapper.py"],
 )
 
+py_library(
+    name = "google_cloud",
+    srcs = [
+        "google_cloud.py",
+    ],
+    deps = [
+        "@pip//google_auth",
+        "@pip//google_cloud_storage",
+    ],
+)
+
 py_binary(
     name = "meeting_bot",
     srcs = ["meeting_bot.py"],
@@ -36,6 +47,7 @@ py_binary(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        ":google_cloud",
         ":meeting_bot_py_pb2",
         ":meeting_bot_py_pb2_grpc",
         ":xvfbwrapper",
@@ -59,7 +71,15 @@ py_test(
     data = [
         ":meeting_bot",
     ],
+    tags = ["manual"],
     deps = [
         ":meeting_bot_py_pb2_grpc",
     ],
+)
+
+py_test(
+    name = "google_cloud_test",
+    srcs = ["google_cloud_test.py"],
+    tags = ["manual"],
+    deps = [":google_cloud"],
 )
