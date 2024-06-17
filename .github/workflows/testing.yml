@@ -12,11 +12,12 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: debian:bookworm-20240612
+      options: --privileged
     steps:
       - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y live-build git git-lfs
+          apt update
+          apt install -y live-build git git-lfs
       - uses: actions/checkout@v4
         with:
           lfs: "true"
@@ -29,6 +30,6 @@ jobs:
             bazel-
       - name: Run unit tests with Bazel
         run: |
-          sudo apt install -y yasm automake libtool m4
+          apt install -y yasm automake libtool m4
           bazel test --test_output=all  //av_transducer/utils:all
           bazel test --test_output=all  //av_transducer/calculators:all
