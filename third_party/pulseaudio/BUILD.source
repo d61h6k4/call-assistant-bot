@@ -19,7 +19,8 @@ meson(
         "-fPIC",
     ],
     lib_source = ":pulseaudio_srcs",
-    out_lib_dir = "lib/x86_64-linux-gnu",
+    # Ubuntu: lib/x86_64-linux-gnu
+    out_lib_dir = "lib64",
     out_shared_libs = [
         "libpulse-simple.so",
         "libpulse-simple.so.0",
