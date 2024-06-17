@@ -14,12 +14,12 @@ meson(
     options = {
         "doxygen": "false",
         "man": "false",
+        "libdir": "lib64",
     },
     copts = [
         "-fPIC",
     ],
     lib_source = ":pulseaudio_srcs",
-    # Ubuntu: lib/x86_64-linux-gnu
     out_lib_dir = "lib64",
     out_shared_libs = [
         "libpulse-simple.so",

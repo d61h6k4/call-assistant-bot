@@ -1,5 +1,5 @@
---- /dev/null	2024-06-17 08:56:51
-+++ BUILD	2024-06-17 08:56:46
+--- /dev/null	2024-06-17 09:27:49
++++ BUILD	2024-06-17 09:27:43
 @@ -0,0 +1,103 @@
 +
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "meson")
@@ -17,12 +17,12 @@
 +    options = {
 +        "doxygen": "false",
 +        "man": "false",
++        "libdir": "lib64",
 +    },
 +    copts = [
 +        "-fPIC",
 +    ],
 +    lib_source = ":pulseaudio_srcs",
-+    # Ubuntu: lib/x86_64-linux-gnu
 +    out_lib_dir = "lib64",
 +    out_shared_libs = [
 +        "libpulse-simple.so",
