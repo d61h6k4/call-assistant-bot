@@ -111,6 +111,14 @@ home(
     ],
 )
 
+tar(
+    name = "sh",
+    mtree = [
+        # needed as dpkg assumes sh is installed in a typical debian installation.
+        "./bin/sh type=link link=/bin/bash",
+    ],
+)
+
 cacerts(
     name = "cacerts",
     package = select({
@@ -120,6 +128,8 @@ cacerts(
 )
 
 PACKAGES = [
+    "@bookworm//bash",
+    "@bookworm//coreutils",
     "@bookworm//xvfb",
     "@bookworm//fluxbox",
     "@bookworm//x11-apps",
@@ -170,6 +180,7 @@ oci_image(
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket",
     },
     tars = [
+        ":sh",
         ":passwd",
         ":group",
         ":home",
