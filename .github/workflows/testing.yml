@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt update
-          apt install -y live-build git git-lfs
+          apt install -y wget git git-lfs
       - uses: actions/checkout@v4
         with:
           lfs: "true"
@@ -30,6 +30,9 @@ jobs:
             bazel-
       - name: Run unit tests with Bazel
         run: |
+          wget https://github.com/bazelbuild/bazelisk/releases/download/v1.20.0/bazelisk-linux-amd64
+          mv bazelisk-linux-amd64 /usr/local/bin/bazel
+          chmod a+x /usr/local/bin/bazel
           apt install -y yasm automake libtool m4
           bazel test --test_output=all  //av_transducer/utils:all
           bazel test --test_output=all  //av_transducer/calculators:all
