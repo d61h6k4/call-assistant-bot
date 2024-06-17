@@ -301,7 +301,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
 
             zip_archive_path = archive_path.with_suffix(".zip")
             destination_blob_name = str(
-                Path(datetime.now().strftime("%y/%m/%d")) / zip_archive_path.name
+                Path(datetime.now().strftime("%Y/%m/%d")) / zip_archive_path.name
             )
 
             upload_blob(zip_archive_path.absolute(), destination_blob_name)
