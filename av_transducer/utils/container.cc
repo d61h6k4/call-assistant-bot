@@ -3,6 +3,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "av_transducer/utils/audio.h"
+#include "av_transducer/utils/video.h"
 #include <optional>
 
 #ifdef __cplusplus
@@ -78,21 +79,20 @@ ContainerStreamContext::CreateReaderContainerStreamContext(
     }
 
     if (local_codec_parameters->codec_type == AVMEDIA_TYPE_VIDEO) {
-      // if (!container_stream_context.image_stream_context.has_value()) {
+      if (!container_stream_context.video_stream_context_.has_value()) {
 
-      //   auto res =
-      //       InitImageStreamContext(video_stream_context.format_context,
-      //                              local_codec, local_codec_parameters, i);
-      //   if (!res.ok()) {
-      //     auto s =
-      //         absl::AbortedError("Failed to initialize image stream
-      //         context.");
-      //     s.Update(res.status());
-      //     return s;
-      //   }
+        auto res = VideoStreamContext::CreateVideoStreamContext(
+            container_stream_context.format_context_, local_codec,
+            local_codec_parameters, i);
+        if (!res.ok()) {
+          auto s =
+              absl::AbortedError("Failed to initialize video stream context.");
+          s.Update(res.status());
+          return s;
+        }
 
-      //   container_stream_context.image_stream_context = res.value();
-      // }
+        container_stream_context.video_stream_context_ = std::move(res.value());
+      }
       continue;
     } else if (local_codec_parameters->codec_type == AVMEDIA_TYPE_AUDIO) {
       if (!container_stream_context.audio_stream_context_.has_value()) {
@@ -110,17 +110,18 @@ ContainerStreamContext::CreateReaderContainerStreamContext(
       }
     }
   }
-  // if (!container_stream_context.image_stream_context.has_value() &&
-  //     !container_stream_context.audio_stream_context.has_value()) {
-  //   return absl::AbortedError(
-  //       "Video does not contain neither image nor audio streams.");
-  // }
+  if (!container_stream_context.video_stream_context_.has_value() &&
+      !container_stream_context.audio_stream_context_.has_value()) {
+    return absl::AbortedError(
+        "Video does not contain neither video nor audio streams.");
+  }
 
   return container_stream_context;
 }
 
 absl::StatusOr<ContainerStreamContext>
 ContainerStreamContext::CreateWriterContainerStreamContext(
+    VideoStreamParameters video_stream_parameters,
     AudioStreamParameters audio_stream_parameters, const std::string &url) {
   ContainerStreamContext container_stream_context;
   container_stream_context.is_reader_ = false;
@@ -139,6 +140,54 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
 
   /* Add the audio and video streams using the default format codecs
    * and initialize the codecs. */
+  if (container_stream_context.format_context_->oformat->video_codec !=
+      AV_CODEC_ID_NONE) {
+
+    // Codec defined by avformat_alloc_output_context2, based on the filename
+    const AVCodec *codec = avcodec_find_encoder(
+        container_stream_context.format_context_->oformat->video_codec);
+
+    if (!codec) {
+      return absl::AbortedError("Failed to find encoder for audio.");
+    }
+
+    // This call creates and connects stream with AVFormatContext
+    AVStream *stream =
+        avformat_new_stream(container_stream_context.format_context_, nullptr);
+    stream->id = container_stream_context.format_context_->nb_streams - 1;
+    stream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+    stream->codecpar->codec_id =
+        container_stream_context.format_context_->oformat->video_codec;
+    stream->codecpar->width = video_stream_parameters.width;
+    stream->codecpar->height = video_stream_parameters.height;
+    stream->codecpar->framerate =
+        AVRational{1, video_stream_parameters.frame_rate};
+    stream->codecpar->format = video_stream_parameters.format;
+
+    stream->time_base = stream->codecpar->framerate;
+
+    auto video_stream_context_or =
+        aikit::media::VideoStreamContext::CreateVideoStreamContext(
+            container_stream_context.format_context_, codec, stream->codecpar,
+            stream->id);
+
+    if (!video_stream_context_or.ok()) {
+      auto s = absl::AbortedError("Failed to initialize audio stream context.");
+      s.Update(video_stream_context_or.status());
+      return s;
+    }
+
+    /* Some formats want stream headers to be separate. */
+    if (container_stream_context.format_context_->oformat->flags &
+        AVFMT_GLOBALHEADER) {
+      video_stream_context_or->codec_context()->flags |=
+          AV_CODEC_FLAG_GLOBAL_HEADER;
+    }
+
+    container_stream_context.video_stream_context_ =
+        std::move(video_stream_context_or.value());
+  }
+
   if (container_stream_context.format_context_->oformat->audio_codec !=
       AV_CODEC_ID_NONE) {
 
@@ -185,32 +234,32 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
           AV_CODEC_FLAG_GLOBAL_HEADER;
     }
 
-    // Print to stdout format info.
-    av_dump_format(container_stream_context.format_context_, 0, url.c_str(), 1);
-
-    /* open the output file, if needed */
-    if (!(container_stream_context.format_context_->oformat->flags &
-          AVFMT_NOFILE)) {
-      if (int ret = avio_open(&container_stream_context.format_context_->pb,
-                              url.c_str(), AVIO_FLAG_WRITE);
-          ret < 0) {
-        return absl::AbortedError(
-            absl::StrCat("Could not open ", url, " ", av_err2str(ret)));
-      }
-    }
-
-    /* Write the stream header, if any. */
-    if (int ret = avformat_write_header(
-            container_stream_context.format_context_, nullptr);
-        ret < 0) {
-      return absl::AbortedError(absl::StrCat(
-          "Error occurred when opening output file: ", av_err2str(ret)));
-    }
-    container_stream_context.header_written_ = true;
-
     container_stream_context.audio_stream_context_ =
         std::move(audio_stream_context_or.value());
   }
+
+  // Print to stdout format info.
+  av_dump_format(container_stream_context.format_context_, 0, url.c_str(), 1);
+
+  /* open the output file, if needed */
+  if (!(container_stream_context.format_context_->oformat->flags &
+        AVFMT_NOFILE)) {
+    if (int ret = avio_open(&container_stream_context.format_context_->pb,
+                            url.c_str(), AVIO_FLAG_WRITE);
+        ret < 0) {
+      return absl::AbortedError(
+          absl::StrCat("Could not open ", url, " ", av_err2str(ret)));
+    }
+  }
+
+  /* Write the stream header, if any. */
+  if (int ret = avformat_write_header(container_stream_context.format_context_,
+                                      nullptr);
+      ret < 0) {
+    return absl::AbortedError(absl::StrCat(
+        "Error occurred when opening output file: ", av_err2str(ret)));
+  }
+  container_stream_context.header_written_ = true;
 
   return container_stream_context;
 }
@@ -219,6 +268,7 @@ ContainerStreamContext::ContainerStreamContext(
     ContainerStreamContext &&o) noexcept
     : is_reader_(o.is_reader_), header_written_(o.header_written_),
       format_context_(o.format_context_),
+      video_stream_context_(std::move(o.video_stream_context_)),
       audio_stream_context_(std::move(o.audio_stream_context_)) {
 
   o.format_context_ = nullptr;
@@ -230,6 +280,7 @@ ContainerStreamContext::operator=(ContainerStreamContext &&o) noexcept {
     is_reader_ = o.is_reader_;
     header_written_ = o.header_written_;
     audio_stream_context_ = std::move(o.audio_stream_context_);
+    video_stream_context_ = std::move(o.video_stream_context_);
     format_context_ = o.format_context_;
     o.format_context_ = nullptr;
   }
@@ -376,7 +427,7 @@ ContainerStreamContext::FramePTSInMicroseconds(const AudioFrame *frame) {
 void ContainerStreamContext::SetFramePTS(int64_t microseconds,
                                          AudioFrame *frame) {
   frame->SetPTS(av_rescale_q(microseconds, AVRational{1, 1000000},
-                            audio_stream_context_->time_base()));
+                             audio_stream_context_->time_base()));
 }
 
 AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {

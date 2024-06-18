@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 #include "av_transducer/utils/audio.h"
+#include "av_transducer/utils/video.h"
 
 namespace aikit {
 namespace media {
@@ -24,6 +25,7 @@ public:
 
   static absl::StatusOr<ContainerStreamContext>
   CreateWriterContainerStreamContext(
+      VideoStreamParameters video_stream_parameters,
       AudioStreamParameters audio_stream_parameters, const std::string &url);
 
   ContainerStreamContext(const ContainerStreamContext &) = delete;
@@ -33,6 +35,7 @@ public:
 
   ~ContainerStreamContext();
 
+  VideoStreamParameters GetVideoStreamParameters();
   AudioStreamParameters GetAudioStreamParameters();
 
   std::unique_ptr<AudioFrame> CreateAudioFrame();
@@ -72,7 +75,7 @@ private:
   bool header_written_ = false;
 
   AVFormatContext *format_context_ = nullptr;
-  // std::optional<ImageStreamContext> image_stream_context = std::nullopt;
+  std::optional<VideoStreamContext> video_stream_context_ = std::nullopt;
   std::optional<AudioStreamContext> audio_stream_context_ = std::nullopt;
 };
 
