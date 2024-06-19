@@ -43,9 +43,7 @@ VideoFrame::CreateVideoFrame(enum AVPixelFormat pix_fmt, int width,
   /* the image can be allocated by any means and av_image_alloc() is
    * just the most convenient way if av_malloc() is to be used */
 
-  if (auto ret = av_image_alloc(frame->data, frame->linesize, width, height,
-                                pix_fmt, 32);
-      ret < 0) {
+  if (auto ret = av_frame_get_buffer(frame, 1); ret < 0) {
     return nullptr;
   }
 
