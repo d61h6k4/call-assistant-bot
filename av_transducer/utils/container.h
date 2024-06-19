@@ -26,8 +26,8 @@ public:
 
   static absl::StatusOr<ContainerStreamContext>
   CreateWriterContainerStreamContext(
-      VideoStreamParameters video_stream_parameters,
-      AudioStreamParameters audio_stream_parameters, const std::string &url);
+      AudioStreamParameters audio_stream_parameters,
+      VideoStreamParameters video_stream_parameters, const std::string &url);
 
   ContainerStreamContext(const ContainerStreamContext &) = delete;
   ContainerStreamContext(ContainerStreamContext &&) noexcept;

@@ -16,6 +16,8 @@ build:linux --host_cxxopt='-std=c++20'
 build:linux --copt=-w
 # https://github.com/bazelbuild/bazel/issues/20886
 build:linux --noincompatible_sandbox_hermetic_tmp
+# https://github.com/bazel-contrib/toolchains_llvm/issues/334
+build:linux --cxxopt='-Xclang' --cxxopt='-fno-cxx-modules'
 
 # windows
 build:windows --cxxopt=/std:c++20
@@ -48,25 +50,11 @@ build:linux --copt="-Werror=switch"
 # Required for building with clang
 build:linux --copt="-Wno-error=unused-but-set-variable"
 
-# Sets the default Apple platform to macOS.
-build --apple_platform_type=macos
-
-# Compile ObjC++ files with C++17
-build --per_file_copt=.*\.mm\$@-std=c++17
-
-# Allow debugging with XCODE
-build --apple_generate_dsym
-
 # https://github.com/bazelbuild/rules_foreign_cc/issues/1186
 build:macos --host_action_env=CXXFLAGS=-Wno-int-conversion
 build:macos --action_env=CXXFLAGS=-Wno-int-conversion
 build:macos --host_action_env=CFLAGS=-Wno-int-conversion
 build:macos --action_env=CFLAGS=-Wno-int-conversion
-
-
-build:darwin_arm64 --apple_platform_type=macos
-build:darwin_arm64 --macos_minimum_os=10.16
-build:darwin_arm64 --cpu=darwin_arm64
 
 # Turn off maximum stdout size
 build --experimental_ui_max_stdouterr_bytes=-1
@@ -88,3 +76,5 @@ build:msan --copt -DADDRESS_SANITIZER
 build:msan --copt -O1
 build:msan --copt -fno-omit-frame-pointer
 build:msan --linkopt -fsanitize=memory
+
+build:release -c opt

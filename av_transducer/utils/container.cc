@@ -121,8 +121,8 @@ ContainerStreamContext::CreateReaderContainerStreamContext(
 
 absl::StatusOr<ContainerStreamContext>
 ContainerStreamContext::CreateWriterContainerStreamContext(
-    VideoStreamParameters video_stream_parameters,
-    AudioStreamParameters audio_stream_parameters, const std::string &url) {
+    AudioStreamParameters audio_stream_parameters,
+    VideoStreamParameters video_stream_parameters, const std::string &url) {
   ContainerStreamContext container_stream_context;
   container_stream_context.is_reader_ = false;
 
