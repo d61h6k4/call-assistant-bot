@@ -5,6 +5,7 @@
 #include "av_transducer/utils/audio.h"
 #include "av_transducer/utils/video.h"
 #include <optional>
+#include <sys/unistd.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -138,55 +139,6 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
     return absl::AbortedError("Failed to allocate output media context");
   }
 
-  /* Add the audio and video streams using the default format codecs
-   * and initialize the codecs. */
-  if (container_stream_context.format_context_->oformat->video_codec !=
-      AV_CODEC_ID_NONE) {
-
-    // Codec defined by avformat_alloc_output_context2, based on the filename
-    const AVCodec *codec = avcodec_find_encoder(
-        container_stream_context.format_context_->oformat->video_codec);
-
-    if (!codec) {
-      return absl::AbortedError("Failed to find encoder for audio.");
-    }
-
-    // This call creates and connects stream with AVFormatContext
-    AVStream *stream =
-        avformat_new_stream(container_stream_context.format_context_, nullptr);
-    stream->id = container_stream_context.format_context_->nb_streams - 1;
-    stream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-    stream->codecpar->codec_id =
-        container_stream_context.format_context_->oformat->video_codec;
-    stream->codecpar->width = video_stream_parameters.width;
-    stream->codecpar->height = video_stream_parameters.height;
-    stream->codecpar->framerate = video_stream_parameters.frame_rate;
-    stream->codecpar->format = video_stream_parameters.format;
-
-    stream->time_base = stream->codecpar->framerate;
-
-    auto video_stream_context_or =
-        aikit::media::VideoStreamContext::CreateVideoStreamContext(
-            container_stream_context.format_context_, codec, stream->codecpar,
-            stream->id);
-
-    if (!video_stream_context_or.ok()) {
-      auto s = absl::AbortedError("Failed to initialize audio stream context.");
-      s.Update(video_stream_context_or.status());
-      return s;
-    }
-
-    /* Some formats want stream headers to be separate. */
-    if (container_stream_context.format_context_->oformat->flags &
-        AVFMT_GLOBALHEADER) {
-      video_stream_context_or->codec_context()->flags |=
-          AV_CODEC_FLAG_GLOBAL_HEADER;
-    }
-
-    container_stream_context.video_stream_context_ =
-        std::move(video_stream_context_or.value());
-  }
-
   if (container_stream_context.format_context_->oformat->audio_codec !=
       AV_CODEC_ID_NONE) {
 
@@ -216,7 +168,7 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
     stream->time_base = (AVRational){1, stream->codecpar->sample_rate};
 
     auto audio_stream_context_or =
-        aikit::media::AudioStreamContext::CreateAudioStreamContext(
+        AudioStreamContext::CreateAudioStreamContext(
             container_stream_context.format_context_, codec, stream->codecpar,
             stream->id);
 
@@ -235,6 +187,62 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
 
     container_stream_context.audio_stream_context_ =
         std::move(audio_stream_context_or.value());
+  }
+
+  /* Add the audio and video streams using the default format codecs
+   * and initialize the codecs. */
+  if (container_stream_context.format_context_->oformat->video_codec !=
+      AV_CODEC_ID_NONE) {
+
+    // Codec defined by avformat_alloc_output_context2, based on the filename
+    const AVCodec *codec = avcodec_find_encoder(
+        container_stream_context.format_context_->oformat->video_codec);
+
+    if (!codec) {
+      return absl::AbortedError("Failed to find encoder for video.");
+    }
+
+    // This call creates and connects stream with AVFormatContext
+    AVStream *stream =
+        avformat_new_stream(container_stream_context.format_context_, nullptr);
+    stream->id = container_stream_context.format_context_->nb_streams - 1;
+    ABSL_LOG(INFO) << "Video stream id " << stream->id;
+    stream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+    stream->codecpar->bit_rate = video_stream_parameters.width *
+                                 video_stream_parameters.height *
+                                 video_stream_parameters.frame_rate.num * 3;
+    stream->codecpar->codec_id =
+        container_stream_context.format_context_->oformat->video_codec;
+    stream->codecpar->width = video_stream_parameters.width;
+    stream->codecpar->height = video_stream_parameters.height;
+    stream->codecpar->framerate = video_stream_parameters.frame_rate;
+    stream->codecpar->format = video_stream_parameters.format;
+
+    stream->time_base = AVRational{stream->codecpar->framerate.den,
+                                   stream->codecpar->framerate.num};
+
+    auto video_stream_context_or =
+        VideoStreamContext::CreateVideoStreamContext(
+            container_stream_context.format_context_, codec, stream->codecpar,
+            stream->id);
+
+    if (!video_stream_context_or.ok()) {
+      auto s = absl::AbortedError(absl::StrCat(
+          "Failed to initialize video stream context. Raised from: ",
+          video_stream_context_or.status().message()));
+      s.Update(video_stream_context_or.status());
+      return s;
+    }
+
+    /* Some formats want stream headers to be separate. */
+    if (container_stream_context.format_context_->oformat->flags &
+        AVFMT_GLOBALHEADER) {
+      video_stream_context_or->codec_context()->flags |=
+          AV_CODEC_FLAG_GLOBAL_HEADER;
+    }
+
+    container_stream_context.video_stream_context_ =
+        std::move(video_stream_context_or.value());
   }
 
   // Print to stdout format info.
@@ -381,6 +389,8 @@ absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
           absl::StrCat("Error encoding a frame: ", av_err2str(ret)));
     }
     /* rescale output packet timestamp values from codec to stream timebase */
+    av_packet_rescale_ts(packet, codec_context->time_base,
+                         format_context->streams[stream_index]->time_base);
     packet->stream_index = stream_index;
 
     /* Write the compressed frame to the media file. */
@@ -399,6 +409,7 @@ absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
   }
   return absl::OkStatus();
 }
+
 absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
                                                 const AudioFrame *frame) {
   if (is_reader_) {
@@ -407,6 +418,17 @@ absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
   }
   return WriteFrame(format_context_, audio_stream_context_->codec_context(),
                     audio_stream_context_->stream_index(), packet,
+                    frame->c_frame());
+}
+
+absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
+                                                const VideoFrame *frame) {
+  if (is_reader_) {
+    return absl::AbortedError("The container stream context was created as "
+                              "reader, writing is not allowed.");
+  }
+  return WriteFrame(format_context_, video_stream_context_->codec_context(),
+                    video_stream_context_->stream_index(), packet,
                     frame->c_frame());
 }
 

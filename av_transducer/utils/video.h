@@ -22,7 +22,7 @@ struct VideoStreamParameters {
   AVPixelFormat format;
 
   VideoStreamParameters()
-      : width(1024), height(768), frame_rate(AVRational{1, 25}), format(AV_PIX_FMT_YUV420P) {}
+      : width(1280), height(720), frame_rate(AVRational{25, 1}), format(AV_PIX_FMT_YUV420P) {}
 };
 
 

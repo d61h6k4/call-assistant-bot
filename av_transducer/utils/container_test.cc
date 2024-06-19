@@ -99,30 +99,29 @@ TEST(TestContainerUtils, CheckCreateReaderContianer) {
   av_packet_free(&packet);
 }
 
-TEST(TestContainerUtils, DISABLED_CheckCreateWriterContianer) {
+TEST(TestContainerUtils, CheckCreateWriterContianer) {
   const std::string filename = "/tmp/test_write_container_utils.mp4";
 
   auto audio_params = aikit::media::AudioStreamParameters();
   audio_params.sample_rate = 16000;
   auto video_params = aikit::media::VideoStreamParameters();
+  video_params.frame_rate = {17, 1};
   auto container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
           audio_params, video_params, filename);
 
   EXPECT_TRUE(container.ok()) << container.status().message();
 
-  AVPacket *packet = av_packet_alloc();
-  EXPECT_TRUE(packet) << "failed to allocate memory for AVPacket";
-
   std::vector<aikit::media::AudioFrame *> audio_frames;
   std::vector<aikit::media::VideoFrame *> video_frames;
 
+  int N = 17;
   absl::Status status;
-  for (auto i = 0; i < 17 * 10; ++i) {
+  for (auto i = 0; i < N; ++i) {
 
     auto audio_frame_or = container->CreateAudioFrame();
     EXPECT_TRUE(audio_frame_or);
-    audio_frame_or->c_frame()->pts = (i + 1) * audio_params.frame_size;
+    audio_frame_or->c_frame()->pts = i * audio_params.frame_size;
     auto audio_data = GenerateAudioData(audio_params.frame_size);
     auto status = audio_frame_or->FillAudioData(audio_data);
     EXPECT_TRUE(status.ok()) << status.message();
@@ -133,13 +132,23 @@ TEST(TestContainerUtils, DISABLED_CheckCreateWriterContianer) {
     auto image = GenerateImage(video_params.width, video_params.height, i);
     status = video_frame_or->CopyFromBuffer(image.data());
     EXPECT_TRUE(status.ok());
+    video_frame_or->c_frame()->pts = i;
+
     video_frames.push_back(video_frame_or.release());
   }
 
-  EXPECT_EQ(audio_frames.size(), 170);
-  for (auto i = 0; i < audio_frames.size(); ++i) {
-    status = container->WriteFrame(packet, audio_frames[i]);
+  AVPacket *audio_packet = av_packet_alloc();
+  EXPECT_TRUE(audio_packet) << "failed to allocate memory for AVPacket";
+
+  AVPacket *video_packet = av_packet_alloc();
+  EXPECT_TRUE(video_packet) << "failed to allocate memory for AVPacket";
+  // EXPECT_EQ(audio_frames.size(), 170);
+  for (auto i = 0; i < N; ++i) {
+    status = container->WriteFrame(video_packet, video_frames[i]);
+    EXPECT_TRUE(status.ok()) << status.message();
+    status = container->WriteFrame(audio_packet, audio_frames[i]);
     EXPECT_TRUE(status.ok()) << status.message();
   }
-  av_packet_free(&packet);
+  av_packet_free(&audio_packet);
+  av_packet_free(&video_packet);
 }

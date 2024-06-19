@@ -1,4 +1,5 @@
 
+#include "absl/strings/str_cat.h"
 #include <memory>
 
 #ifdef __cplusplus
@@ -93,7 +94,6 @@ absl::StatusOr<VideoStreamContext> VideoStreamContext::CreateVideoStreamContext(
     const AVCodecParameters *codec_parameters, int stream_idx) {
   VideoStreamContext result;
 
-  result.stream_index_ = stream_idx;
   // the component that knows how to enCOde and DECode the stream
   // it's the codec (audio or video)
   // http://ffmpeg.org/doxygen/trunk/structAVCodec.html
@@ -101,14 +101,14 @@ absl::StatusOr<VideoStreamContext> VideoStreamContext::CreateVideoStreamContext(
   // this component describes the properties of a codec used by the stream i
   // https://ffmpeg.org/doxygen/trunk/structAVCodecParameters.html
   // AVCodecParameters *codec_parameters_ ;
-
+  result.stream_index_ = stream_idx;
   result.start_time_ = format_context->streams[stream_idx]->start_time;
   result.time_base_ = format_context->streams[stream_idx]->time_base;
 
-  result.format_ = AVPixelFormat(codec_parameters->format);
+  result.format_ = (AVPixelFormat)codec_parameters->format;
   result.width_ = codec_parameters->width;
   result.height_ = codec_parameters->height;
-  result.frame_rate_ = format_context->streams[stream_idx]->r_frame_rate;
+  result.frame_rate_ = codec_parameters->framerate;
 
   result.codec_context_ = avcodec_alloc_context3(codec);
   if (!result.codec_context_) {
@@ -119,17 +119,23 @@ absl::StatusOr<VideoStreamContext> VideoStreamContext::CreateVideoStreamContext(
   // Fill the codec context based on the values from the supplied codec
   // parameters
   // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
-  if (avcodec_parameters_to_context(result.codec_context_, codec_parameters) !=
-      0) {
+  if (auto res = avcodec_parameters_to_context(result.codec_context_,
+                                               codec_parameters);
+      res < 0) {
     return absl::FailedPreconditionError(
-        "failed to copy codec params to codec context");
+        absl::StrCat("failed to copy codec params to codec context. Error: ",
+                     av_err2string(res)));
   }
+  result.codec_context_->time_base = AVRational{result.frame_rate_.den, result.frame_rate_.num};
+  result.codec_context_->pkt_timebase = AVRational{result.frame_rate_.den, result.frame_rate_.num};
 
   // Initialize the AVCodecContext to use the given AVCodec.
   // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
-  if (avcodec_open2(result.codec_context_, codec, nullptr) != 0) {
+  if (auto res = avcodec_open2(result.codec_context_, codec, nullptr);
+      res < 0) {
     return absl::FailedPreconditionError(
-        "failed to open codec through avcodec_open2");
+        absl::StrCat("failed to open codec through avcodec_open2. Error: ",
+                     av_err2string(res)));
   }
 
   return result;

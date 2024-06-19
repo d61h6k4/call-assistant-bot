@@ -158,6 +158,8 @@ absl::StatusOr<AudioStreamContext> AudioStreamContext::CreateAudioStreamContext(
     return absl::FailedPreconditionError(
         "failed to copy codec params to codec context");
   }
+  result.codec_context_->time_base = AVRational{1, result.sample_rate_};
+  result.codec_context_->pkt_timebase = AVRational{1, result.sample_rate_};
 
   // Initialize the AVCodecContext to use the given AVCodec.
   // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d

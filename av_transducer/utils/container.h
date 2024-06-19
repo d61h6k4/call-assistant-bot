@@ -54,6 +54,7 @@ public:
   absl::Status PacketToFrame(AVPacket *packet, VideoFrame *frame);
 
   absl::Status WriteFrame(AVPacket *packet, const AudioFrame *frame);
+  absl::Status WriteFrame(AVPacket *packet, const VideoFrame *frame);
 
   // Captures data from the device.
   // This operation is operating system dependent:
