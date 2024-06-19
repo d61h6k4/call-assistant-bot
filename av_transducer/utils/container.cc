@@ -160,8 +160,7 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
         container_stream_context.format_context_->oformat->video_codec;
     stream->codecpar->width = video_stream_parameters.width;
     stream->codecpar->height = video_stream_parameters.height;
-    stream->codecpar->framerate =
-        AVRational{1, video_stream_parameters.frame_rate};
+    stream->codecpar->framerate = video_stream_parameters.frame_rate;
     stream->codecpar->format = video_stream_parameters.format;
 
     stream->time_base = stream->codecpar->framerate;
@@ -302,17 +301,6 @@ ContainerStreamContext::~ContainerStreamContext() {
   }
 }
 
-std::unique_ptr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {
-  if (!audio_stream_context_.has_value()) {
-    return nullptr;
-  }
-
-  auto audio_stream_params = GetAudioStreamParameters();
-  return AudioFrame::CreateAudioFrame(
-      audio_stream_params.format, &audio_stream_params.channel_layout,
-      audio_stream_params.sample_rate, audio_stream_params.frame_size);
-}
-
 absl::Status
 ContainerStreamContext::PacketToFrame(AVCodecContext *codec_context,
                                       AVPacket *packet, AVFrame *frame) {
@@ -333,9 +321,23 @@ ContainerStreamContext::PacketToFrame(AVCodecContext *codec_context,
   return absl::OkStatus();
 }
 
+bool ContainerStreamContext::IsPacketAudio(AVPacket *packet) {
+  return packet->stream_index == audio_stream_context_->stream_index();
+}
+
+bool ContainerStreamContext::IsPacketVideo(AVPacket *packet) {
+  return packet->stream_index == video_stream_context_->stream_index();
+}
+
 absl::Status ContainerStreamContext::PacketToFrame(AVPacket *packet,
                                                    AudioFrame *frame) {
   return PacketToFrame(audio_stream_context_->codec_context(), packet,
+                       frame->c_frame());
+}
+
+absl::Status ContainerStreamContext::PacketToFrame(AVPacket *packet,
+                                                   VideoFrame *frame) {
+  return PacketToFrame(video_stream_context_->codec_context(), packet,
                        frame->c_frame());
 }
 
@@ -349,7 +351,7 @@ absl::Status ContainerStreamContext::ReadPacket(AVPacket *packet) {
   // https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
   int res = av_read_frame(format_context_, packet);
   for (; res == 0; res = av_read_frame(format_context_, packet)) {
-    if (packet->stream_index == audio_stream_context_->stream_index()) {
+    if (IsPacketAudio(packet) || IsPacketVideo(packet)) {
       return absl::OkStatus();
     }
   }
@@ -430,6 +432,17 @@ void ContainerStreamContext::SetFramePTS(int64_t microseconds,
                              audio_stream_context_->time_base()));
 }
 
+std::unique_ptr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {
+  if (!audio_stream_context_.has_value()) {
+    return nullptr;
+  }
+
+  auto audio_stream_params = GetAudioStreamParameters();
+  return AudioFrame::CreateAudioFrame(
+      audio_stream_params.format, &audio_stream_params.channel_layout,
+      audio_stream_params.sample_rate, audio_stream_params.frame_size);
+}
+
 AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {
   auto params = AudioStreamParameters();
 
@@ -448,6 +461,28 @@ AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {
   params.format = audio_stream_context_->format();
   av_channel_layout_copy(&params.channel_layout,
                          audio_stream_context_->channel_layout());
+
+  return params;
+}
+
+std::unique_ptr<VideoFrame> ContainerStreamContext::CreateVideoFrame() {
+  if (!video_stream_context_.has_value()) {
+    return nullptr;
+  }
+
+  auto video_stream_params = GetVideoStreamParameters();
+  return VideoFrame::CreateVideoFrame(video_stream_params.format,
+                                      video_stream_params.width,
+                                      video_stream_params.height);
+}
+
+VideoStreamParameters ContainerStreamContext::GetVideoStreamParameters() {
+  auto params = VideoStreamParameters();
+
+  params.width = video_stream_context_->codec_context()->width;
+  params.height = video_stream_context_->codec_context()->height;
+  params.frame_rate = video_stream_context_->codec_context()->framerate;
+  params.format = video_stream_context_->codec_context()->pix_fmt;
 
   return params;
 }

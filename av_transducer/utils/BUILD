@@ -5,7 +5,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//third_party:libffmpeg",
-        "//third_party:libyuv",
         "@com_google_absl//absl/status:statusor",
     ],
 )
@@ -21,14 +20,36 @@ cc_test(
 )
 
 cc_library(
+    name = "video",
+    srcs = ["video.cc"],
+    hdrs = ["video.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//third_party:libffmpeg",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_test(
+    name = "video_test",
+    srcs = ["video_test.cc"],
+    deps = [
+        ":video",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "container",
     srcs = ["container.cc"],
     hdrs = ["container.h"],
     visibility = ["//visibility:public"],
     deps = [
         ":audio",
+        ":video",
         "//third_party:libffmpeg",
-        "//third_party:libyuv",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status:statusor",
     ],
@@ -53,7 +74,6 @@ cc_library(
     deps = [
         ":audio",
         "//third_party:libffmpeg",
-        "//third_party:libyuv",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status:statusor",
     ],

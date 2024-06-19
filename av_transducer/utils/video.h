@@ -8,6 +8,7 @@ extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/frame.h"
+#include "libavutil/pixfmt.h"
 #ifdef __cplusplus
 }
 #endif
@@ -17,11 +18,11 @@ namespace media {
 struct VideoStreamParameters {
   int width;
   int height;
-  int frame_rate;
+  AVRational frame_rate;
   AVPixelFormat format;
 
   VideoStreamParameters()
-      : width(1024), height(768), frame_rate(25), format(AV_PIX_FMT_YUV420P) {}
+      : width(1024), height(768), frame_rate(AVRational{1, 25}), format(AV_PIX_FMT_YUV420P) {}
 };
 
 
@@ -78,7 +79,7 @@ private:
   int stream_index_{};
   int start_time_{};
   AVRational time_base_{};
-  int frame_rate_{};
+  AVRational frame_rate_{};
   int width_{};
   int height_{};
   AVPixelFormat format_ = AV_PIX_FMT_YUV420P;

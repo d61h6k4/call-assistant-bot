@@ -62,7 +62,6 @@ VideoFrame &VideoFrame::operator=(VideoFrame &&o) noexcept {
 
 VideoFrame::~VideoFrame() {
   if (c_frame_) {
-    av_freep(&c_frame_->data[0]);
     av_frame_free(&c_frame_);
   }
 }
@@ -109,7 +108,7 @@ absl::StatusOr<VideoStreamContext> VideoStreamContext::CreateVideoStreamContext(
   result.format_ = AVPixelFormat(codec_parameters->format);
   result.width_ = codec_parameters->width;
   result.height_ = codec_parameters->height;
-  result.frame_rate_ = format_context->streams[stream_idx]->r_frame_rate.num;
+  result.frame_rate_ = format_context->streams[stream_idx]->r_frame_rate;
 
   result.codec_context_ = avcodec_alloc_context3(codec);
   if (!result.codec_context_) {

@@ -2,6 +2,7 @@
 
 #include "absl/status/statusor.h"
 #include <cstdint>
+#include <cwchar>
 #include <optional>
 
 #ifdef __cplusplus
@@ -35,15 +36,22 @@ public:
 
   ~ContainerStreamContext();
 
-  VideoStreamParameters GetVideoStreamParameters();
   AudioStreamParameters GetAudioStreamParameters();
+  VideoStreamParameters GetVideoStreamParameters();
 
   std::unique_ptr<AudioFrame> CreateAudioFrame();
+  std::unique_ptr<VideoFrame> CreateVideoFrame();
+
   int64_t FramePTSInMicroseconds(const AudioFrame *frame);
   void SetFramePTS(int64_t microseconds, AudioFrame *frame);
 
   absl::Status ReadPacket(AVPacket *packet);
+
+  bool IsPacketAudio(AVPacket *packet);
+  bool IsPacketVideo(AVPacket *packet);
+
   absl::Status PacketToFrame(AVPacket *packet, AudioFrame *frame);
+  absl::Status PacketToFrame(AVPacket *packet, VideoFrame *frame);
 
   absl::Status WriteFrame(AVPacket *packet, const AudioFrame *frame);
 
