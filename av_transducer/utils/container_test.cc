@@ -58,7 +58,7 @@ std::vector<uint8_t> GenerateImage(int width, int height, int frame_ix) {
   for (auto y = 0; y < height / 2; y++) {
     for (auto x = 0; x < width / 2; x++) {
       image[width * height + y * linesize[1] + x] = 128 + y + frame_ix * 2;
-      image[width * height + width / 2 * linesize[1] + y * linesize[2] + x] =
+      image[width * height + width / 2 * height /2 + y * linesize[2] + x] =
           64 + x + frame_ix * 5;
     }
   }

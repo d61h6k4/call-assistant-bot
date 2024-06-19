@@ -206,7 +206,6 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
     AVStream *stream =
         avformat_new_stream(container_stream_context.format_context_, nullptr);
     stream->id = container_stream_context.format_context_->nb_streams - 1;
-    ABSL_LOG(INFO) << "Video stream id " << stream->id;
     stream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     stream->codecpar->bit_rate = video_stream_parameters.width *
                                  video_stream_parameters.height *
