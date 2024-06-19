@@ -4,6 +4,8 @@ cc_library(
     hdrs = ["audio.h"],
     visibility = ["//visibility:public"],
     deps = [
+
+"@com_google_absl//absl/log:absl_log",
         "//third_party:libffmpeg",
         "@com_google_absl//absl/status:statusor",
     ],
@@ -12,6 +14,7 @@ cc_library(
 cc_test(
     name = "audio_test",
     srcs = ["audio_test.cc"],
+    size = "small",
     deps = [
         ":audio",
         "@com_google_googletest//:gtest",
@@ -27,12 +30,15 @@ cc_library(
     deps = [
         "//third_party:libffmpeg",
         "@com_google_absl//absl/status:statusor",
+
+"@com_google_absl//absl/log:absl_log",
     ],
 )
 
 cc_test(
     name = "video_test",
     srcs = ["video_test.cc"],
+    size = "small",
     deps = [
         ":video",
         "@com_google_absl//absl/log:absl_log",

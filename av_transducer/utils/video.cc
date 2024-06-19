@@ -1,4 +1,5 @@
 
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include <memory>
 
@@ -52,11 +53,13 @@ VideoFrame::CreateVideoFrame(enum AVPixelFormat pix_fmt, int width,
 }
 
 VideoFrame::VideoFrame(VideoFrame &&o) noexcept {
+  av_frame_unref(c_frame_);
   av_frame_move_ref(c_frame_, o.c_frame_);
 }
 
 VideoFrame &VideoFrame::operator=(VideoFrame &&o) noexcept {
   if (this != &o) {
+    av_frame_unref(c_frame_);
     av_frame_move_ref(c_frame_, o.c_frame_);
   }
 }
@@ -126,8 +129,10 @@ absl::StatusOr<VideoStreamContext> VideoStreamContext::CreateVideoStreamContext(
         absl::StrCat("failed to copy codec params to codec context. Error: ",
                      av_err2string(res)));
   }
-  result.codec_context_->time_base = AVRational{result.frame_rate_.den, result.frame_rate_.num};
-  result.codec_context_->pkt_timebase = AVRational{result.frame_rate_.den, result.frame_rate_.num};
+  result.codec_context_->time_base =
+      AVRational{result.frame_rate_.den, result.frame_rate_.num};
+  result.codec_context_->pkt_timebase =
+      AVRational{result.frame_rate_.den, result.frame_rate_.num};
 
   // Initialize the AVCodecContext to use the given AVCodec.
   // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d

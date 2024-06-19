@@ -1,5 +1,6 @@
 
 #include "av_transducer/utils/audio.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include <algorithm>
 #include <cstddef>
@@ -55,11 +56,13 @@ AudioFrame::CreateAudioFrame(enum AVSampleFormat sample_fmt,
 }
 
 AudioFrame::AudioFrame(AudioFrame &&o) noexcept {
+  av_frame_unref(c_frame_);
   av_frame_move_ref(c_frame_, o.c_frame_);
 }
 
 AudioFrame &AudioFrame::operator=(AudioFrame &&o) noexcept {
   if (this != &o) {
+    av_frame_unref(c_frame_);
     av_frame_move_ref(c_frame_, o.c_frame_);
   }
 }
