@@ -124,9 +124,35 @@ ContainerStreamContext::CreateReaderContainerStreamContext(
     } else if (local_codec_parameters->codec_type == AVMEDIA_TYPE_AUDIO) {
       if (!container_stream_context.audio_stream_context_.has_value()) {
 
+        AVCodecContext *codec_context = avcodec_alloc_context3(local_codec);
+        if (!codec_context) {
+          return absl::FailedPreconditionError(
+              "failed to allocated memory for AVCodecContext");
+        }
+
+        // Fill the codec context based on the values from the supplied codec
+        // parameters
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
+        if (auto res = avcodec_parameters_to_context(codec_context,
+                                                     local_codec_parameters);
+            res < 0) {
+          return absl::FailedPreconditionError(absl::StrCat(
+              "failed to copy codec params to codec context. Error: ",
+              av_err2string(res)));
+        }
+
+        // Initialize the AVCodecContext to use the given AVCodec.
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
+        if (auto res = avcodec_open2(codec_context, local_codec, nullptr);
+            res < 0) {
+          return absl::FailedPreconditionError(absl::StrCat(
+              "failed to open codec through avcodec_open2. Error: ",
+              av_err2string(res)));
+        }
+
         auto res = AudioStreamContext::CreateAudioStreamContext(
             container_stream_context.format_context_, local_codec,
-            local_codec_parameters, i);
+            local_codec_parameters, codec_context, i);
         if (!res.ok()) {
           auto s = absl::FailedPreconditionError(
               "Failed to initialize audio stream context.");
@@ -173,41 +199,62 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
         container_stream_context.format_context_->oformat->audio_codec);
 
     if (!codec) {
-      return absl::AbortedError("Failed to find encoder for audio.");
+      return absl::AbortedError("Failed to find encoder for video.");
     }
 
     // This call creates and connects stream with AVFormatContext
     AVStream *stream =
         avformat_new_stream(container_stream_context.format_context_, nullptr);
     stream->id = container_stream_context.format_context_->nb_streams - 1;
-    // Here we define format of the output format
-    stream->codecpar->frame_size = audio_stream_parameters.frame_size;
-    stream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
-    stream->codecpar->codec_id =
-        container_stream_context.format_context_->oformat->audio_codec;
-    stream->codecpar->format = audio_stream_parameters.format;
-    stream->codecpar->sample_rate = audio_stream_parameters.sample_rate;
-    stream->codecpar->bit_rate = audio_stream_parameters.bit_rate;
+
+    AVCodecContext *codec_context = avcodec_alloc_context3(codec);
+    if (!codec_context) {
+      return absl::FailedPreconditionError(
+          "failed to allocated memory for AVCodecContext");
+    }
+
+    codec_context->sample_fmt = audio_stream_parameters.format;
+    codec_context->bit_rate = audio_stream_parameters.bit_rate;
+    codec_context->sample_rate = audio_stream_parameters.sample_rate;
     AVChannelLayout audio_channel_layout =
         audio_stream_parameters.channel_layout;
-    av_channel_layout_copy(&stream->codecpar->ch_layout, &audio_channel_layout);
-    stream->time_base = (AVRational){1, stream->codecpar->sample_rate};
+    av_channel_layout_copy(&codec_context->ch_layout, &audio_channel_layout);
+
+    stream->time_base = (AVRational){1, codec_context->sample_rate};
+
+    /* Some formats want stream headers to be separate. */
+    if (container_stream_context.format_context_->oformat->flags &
+        AVFMT_GLOBALHEADER) {
+      codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    }
+
+    // Initialize the AVCodecContext to use the given AVCodec.
+    // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
+    if (auto res = avcodec_open2(codec_context, codec, nullptr); res < 0) {
+      return absl::FailedPreconditionError(
+          absl::StrCat("failed to open audio codec through avcodec_open2. Error: ",
+                       av_err2string(res)));
+    }
+
+    // Fill the codec context based on the values from the supplied codec
+    // parameters
+    // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
+    if (auto res =
+            avcodec_parameters_from_context(stream->codecpar, codec_context);
+        res < 0) {
+      return absl::FailedPreconditionError(absl::StrCat(
+          "failed to copy codec params from codec context. Error: ",
+          av_err2string(res)));
+    }
 
     auto audio_stream_context_or = AudioStreamContext::CreateAudioStreamContext(
         container_stream_context.format_context_, codec, stream->codecpar,
-        stream->id);
+        codec_context, stream->id);
 
     if (!audio_stream_context_or.ok()) {
       auto s = absl::AbortedError("Failed to initialize audio stream context.");
       s.Update(audio_stream_context_or.status());
       return s;
-    }
-
-    /* Some formats want stream headers to be separate. */
-    if (container_stream_context.format_context_->oformat->flags &
-        AVFMT_GLOBALHEADER) {
-      audio_stream_context_or->codec_context()->flags |=
-          AV_CODEC_FLAG_GLOBAL_HEADER;
     }
 
     container_stream_context.audio_stream_context_ =

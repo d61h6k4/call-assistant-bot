@@ -11,6 +11,7 @@
 #include "av_transducer/utils/converter.h"
 
 #include "absl/log/absl_log.h"
+#include "av_transducer/utils/video.h"
 
 std::vector<float> GenerateAudioData(size_t nb_samples) {
   std::vector<float> audio_data(nb_samples);
@@ -107,16 +108,12 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
   EXPECT_TRUE(audio_frame_or);
 
   aikit::media::AudioStreamParameters out_audio_stream;
-  out_audio_stream.sample_rate = 48000;
-  // out_audio_stream.bit_rate = 96000;
-  // out_audio_stream.frame_size =
-  //     static_cast<int>(static_cast<float>(out_audio_stream.sample_rate) *
-  //                      static_cast<float>(in_audio_stream.frame_size) /
-  //                      static_cast<float>(in_audio_stream.sample_rate));
+  out_audio_stream.sample_rate = 44100;
+  aikit::media::VideoStreamParameters out_video_stream;
 
   auto write_container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
-          out_audio_stream, "/tmp/testvideo.m4a");
+          out_audio_stream, out_video_stream, "/tmp/testvideo.m4a");
   auto out_audio_frame = write_container->CreateAudioFrame();
   EXPECT_TRUE(out_audio_frame);
 
@@ -126,18 +123,21 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
 
   for (absl::Status st = container->ReadPacket(packet); st.ok();
        st = container->ReadPacket(packet)) {
-    st = container->PacketToFrame(packet, audio_frame_or.get());
-    EXPECT_TRUE(st.ok());
+    if (container->IsPacketAudio(packet)) {
 
-    auto s = audio_converter_or->Store(audio_frame_or.get());
-    EXPECT_TRUE(s.ok());
+      st = container->PacketToFrame(packet, audio_frame_or.get());
+      EXPECT_TRUE(st.ok());
 
-    s = audio_converter_or->Load(out_audio_frame.get());
-    if (s.ok()) {
-      st = write_container->WriteFrame(write_packet, out_audio_frame.get());
-      EXPECT_TRUE(st.ok()) << st.message();
-    } else {
-      EXPECT_TRUE(absl::IsFailedPrecondition(s)) << s.message();
+      auto s = audio_converter_or->Store(audio_frame_or.get());
+      EXPECT_TRUE(s.ok());
+
+      s = audio_converter_or->Load(out_audio_frame.get());
+      if (s.ok()) {
+        st = write_container->WriteFrame(write_packet, out_audio_frame.get());
+        EXPECT_TRUE(st.ok()) << st.message();
+      } else {
+        EXPECT_TRUE(absl::IsFailedPrecondition(s)) << s.message();
+      }
     }
   }
 
