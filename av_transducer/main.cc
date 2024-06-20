@@ -5,14 +5,20 @@
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
 #include "absl/log/absl_log.h"
+#include "av_transducer/utils/audio.h"
+#include "av_transducer/utils/video.h"
 #include "mediapipe/framework/api2/builder.h"
 #include "mediapipe/framework/calculator_graph.h"
-#include "av_transducer/utils/audio.h"
 
 ABSL_FLAG(std::string, output_file_path, "", "Full path of video to save.");
 
 mediapipe::CalculatorGraphConfig BuildGraph() {
   mediapipe::api2::builder::Graph graph;
+
+  // Capture video device
+  auto &capture_video_node = graph.AddNode("FFMPEGCaptureVideoCalculator");
+  auto video_header = capture_video_node.SideOut("VIDEO_HEADER");
+  auto video_stream = capture_video_node.Out("VIDEO");
 
   // Capture audio device
   auto &capture_audio_node = graph.AddNode("FFMPEGCaptureAudioCalculator");
@@ -39,7 +45,9 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .SetName("out_audio_header")
           .Cast<aikit::media::AudioStreamParameters>() >>
       sink_video_node.SideIn("AUDIO_HEADER");
+  video_header >> sink_video_node.SideIn("VIDEO_HEADER");
   float_48kHz_audio_stream >> sink_video_node.In("AUDIO");
+  video_stream >> sink_video_node.In("VIDEO");
 
   return graph.GetConfig();
 }

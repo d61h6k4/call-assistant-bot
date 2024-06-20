@@ -6,6 +6,7 @@ cc_binary(
     deps = [
         "//av_transducer/calculators:audio_converter_calculator",
         "//av_transducer/calculators:ffmpeg_capture_audio_calculator",
+        "//av_transducer/calculators:ffmpeg_capture_screen_calculator",
         "//av_transducer/calculators:ffmpeg_sink_video_calculator",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
