@@ -231,9 +231,9 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
     // Initialize the AVCodecContext to use the given AVCodec.
     // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
     if (auto res = avcodec_open2(codec_context, codec, nullptr); res < 0) {
-      return absl::FailedPreconditionError(
-          absl::StrCat("failed to open audio codec through avcodec_open2. Error: ",
-                       av_err2string(res)));
+      return absl::FailedPreconditionError(absl::StrCat(
+          "failed to open audio codec through avcodec_open2. Error: ",
+          av_err2string(res)));
     }
 
     // Fill the codec context based on the values from the supplied codec
@@ -558,6 +558,18 @@ void ContainerStreamContext::SetFramePTS(int64_t microseconds,
                                          AudioFrame *frame) {
   frame->SetPTS(av_rescale_q(microseconds, AVRational{1, 1000000},
                              audio_stream_context_->time_base()));
+}
+
+int64_t
+ContainerStreamContext::FramePTSInMicroseconds(const VideoFrame *frame) {
+  return av_rescale_q(frame->GetPTS(), video_stream_context_->time_base(),
+                      AVRational{1, 1000000});
+}
+
+void ContainerStreamContext::SetFramePTS(int64_t microseconds,
+                                         VideoFrame *frame) {
+  frame->SetPTS(av_rescale_q(microseconds, AVRational{1, 1000000},
+                             video_stream_context_->time_base()));
 }
 
 std::unique_ptr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {

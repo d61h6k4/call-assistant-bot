@@ -74,6 +74,7 @@ public:
 
   int stream_index() { return stream_index_; }
   AVCodecContext *codec_context() { return codec_context_; }
+  AVRational time_base() { return time_base_; }
 
 private:
   VideoStreamContext();

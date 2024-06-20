@@ -44,6 +44,8 @@ public:
 
   int64_t FramePTSInMicroseconds(const AudioFrame *frame);
   void SetFramePTS(int64_t microseconds, AudioFrame *frame);
+  int64_t FramePTSInMicroseconds(const VideoFrame *frame);
+  void SetFramePTS(int64_t microseconds, VideoFrame *frame);
 
   absl::Status ReadPacket(AVPacket *packet);
 
