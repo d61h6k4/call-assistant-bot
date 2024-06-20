@@ -322,7 +322,7 @@ async def prepare_env(logger: logging.Logger):
         from meeting_bot.xvfbwrapper import Xvfb
 
         display = os.environ.get("DISPLAY")
-        vdisplay = Xvfb(width=1024, height=768, colordepth=24, display=display[1:])
+        vdisplay = Xvfb(width=1280, height=720, colordepth=24, display=display[1:])
         vdisplay.start()
         logger.info({"message": f"Xvfb runs on {vdisplay.new_display}"})
 

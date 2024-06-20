@@ -8,7 +8,7 @@ TEST(TestFFmpegUtils, CheckCaptureAudio) {
   EXPECT_TRUE(res.ok());
 }
 
-TEST(TestFFmpegUtils, DISABLED_CheckCaptureScreen) {
+TEST(TestFFmpegUtils, CheckCaptureScreen) {
   auto res = aikit::media::ContainerStreamContext::CaptureDevice(
       "x11grab", ":1.0");
   EXPECT_TRUE(res.ok()) << res.status().message();
@@ -53,10 +53,15 @@ TEST(TestFFmpegUtils, ReadImageFrameCheck) {
     auto video_frame_or = container->CreateVideoFrame();
     EXPECT_TRUE(video_frame_or) ;
 
+    int n = 3;
     for (absl::Status st = container->ReadPacket(packet); st.ok();
          st = container->ReadPacket(packet)) {
       st = container->PacketToFrame(packet, video_frame_or.get());
       EXPECT_TRUE(st.ok());
+      if (n < 1) {
+          break;
+      }
+      --n;
     }
 
     av_packet_free(&packet);

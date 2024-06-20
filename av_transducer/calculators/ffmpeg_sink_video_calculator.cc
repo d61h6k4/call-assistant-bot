@@ -36,8 +36,10 @@ public:
   // TODO(d61h6k4) Check the sinchronization rules, here we may want
   // to use ImmediateInputStreamHandler.
   // https://ai.google.dev/edge/mediapipe/framework/framework_concepts/synchronization
-  MEDIAPIPE_NODE_CONTRACT(kInFilePath, kInAudioHeader, kInVideoHeader, kInAudio,
-                          kInVideo);
+  MEDIAPIPE_NODE_CONTRACT(
+      kInFilePath, kInAudioHeader, kInVideoHeader, kInAudio, kInVideo,
+      mediapipe::api2::StreamHandler("ImmediateInputStreamHandler"),
+      mediapipe::api2::TimestampChange::Arbitrary());
 
   absl::Status Open(mediapipe::CalculatorContext *cc) override;
   absl::Status Process(mediapipe::CalculatorContext *cc) override;
@@ -73,11 +75,11 @@ absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
            << "failed to allocate memory for AVPacket";
   }
 
-    video_packet_ = av_packet_alloc();
-    if (!video_packet_) {
-      return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-             << "failed to allocate memory for AVPacket";
-    }
+  video_packet_ = av_packet_alloc();
+  if (!video_packet_) {
+    return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+           << "failed to allocate memory for AVPacket";
+  }
   return absl::OkStatus();
 }
 
@@ -95,7 +97,8 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
   if (kInVideo(cc).IsConnected() && !kInVideo(cc).IsEmpty()) {
 
     const auto &video_frame = kInVideo(cc).Get();
-    auto status = container_stream_context_->WriteFrame(video_packet_, &video_frame);
+    auto status =
+        container_stream_context_->WriteFrame(video_packet_, &video_frame);
     if (!status.ok()) {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
              << "Failed to write video frame. " << status.message();
@@ -105,7 +108,8 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
   if (kInAudio(cc).IsConnected() && !kInAudio(cc).IsEmpty()) {
 
     const auto &audio_frame = kInAudio(cc).Get();
-    auto status = container_stream_context_->WriteFrame(audio_packet_, &audio_frame);
+    auto status =
+        container_stream_context_->WriteFrame(audio_packet_, &audio_frame);
     if (!status.ok()) {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
              << "Failed to write frame. " << status.message();

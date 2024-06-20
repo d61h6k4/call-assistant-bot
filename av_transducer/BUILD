@@ -5,6 +5,7 @@ cc_binary(
     srcs = ["main.cc"],
     deps = [
         "//av_transducer/calculators:audio_converter_calculator",
+        "//av_transducer/calculators:video_converter_calculator",
         "//av_transducer/calculators:ffmpeg_capture_audio_calculator",
         "//av_transducer/calculators:ffmpeg_capture_screen_calculator",
         "//av_transducer/calculators:ffmpeg_sink_video_calculator",

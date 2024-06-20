@@ -13,9 +13,6 @@ void SignalHandler(int signal) { gSignalStatus = signal; }
 } // namespace
 // This Calculator captures screen and produces video packets.
 //
-// Output Streams:
-//   VIDEO: Output video frames (YUVImage).
-//
 // Example config:
 // node {
 //   calculator: "FFMPEGCaptureScreenCalculator"
@@ -122,8 +119,8 @@ FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
       if (prev_video_timestamp_ < timestamp) {
-
-        kOutVideo(cc).Send(std::move(video_frame_or), timestamp);
+        auto out_timestamp = mediapipe::Timestamp(video_frame_or->GetPTS());
+        kOutVideo(cc).Send(std::move(video_frame_or), out_timestamp);
         prev_video_timestamp_ = timestamp;
 
         // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2

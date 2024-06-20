@@ -18,7 +18,6 @@ extern "C" {
 #include "av_transducer/utils/audio.h"
 #include "av_transducer/utils/video.h"
 #include "mediapipe/framework/calculator_runner.h"
-#include "mediapipe/framework/formats/yuv_image.h"
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/status_matchers.h"
 

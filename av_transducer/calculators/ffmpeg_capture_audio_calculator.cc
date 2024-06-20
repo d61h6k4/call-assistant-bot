@@ -123,7 +123,8 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
       if (prev_audio_timestamp_ < timestamp) {
-        kOutAudio(cc).Send(std::move(audio_frame_or), timestamp);
+          auto out_timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());
+        kOutAudio(cc).Send(std::move(audio_frame_or), out_timestamp);
         prev_audio_timestamp_ = timestamp;
 
         // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2

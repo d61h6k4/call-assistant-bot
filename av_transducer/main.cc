@@ -20,6 +20,16 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   auto video_header = capture_video_node.SideOut("VIDEO_HEADER");
   auto video_stream = capture_video_node.Out("VIDEO");
 
+  // Convert to YUV420P
+  auto &video_converter_node = graph.AddNode("VideoConverterCalculator");
+  video_header >> video_converter_node.SideIn("IN_VIDEO_HEADER");
+  graph.SideIn("OUT_VIDEO_HEADER")
+          .SetName("out_video_header")
+          .Cast<aikit::media::VideoStreamParameters>() >>
+      video_converter_node.SideIn("OUT_VIDEO_HEADER");
+  video_stream >> video_converter_node.In("IN_VIDEO");
+  auto yuv_video_stream = video_converter_node.Out("OUT_VIDEO");
+
   // Capture audio device
   auto &capture_audio_node = graph.AddNode("FFMPEGCaptureAudioCalculator");
   auto audio_header = capture_audio_node.SideOut("AUDIO_HEADER");
@@ -50,7 +60,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .Cast<aikit::media::VideoStreamParameters>() >>
       sink_video_node.SideIn("VIDEO_HEADER");
   float_48kHz_audio_stream >> sink_video_node.In("AUDIO");
-  video_stream >> sink_video_node.In("VIDEO");
+  yuv_video_stream >> sink_video_node.In("VIDEO");
 
   return graph.GetConfig();
 }
