@@ -47,7 +47,8 @@ private:
   std::optional<media::ContainerStreamContext> container_stream_context_;
 
   // https://ffmpeg.org/doxygen/trunk/structAVPacket.html
-  AVPacket *packet_ = nullptr;
+  AVPacket *audio_packet_ = nullptr;
+  AVPacket *video_packet_ = nullptr;
 };
 MEDIAPIPE_REGISTER_NODE(FFMPEGSinkVideoCalculator);
 
@@ -66,17 +67,24 @@ absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
   }
   container_stream_context_ = std::move(container_stream_context_or.value());
 
-  packet_ = av_packet_alloc();
-  if (!packet_) {
+  audio_packet_ = av_packet_alloc();
+  if (!audio_packet_) {
     return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
            << "failed to allocate memory for AVPacket";
   }
+
+    video_packet_ = av_packet_alloc();
+    if (!video_packet_) {
+      return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
+             << "failed to allocate memory for AVPacket";
+    }
   return absl::OkStatus();
 }
 
 absl::Status
 FFMPEGSinkVideoCalculator::Close(mediapipe::CalculatorContext *cc) {
-  av_packet_free(&packet_);
+  av_packet_free(&audio_packet_);
+  av_packet_free(&video_packet_);
 
   return absl::OkStatus();
 }
@@ -87,7 +95,7 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
   if (kInVideo(cc).IsConnected() && !kInVideo(cc).IsEmpty()) {
 
     const auto &video_frame = kInVideo(cc).Get();
-    auto status = container_stream_context_->WriteFrame(packet_, &video_frame);
+    auto status = container_stream_context_->WriteFrame(video_packet_, &video_frame);
     if (!status.ok()) {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
              << "Failed to write video frame. " << status.message();
@@ -97,7 +105,7 @@ FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
   if (kInAudio(cc).IsConnected() && !kInAudio(cc).IsEmpty()) {
 
     const auto &audio_frame = kInAudio(cc).Get();
-    auto status = container_stream_context_->WriteFrame(packet_, &audio_frame);
+    auto status = container_stream_context_->WriteFrame(audio_packet_, &audio_frame);
     if (!status.ok()) {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
              << "Failed to write frame. " << status.message();
