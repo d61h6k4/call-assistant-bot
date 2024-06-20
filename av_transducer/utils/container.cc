@@ -321,7 +321,7 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
     // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
     if (auto res = avcodec_open2(codec_context, codec, nullptr); res < 0) {
       return absl::FailedPreconditionError(
-          absl::StrCat("failed to open codec through avcodec_open2. Error: ",
+          absl::StrCat("failed to open video codec through avcodec_open2. Error: ",
                        av_err2string(res)));
     }
     // Fill the codec context based on the values from the supplied codec

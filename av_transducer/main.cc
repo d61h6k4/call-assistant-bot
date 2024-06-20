@@ -45,7 +45,10 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .SetName("out_audio_header")
           .Cast<aikit::media::AudioStreamParameters>() >>
       sink_video_node.SideIn("AUDIO_HEADER");
-  video_header >> sink_video_node.SideIn("VIDEO_HEADER");
+  graph.SideIn("OUT_VIDEO_HEADER")
+          .SetName("out_video_header")
+          .Cast<aikit::media::VideoStreamParameters>() >>
+      sink_video_node.SideIn("VIDEO_HEADER");
   float_48kHz_audio_stream >> sink_video_node.In("AUDIO");
   video_stream >> sink_video_node.In("VIDEO");
 
@@ -59,11 +62,15 @@ absl::Status RunMPPGraph() {
   input_side_packets["output_file_path"] =
       mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_output_file_path));
 
-  // Whisper requires 16kHz float mono stream
   aikit::media::AudioStreamParameters audio_stream_parameters;
   input_side_packets["out_audio_header"] =
       mediapipe::MakePacket<aikit::media::AudioStreamParameters>(
           audio_stream_parameters);
+
+  aikit::media::VideoStreamParameters video_stream_parameters;
+  input_side_packets["out_video_header"] =
+      mediapipe::MakePacket<aikit::media::VideoStreamParameters>(
+          video_stream_parameters);
 
   ABSL_LOG(INFO) << "Initialize the calculator graph.";
   mediapipe::CalculatorGraph graph;
