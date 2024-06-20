@@ -75,8 +75,20 @@ FFMPEGCaptureScreenCalculator::Open(mediapipe::CalculatorContext *cc) {
   const auto &in_video_stream =
       container_stream_context_->GetVideoStreamParameters();
 
-  // Write video header
-  kOutVideoHeader(cc).Set(in_video_stream);
+  if (in_video_stream.frame_rate.num == 0 &&
+      in_video_stream.frame_rate.den == 1) {
+    // Debian x11grabs sets fps 0/1, we change to 30
+    auto fps_video_stream = media::VideoStreamParameters();
+    fps_video_stream.format = in_video_stream.format;
+    fps_video_stream.width = in_video_stream.width;
+    fps_video_stream.height = in_video_stream.height;
+    fps_video_stream.frame_rate = {30, 1};
+    kOutVideoHeader(cc).Set(fps_video_stream);
+  } else {
+
+    // Write video header
+    kOutVideoHeader(cc).Set(in_video_stream);
+  }
 
   return absl::OkStatus();
 }
