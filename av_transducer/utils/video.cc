@@ -92,16 +92,9 @@ absl::Status VideoFrame::CopyToBuffer(uint8_t *buf) {
 
 absl::StatusOr<VideoStreamContext> VideoStreamContext::CreateVideoStreamContext(
     const AVFormatContext *format_context, const AVCodec *codec,
-    const AVCodecParameters *codec_parameters, int stream_idx) {
+    const AVCodecParameters *codec_parameters, AVCodecContext *codec_context,
+    int stream_idx) {
   VideoStreamContext result;
-
-  // the component that knows how to enCOde and DECode the stream
-  // it's the codec (audio or video)
-  // http://ffmpeg.org/doxygen/trunk/structAVCodec.html
-  // const AVCodec *codec_ ;
-  // this component describes the properties of a codec used by the stream i
-  // https://ffmpeg.org/doxygen/trunk/structAVCodecParameters.html
-  // AVCodecParameters *codec_parameters_ ;
   result.stream_index_ = stream_idx;
   result.start_time_ = format_context->streams[stream_idx]->start_time;
   result.time_base_ = format_context->streams[stream_idx]->time_base;
@@ -111,35 +104,7 @@ absl::StatusOr<VideoStreamContext> VideoStreamContext::CreateVideoStreamContext(
   result.height_ = codec_parameters->height;
   result.frame_rate_ = codec_parameters->framerate;
 
-  result.codec_context_ = avcodec_alloc_context3(codec);
-  if (!result.codec_context_) {
-    return absl::FailedPreconditionError(
-        "failed to allocated memory for AVCodecContext");
-  }
-
-  // Fill the codec context based on the values from the supplied codec
-  // parameters
-  // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
-  if (auto res = avcodec_parameters_to_context(result.codec_context_,
-                                               codec_parameters);
-      res < 0) {
-    return absl::FailedPreconditionError(
-        absl::StrCat("failed to copy codec params to codec context. Error: ",
-                     av_err2string(res)));
-  }
-  result.codec_context_->time_base =
-      AVRational{result.frame_rate_.den, result.frame_rate_.num};
-  result.codec_context_->pkt_timebase =
-      AVRational{result.frame_rate_.den, result.frame_rate_.num};
-
-  // Initialize the AVCodecContext to use the given AVCodec.
-  // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
-  if (auto res = avcodec_open2(result.codec_context_, codec, nullptr);
-      res < 0) {
-    return absl::FailedPreconditionError(
-        absl::StrCat("failed to open codec through avcodec_open2. Error: ",
-                     av_err2string(res)));
-  }
+  result.codec_context_ = codec_context;
 
   return result;
 }

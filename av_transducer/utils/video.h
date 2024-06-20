@@ -22,13 +22,14 @@ struct VideoStreamParameters {
   AVPixelFormat format;
 
   VideoStreamParameters()
-      : width(1280), height(720), frame_rate(AVRational{25, 1}), format(AV_PIX_FMT_YUV420P) {}
+      : width(1280), height(720), frame_rate(AVRational{25, 1}),
+        format(AV_PIX_FMT_YUV420P) {}
 };
-
 
 class VideoFrame {
 public:
-  static std::unique_ptr<VideoFrame> CreateVideoFrame(enum AVPixelFormat pix_fmt, int width, int height);
+  static std::unique_ptr<VideoFrame>
+  CreateVideoFrame(enum AVPixelFormat pix_fmt, int width, int height);
   VideoFrame(const VideoFrame &) = delete;
   VideoFrame(VideoFrame &&) noexcept;
   VideoFrame &operator=(const VideoFrame &) = delete;
@@ -38,11 +39,11 @@ public:
 
   // !Important. Frame should be created exactly to be
   // able to hold the given buffer amount of data.
-  absl::Status CopyFromBuffer(const uint8_t* buf);
+  absl::Status CopyFromBuffer(const uint8_t *buf);
   // User has to preallocate the buf
   // use av_image_get_buffer_size to compute the
   // required size
-  absl::Status CopyToBuffer(uint8_t* buf);
+  absl::Status CopyToBuffer(uint8_t *buf);
 
   AVFrame *c_frame() const { return c_frame_; }
   int64_t GetPTS() const { return c_frame_->pts; }
@@ -58,9 +59,11 @@ private:
 class VideoStreamContext {
 
 public:
-  static absl::StatusOr<VideoStreamContext> CreateVideoStreamContext(
-      const AVFormatContext *format_context, const AVCodec *codec,
-      const AVCodecParameters *codec_parameters, int stream_idx);
+  static absl::StatusOr<VideoStreamContext>
+  CreateVideoStreamContext(const AVFormatContext *format_context,
+                           const AVCodec *codec,
+                           const AVCodecParameters *codec_parameters,
+                           AVCodecContext *codec_context, int stream_idx);
 
   VideoStreamContext(const VideoStreamContext &) = delete;
   VideoStreamContext(VideoStreamContext &&) noexcept;

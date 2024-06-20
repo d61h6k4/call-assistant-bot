@@ -82,9 +82,35 @@ ContainerStreamContext::CreateReaderContainerStreamContext(
     if (local_codec_parameters->codec_type == AVMEDIA_TYPE_VIDEO) {
       if (!container_stream_context.video_stream_context_.has_value()) {
 
+        AVCodecContext *codec_context = avcodec_alloc_context3(local_codec);
+        if (!codec_context) {
+          return absl::FailedPreconditionError(
+              "failed to allocated memory for AVCodecContext");
+        }
+
+        // Fill the codec context based on the values from the supplied codec
+        // parameters
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
+        if (auto res = avcodec_parameters_to_context(codec_context,
+                                                     local_codec_parameters);
+            res < 0) {
+          return absl::FailedPreconditionError(absl::StrCat(
+              "failed to copy codec params to codec context. Error: ",
+              av_err2string(res)));
+        }
+
+        // Initialize the AVCodecContext to use the given AVCodec.
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
+        if (auto res = avcodec_open2(codec_context, local_codec, nullptr);
+            res < 0) {
+          return absl::FailedPreconditionError(absl::StrCat(
+              "failed to open codec through avcodec_open2. Error: ",
+              av_err2string(res)));
+        }
+
         auto res = VideoStreamContext::CreateVideoStreamContext(
             container_stream_context.format_context_, local_codec,
-            local_codec_parameters, i);
+            local_codec_parameters, codec_context, i);
         if (!res.ok()) {
           auto s =
               absl::AbortedError("Failed to initialize video stream context.");
@@ -167,10 +193,9 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
     av_channel_layout_copy(&stream->codecpar->ch_layout, &audio_channel_layout);
     stream->time_base = (AVRational){1, stream->codecpar->sample_rate};
 
-    auto audio_stream_context_or =
-        AudioStreamContext::CreateAudioStreamContext(
-            container_stream_context.format_context_, codec, stream->codecpar,
-            stream->id);
+    auto audio_stream_context_or = AudioStreamContext::CreateAudioStreamContext(
+        container_stream_context.format_context_, codec, stream->codecpar,
+        stream->id);
 
     if (!audio_stream_context_or.ok()) {
       auto s = absl::AbortedError("Failed to initialize audio stream context.");
@@ -206,24 +231,66 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
     AVStream *stream =
         avformat_new_stream(container_stream_context.format_context_, nullptr);
     stream->id = container_stream_context.format_context_->nb_streams - 1;
-    stream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-    stream->codecpar->bit_rate = video_stream_parameters.width *
-                                 video_stream_parameters.height *
-                                 video_stream_parameters.frame_rate.num * 3;
-    stream->codecpar->codec_id =
+
+    AVCodecContext *codec_context = avcodec_alloc_context3(codec);
+    if (!codec_context) {
+      return absl::FailedPreconditionError(
+          "failed to allocated memory for AVCodecContext");
+    }
+    codec_context->codec_id =
         container_stream_context.format_context_->oformat->video_codec;
-    stream->codecpar->width = video_stream_parameters.width;
-    stream->codecpar->height = video_stream_parameters.height;
-    stream->codecpar->framerate = video_stream_parameters.frame_rate;
-    stream->codecpar->format = video_stream_parameters.format;
+    codec_context->bit_rate = video_stream_parameters.width *
+                              video_stream_parameters.height *
+                              video_stream_parameters.frame_rate.num * 3;
+    codec_context->width = video_stream_parameters.width;
+    codec_context->height = video_stream_parameters.height;
 
-    stream->time_base = AVRational{stream->codecpar->framerate.den,
-                                   stream->codecpar->framerate.num};
+    codec_context->time_base =
+        AVRational{video_stream_parameters.frame_rate.den,
+                   video_stream_parameters.frame_rate.num};
+    codec_context->pkt_timebase = codec_context->time_base;
+    // No idea what it does. Copied from mux.c example
+    codec_context->gop_size =
+        12; /* emit one intra frame every twelve frames at most */
+    codec_context->pix_fmt = video_stream_parameters.format;
+    if (codec_context->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
+      /* just for testing, we also add B-frames */
+      codec_context->max_b_frames = 2;
+    }
+    if (codec_context->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
+      /* Needed to avoid using macroblocks in which some coeffs overflow.
+       * This does not happen with normal video, it just happens here as
+       * the motion of the chroma plane does not match the luma plane. */
+      codec_context->mb_decision = 2;
+    }
 
-    auto video_stream_context_or =
-        VideoStreamContext::CreateVideoStreamContext(
-            container_stream_context.format_context_, codec, stream->codecpar,
-            stream->id);
+    /* Some formats want stream headers to be separate. */
+    if (container_stream_context.format_context_->oformat->flags &
+        AVFMT_GLOBALHEADER) {
+      codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    }
+
+    // Initialize the AVCodecContext to use the given AVCodec.
+    // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
+    if (auto res = avcodec_open2(codec_context, codec, nullptr); res < 0) {
+      return absl::FailedPreconditionError(
+          absl::StrCat("failed to open codec through avcodec_open2. Error: ",
+                       av_err2string(res)));
+    }
+    // Fill the codec context based on the values from the supplied codec
+    // parameters
+    // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
+    if (auto res =
+            avcodec_parameters_from_context(stream->codecpar, codec_context);
+        res < 0) {
+      return absl::FailedPreconditionError(absl::StrCat(
+          "failed to copy codec params from codec context. Error: ",
+          av_err2string(res)));
+    }
+
+    auto video_stream_context_or = VideoStreamContext::CreateVideoStreamContext(
+        container_stream_context.format_context_, codec, stream->codecpar,
+        codec_context, stream->id);
 
     if (!video_stream_context_or.ok()) {
       auto s = absl::AbortedError(absl::StrCat(
@@ -231,13 +298,6 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
           video_stream_context_or.status().message()));
       s.Update(video_stream_context_or.status());
       return s;
-    }
-
-    /* Some formats want stream headers to be separate. */
-    if (container_stream_context.format_context_->oformat->flags &
-        AVFMT_GLOBALHEADER) {
-      video_stream_context_or->codec_context()->flags |=
-          AV_CODEC_FLAG_GLOBAL_HEADER;
     }
 
     container_stream_context.video_stream_context_ =
