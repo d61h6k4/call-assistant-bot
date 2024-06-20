@@ -119,7 +119,9 @@ FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
       if (prev_video_timestamp_ < timestamp) {
-        auto out_timestamp = mediapipe::Timestamp(video_frame_or->GetPTS());
+        auto out_timestamp = mediapipe::Timestamp(
+            container_stream_context_->FramePTSInMicroseconds(
+                video_frame_or.get()));
         kOutVideo(cc).Send(std::move(video_frame_or), out_timestamp);
         prev_video_timestamp_ = timestamp;
 
