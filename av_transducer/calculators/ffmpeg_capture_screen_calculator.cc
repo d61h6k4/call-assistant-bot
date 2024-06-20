@@ -75,20 +75,8 @@ FFMPEGCaptureScreenCalculator::Open(mediapipe::CalculatorContext *cc) {
   const auto &in_video_stream =
       container_stream_context_->GetVideoStreamParameters();
 
-  if (in_video_stream.frame_rate.num == 0 &&
-      in_video_stream.frame_rate.den == 1) {
-    // Debian x11grabs sets fps 0/1, we change to 30
-    auto fps_video_stream = media::VideoStreamParameters();
-    fps_video_stream.format = in_video_stream.format;
-    fps_video_stream.width = in_video_stream.width;
-    fps_video_stream.height = in_video_stream.height;
-    fps_video_stream.frame_rate = {30, 1};
-    kOutVideoHeader(cc).Set(fps_video_stream);
-  } else {
-
-    // Write video header
-    kOutVideoHeader(cc).Set(in_video_stream);
-  }
+  // Write video header
+  kOutVideoHeader(cc).Set(in_video_stream);
 
   return absl::OkStatus();
 }
@@ -125,8 +113,10 @@ FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
       }
 
       auto timestamp = mediapipe::Timestamp(video_frame_or->GetPTS());
-      container_stream_context_->SetFramePTS(
-          (timestamp - start_timestamp_).Microseconds(), video_frame_or.get());
+      // x11grab time base is 1/0, so we set pts manually
+      video_frame_or->SetPTS(
+          av_rescale_q((timestamp - start_timestamp_).Microseconds(),
+                       AVRational{1, 1000000}, AVRational{1, 30}));
 
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
