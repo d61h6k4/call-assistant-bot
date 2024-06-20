@@ -16,7 +16,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   mediapipe::api2::builder::Graph graph;
 
   // Capture video device
-  auto &capture_video_node = graph.AddNode("FFMPEGCaptureVideoCalculator");
+  auto &capture_video_node = graph.AddNode("FFMPEGCaptureScreenCalculator");
   auto video_header = capture_video_node.SideOut("VIDEO_HEADER");
   auto video_stream = capture_video_node.Out("VIDEO");
 

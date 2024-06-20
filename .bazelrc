@@ -2,7 +2,7 @@
 common --enable_bzlmod
 
 # Basic build settings
-build --jobs 8
+build --jobs auto
 build --define='absl=1'  # for gtest
 build --define MEDIAPIPE_DISABLE_GPU=1
 build --enable_platform_specific_config
