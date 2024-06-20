@@ -1,6 +1,7 @@
 
 
 #include "absl/log/absl_log.h"
+#include "av_transducer/utils/video.h"
 #include "mediapipe/framework/calculator_runner.h"
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/status_matchers.h"
@@ -73,6 +74,7 @@ TEST_F(AudioConverterCalculatorTest, AudioSanityCheck) {
 
   aikit::media::AudioStreamParameters out_audio_stream;
   // out_audio_stream.sample_rate = 44100;
+  aikit::media::VideoStreamParameters out_video_stream;
 
   SetInput(out_audio_stream);
 
@@ -83,7 +85,7 @@ TEST_F(AudioConverterCalculatorTest, AudioSanityCheck) {
 
   auto write_container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
-          out_audio_stream, "/tmp/testvideo.m4a");
+          out_audio_stream, out_video_stream, "/tmp/testvideo.m4a");
 
   for (auto &packet : GetOutputs()) {
     auto &audio_frame = packet.Get<media::AudioFrame>();
