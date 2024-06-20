@@ -10,7 +10,6 @@
 #include "av_transducer/utils/container.h"
 #include "av_transducer/utils/converter.h"
 
-#include "absl/log/absl_log.h"
 #include "av_transducer/utils/video.h"
 
 std::vector<float> GenerateAudioData(size_t nb_samples) {
@@ -137,6 +136,64 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
         EXPECT_TRUE(st.ok()) << st.message();
       } else {
         EXPECT_TRUE(absl::IsFailedPrecondition(s)) << s.message();
+      }
+    }
+  }
+
+  av_packet_free(&packet);
+  av_packet_free(&write_packet);
+}
+
+TEST(TestConverterUtils, CheckReadVideoConvertWrite) {
+
+  const std::string filename = "testdata/testvideo.mp4";
+
+  auto container =
+      aikit::media::ContainerStreamContext::CreateReaderContainerStreamContext(
+          filename, nullptr);
+
+  EXPECT_TRUE(container.ok()) << container.status().message();
+
+  AVPacket *packet = av_packet_alloc();
+  EXPECT_TRUE(packet) << "failed to allocate memory for AVPacket";
+
+  AVPacket *write_packet = av_packet_alloc();
+  EXPECT_TRUE(write_packet) << "failed to allocate memory for AVPacket";
+
+  auto in_video_stream = container->GetVideoStreamParameters();
+  auto video_frame_or = container->CreateVideoFrame();
+  EXPECT_TRUE(video_frame_or);
+
+  aikit::media::AudioStreamParameters out_audio_stream;
+  out_audio_stream.sample_rate = 44100;
+  aikit::media::VideoStreamParameters out_video_stream;
+  out_video_stream.width = 640;
+  out_video_stream.height = 360;
+  out_video_stream.format = AV_PIX_FMT_NV12;
+
+  auto write_container =
+      aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
+          out_audio_stream, out_video_stream, "/tmp/testvideo.h264");
+  auto out_video_frame = write_container->CreateVideoFrame();
+  EXPECT_TRUE(out_video_frame);
+
+  auto video_converter_or = aikit::media::VideoConverter::CreateVideoConverter(
+      in_video_stream, out_video_stream);
+  EXPECT_TRUE(video_converter_or.ok()) << video_converter_or.status().message();
+
+  for (absl::Status st = container->ReadPacket(packet); st.ok();
+       st = container->ReadPacket(packet)) {
+    if (container->IsPacketVideo(packet)) {
+
+      st = container->PacketToFrame(packet, video_frame_or.get());
+      EXPECT_TRUE(st.ok());
+
+      auto s = video_converter_or->Convert(video_frame_or.get(),
+                                           out_video_frame.get());
+      EXPECT_TRUE(s.ok());
+      if (s.ok()) {
+        st = write_container->WriteFrame(write_packet, out_video_frame.get());
+        EXPECT_TRUE(st.ok()) << st.message();
       }
     }
   }

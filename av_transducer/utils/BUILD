@@ -5,7 +5,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
 
-"@com_google_absl//absl/log:absl_log",
         "//third_party:libffmpeg",
         "@com_google_absl//absl/status:statusor",
     ],
@@ -30,8 +29,6 @@ cc_library(
     deps = [
         "//third_party:libffmpeg",
         "@com_google_absl//absl/status:statusor",
-
-"@com_google_absl//absl/log:absl_log",
     ],
 )
 
@@ -79,8 +76,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":audio",
+        ":video",
         "//third_party:libffmpeg",
-        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status:statusor",
     ],
 )

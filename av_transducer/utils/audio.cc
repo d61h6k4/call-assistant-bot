@@ -1,6 +1,5 @@
 
 #include "av_transducer/utils/audio.h"
-#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include <algorithm>
 #include <cstddef>
