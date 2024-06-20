@@ -429,7 +429,7 @@ async def prepare_env(logger: logging.Logger):
 
 
 async def serve(args: argparse.Namespace):
-    logger = logging.getLogger()
+    logger = logging.getLogger("meeting_bot")
     await prepare_env(logger)
 
     server = grpc.aio.server()

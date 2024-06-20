@@ -115,7 +115,7 @@ class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
 
 
 async def serve(args: argparse.Namespace):
-    logger = logging.getLogger()
+    logger = logging.getLogger("articulator")
     server = grpc.aio.server()
     service = await ArticulatorServicer.create(
         google_login=args.google_login,

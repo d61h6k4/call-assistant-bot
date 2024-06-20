@@ -64,7 +64,7 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
 
 
 async def serve(args: argparse.Namespace):
-    logger = logging.getLogger()
+    logger = logging.getLogger("evaluator")
     server = grpc.aio.server()
     service = await EvaluatorServicer.create(
         meeting_bot_address=args.meeting_bot_address,
