@@ -112,18 +112,17 @@ FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
         start_timestamp_ = mediapipe::Timestamp(video_frame_or->GetPTS());
       }
 
-      auto timestamp = mediapipe::Timestamp(video_frame_or->GetPTS());
+      auto current_timestamp = mediapipe::Timestamp(video_frame_or->GetPTS());
       // x11grab time base is 1/0, so we set pts manually
       video_frame_or->SetPTS(
-          av_rescale_q((timestamp - start_timestamp_).Microseconds(),
+          av_rescale_q((current_timestamp - start_timestamp_).Microseconds(),
                        AVRational{1, 1000000}, AVRational{1, 30}));
-
+      auto timestamp = mediapipe::Timestamp(av_rescale_q(
+          video_frame_or->GetPTS(), AVRational{1, 30}, AVRational{1, 1000000}));
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
       if (prev_video_timestamp_ < timestamp) {
-        auto out_timestamp = mediapipe::Timestamp(av_rescale_q(
-            video_frame_or->GetPTS(), AVRational{1, 30}, AVRational{1, 1000000}));
-        kOutVideo(cc).Send(std::move(video_frame_or), out_timestamp);
+        kOutVideo(cc).Send(std::move(video_frame_or), timestamp);
         prev_video_timestamp_ = timestamp;
 
         // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2
