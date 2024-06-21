@@ -323,7 +323,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             archive_path = Path(archive_dir) / archive_name
             zip_archive_path = shutil.make_archive(
                 str(archive_path),
-                "tar",
+                "xztar",
                 self.working_dir.name,
                 verbose=True,
                 logger=self.logger,
