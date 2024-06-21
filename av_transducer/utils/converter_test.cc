@@ -173,7 +173,7 @@ TEST(TestConverterUtils, CheckReadVideoConvertWrite) {
 
   auto write_container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
-          out_audio_stream, out_video_stream, "/tmp/testvideo.h264");
+          out_audio_stream, out_video_stream, "/tmp/testvideo.mp4");
   auto out_video_frame = write_container->CreateVideoFrame();
   EXPECT_TRUE(out_video_frame);
 
