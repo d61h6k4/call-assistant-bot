@@ -33,12 +33,34 @@ class GoogleMeetOperator:
         await self.tab.fullscreen()
 
         await self.try_continue_wo_mic(self.tab)
-        await self.try_sign_in(self.tab)
+        await self.set_name(self.tab)
         await self.try_continue_wo_mic(self.tab)
         await self.ask_to_join(self.tab)
 
         screenshot_path = self.screenshots_dir / "on_a_call.jpg"
         await self.tab.save_screenshot(filename=screenshot_path)
+
+    async def set_name(self, tab: nodriver.Tab):
+        """Set name use to join a meeting"""
+        self.logger.info(
+            {
+                "message": "Setting name to join the meeting",
+                "sesison_id": self.session_id,
+            }
+        )
+        set_name_input = await tab.wait_for('input[placeholder="Your name"]')
+        if not set_name_input:
+            screenshot_path = self.screenshots_dir / "set_name_input.jpg"
+            await tab.save_screenshot(filename=screenshot_path)
+            self.logger.error(
+                {
+                    "message": "Expected to find input with placeholder 'Your name' text on it. See screenshot.",
+                    "screenshot_path": screenshot_path,
+                    "session_id": self.session_id,
+                }
+            )
+            return
+        await set_name_input.send_keys("AI-kit Meeting Bot")
 
     async def exit(self):
         if self.tab is not None:
