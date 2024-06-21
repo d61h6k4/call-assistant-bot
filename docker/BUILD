@@ -178,6 +178,7 @@ oci_image(
         "PULSE_SERVER": "/var/run/pulse/native",
         "DBUS_STARTER_BUS_TYPE": "session",
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket",
+        "TMPDIR": "/home/nonroot/tmp",
     },
     tars = [
         ":sh",
