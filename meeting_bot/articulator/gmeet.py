@@ -30,6 +30,7 @@ class GoogleMeetOperator:
         )
         self.tab = await self.browser.get(url)
         await self.tab.wait()
+        await self.tab.fullscreen()
 
         await self.try_continue_wo_mic(self.tab)
         await self.try_sign_in(self.tab)

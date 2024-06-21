@@ -5,7 +5,7 @@
 #include <optional>
 namespace aikit {
 
-    // This Calculator captures audio from audio driver and stream audio packets.
+// This Calculator captures audio from audio driver and stream audio packets.
 // All streams and input side packets are specified using tags and all of them
 // are optional.
 //
@@ -121,8 +121,10 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
         av_packet_unref(packet_);
         return absl::OkStatus();
       } else {
-        ABSL_LOG(WARNING) << "Unmonotonic timestamps " << prev_audio_timestamp_
-                          << " and " << timestamp;
+        ABSL_LOG_EVERY_N_SEC(WARNING, 3)
+            << "Unmonotonic timestamps " << prev_audio_timestamp_ << " and "
+            << timestamp << " PTS: " << audio_frame_or->GetPTS() << " diff: "
+            << (current_timestamp - start_timestamp_).Microseconds();
         av_packet_unref(packet_);
         return absl::OkStatus();
       }
