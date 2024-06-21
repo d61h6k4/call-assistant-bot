@@ -2,6 +2,7 @@
 
 #include "absl/status/statusor.h"
 #include <cstdint>
+#include <cwchar>
 #include <optional>
 
 #ifdef __cplusplus
@@ -13,6 +14,7 @@ extern "C" {
 #endif
 
 #include "av_transducer/utils/audio.h"
+#include "av_transducer/utils/video.h"
 
 namespace aikit {
 namespace media {
@@ -24,7 +26,8 @@ public:
 
   static absl::StatusOr<ContainerStreamContext>
   CreateWriterContainerStreamContext(
-      AudioStreamParameters audio_stream_parameters, const std::string &url);
+      AudioStreamParameters audio_stream_parameters,
+      VideoStreamParameters video_stream_parameters, const std::string &url);
 
   ContainerStreamContext(const ContainerStreamContext &) = delete;
   ContainerStreamContext(ContainerStreamContext &&) noexcept;
@@ -34,15 +37,26 @@ public:
   ~ContainerStreamContext();
 
   AudioStreamParameters GetAudioStreamParameters();
+  VideoStreamParameters GetVideoStreamParameters();
 
   std::unique_ptr<AudioFrame> CreateAudioFrame();
+  std::unique_ptr<VideoFrame> CreateVideoFrame();
+
   int64_t FramePTSInMicroseconds(const AudioFrame *frame);
   void SetFramePTS(int64_t microseconds, AudioFrame *frame);
+  int64_t FramePTSInMicroseconds(const VideoFrame *frame);
+  void SetFramePTS(int64_t microseconds, VideoFrame *frame);
 
   absl::Status ReadPacket(AVPacket *packet);
+
+  bool IsPacketAudio(AVPacket *packet);
+  bool IsPacketVideo(AVPacket *packet);
+
   absl::Status PacketToFrame(AVPacket *packet, AudioFrame *frame);
+  absl::Status PacketToFrame(AVPacket *packet, VideoFrame *frame);
 
   absl::Status WriteFrame(AVPacket *packet, const AudioFrame *frame);
+  absl::Status WriteFrame(AVPacket *packet, const VideoFrame *frame);
 
   // Captures data from the device.
   // This operation is operating system dependent:
@@ -72,7 +86,7 @@ private:
   bool header_written_ = false;
 
   AVFormatContext *format_context_ = nullptr;
-  // std::optional<ImageStreamContext> image_stream_context = std::nullopt;
+  std::optional<VideoStreamContext> video_stream_context_ = std::nullopt;
   std::optional<AudioStreamContext> audio_stream_context_ = std::nullopt;
 };
 

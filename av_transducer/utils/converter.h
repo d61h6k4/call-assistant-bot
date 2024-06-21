@@ -2,12 +2,14 @@
 
 #include "absl/status/statusor.h"
 #include "av_transducer/utils/audio.h"
+#include "av_transducer/utils/video.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 #include "libavutil/audio_fifo.h"
 #include "libswresample/swresample.h"
+#include "libswscale/swscale.h"
 #ifdef __cplusplus
 }
 #endif
@@ -55,5 +57,27 @@ private:
   int out_frame_size_ = 0;
   AVAudioFifo *audio_fifo_ = nullptr;
 };
+
+class VideoConverter {
+public:
+  static absl::StatusOr<VideoConverter>
+  CreateVideoConverter(const VideoStreamParameters &in_video_stream,
+                       const VideoStreamParameters &out_video_stream);
+
+  VideoConverter(const VideoConverter &) = delete;
+  VideoConverter(VideoConverter &&) noexcept;
+  VideoConverter &operator=(const VideoConverter &) = delete;
+  VideoConverter &operator=(VideoConverter &&) noexcept;
+  ~VideoConverter();
+
+  absl::Status Convert(const VideoFrame *in_frame, VideoFrame *out_frame);
+
+private:
+  VideoConverter() {};
+
+private:
+  SwsContext *sw_scale_context_ = nullptr;
+};
 } // namespace media
+
 } // namespace aikit

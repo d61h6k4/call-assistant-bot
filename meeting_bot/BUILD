@@ -79,8 +79,8 @@ py_test(
 
 py_test(
     name = "google_cloud_test",
-    data = ["//testdata:test_videos"],
     srcs = ["google_cloud_test.py"],
+    data = ["//testdata:test_videos"],
     tags = ["manual"],
     deps = [":google_cloud"],
 )

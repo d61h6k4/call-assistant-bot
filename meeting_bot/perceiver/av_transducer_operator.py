@@ -30,7 +30,7 @@ class AVTransducerOperator:
                 [
                     r.Rlocation(AVTransducerOperator._AV_TRANSDUCER_BIN),
                     "--output_file_path",
-                    str(working_dir / "meeting_record.m4a"),
+                    str(working_dir / "meeting_record.mp4"),
                 ]
             ),
             env=env,

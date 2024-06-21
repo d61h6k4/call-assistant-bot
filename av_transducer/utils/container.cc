@@ -3,7 +3,9 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "av_transducer/utils/audio.h"
+#include "av_transducer/utils/video.h"
 #include <optional>
+#include <sys/unistd.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,28 +80,79 @@ ContainerStreamContext::CreateReaderContainerStreamContext(
     }
 
     if (local_codec_parameters->codec_type == AVMEDIA_TYPE_VIDEO) {
-      // if (!container_stream_context.image_stream_context.has_value()) {
+      if (!container_stream_context.video_stream_context_.has_value()) {
 
-      //   auto res =
-      //       InitImageStreamContext(video_stream_context.format_context,
-      //                              local_codec, local_codec_parameters, i);
-      //   if (!res.ok()) {
-      //     auto s =
-      //         absl::AbortedError("Failed to initialize image stream
-      //         context.");
-      //     s.Update(res.status());
-      //     return s;
-      //   }
+        AVCodecContext *codec_context = avcodec_alloc_context3(local_codec);
+        if (!codec_context) {
+          return absl::FailedPreconditionError(
+              "failed to allocated memory for AVCodecContext");
+        }
 
-      //   container_stream_context.image_stream_context = res.value();
-      // }
+        // Fill the codec context based on the values from the supplied codec
+        // parameters
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
+        if (auto res = avcodec_parameters_to_context(codec_context,
+                                                     local_codec_parameters);
+            res < 0) {
+          return absl::FailedPreconditionError(absl::StrCat(
+              "failed to copy codec params to codec context. Error: ",
+              av_err2string(res)));
+        }
+
+        // Initialize the AVCodecContext to use the given AVCodec.
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
+        if (auto res = avcodec_open2(codec_context, local_codec, nullptr);
+            res < 0) {
+          return absl::FailedPreconditionError(absl::StrCat(
+              "failed to open codec through avcodec_open2. Error: ",
+              av_err2string(res)));
+        }
+
+        auto res = VideoStreamContext::CreateVideoStreamContext(
+            container_stream_context.format_context_, local_codec,
+            local_codec_parameters, codec_context, i);
+        if (!res.ok()) {
+          auto s =
+              absl::AbortedError("Failed to initialize video stream context.");
+          s.Update(res.status());
+          return s;
+        }
+
+        container_stream_context.video_stream_context_ = std::move(res.value());
+      }
       continue;
     } else if (local_codec_parameters->codec_type == AVMEDIA_TYPE_AUDIO) {
       if (!container_stream_context.audio_stream_context_.has_value()) {
 
+        AVCodecContext *codec_context = avcodec_alloc_context3(local_codec);
+        if (!codec_context) {
+          return absl::FailedPreconditionError(
+              "failed to allocated memory for AVCodecContext");
+        }
+
+        // Fill the codec context based on the values from the supplied codec
+        // parameters
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
+        if (auto res = avcodec_parameters_to_context(codec_context,
+                                                     local_codec_parameters);
+            res < 0) {
+          return absl::FailedPreconditionError(absl::StrCat(
+              "failed to copy codec params to codec context. Error: ",
+              av_err2string(res)));
+        }
+
+        // Initialize the AVCodecContext to use the given AVCodec.
+        // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
+        if (auto res = avcodec_open2(codec_context, local_codec, nullptr);
+            res < 0) {
+          return absl::FailedPreconditionError(absl::StrCat(
+              "failed to open codec through avcodec_open2. Error: ",
+              av_err2string(res)));
+        }
+
         auto res = AudioStreamContext::CreateAudioStreamContext(
             container_stream_context.format_context_, local_codec,
-            local_codec_parameters, i);
+            local_codec_parameters, codec_context, i);
         if (!res.ok()) {
           auto s = absl::FailedPreconditionError(
               "Failed to initialize audio stream context.");
@@ -110,18 +163,19 @@ ContainerStreamContext::CreateReaderContainerStreamContext(
       }
     }
   }
-  // if (!container_stream_context.image_stream_context.has_value() &&
-  //     !container_stream_context.audio_stream_context.has_value()) {
-  //   return absl::AbortedError(
-  //       "Video does not contain neither image nor audio streams.");
-  // }
+  if (!container_stream_context.video_stream_context_.has_value() &&
+      !container_stream_context.audio_stream_context_.has_value()) {
+    return absl::AbortedError(
+        "Video does not contain neither video nor audio streams.");
+  }
 
   return container_stream_context;
 }
 
 absl::StatusOr<ContainerStreamContext>
 ContainerStreamContext::CreateWriterContainerStreamContext(
-    AudioStreamParameters audio_stream_parameters, const std::string &url) {
+    AudioStreamParameters audio_stream_parameters,
+    VideoStreamParameters video_stream_parameters, const std::string &url) {
   ContainerStreamContext container_stream_context;
   container_stream_context.is_reader_ = false;
 
@@ -137,8 +191,6 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
     return absl::AbortedError("Failed to allocate output media context");
   }
 
-  /* Add the audio and video streams using the default format codecs
-   * and initialize the codecs. */
   if (container_stream_context.format_context_->oformat->audio_codec !=
       AV_CODEC_ID_NONE) {
 
@@ -147,30 +199,57 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
         container_stream_context.format_context_->oformat->audio_codec);
 
     if (!codec) {
-      return absl::AbortedError("Failed to find encoder for audio.");
+      return absl::AbortedError("Failed to find encoder for video.");
     }
 
     // This call creates and connects stream with AVFormatContext
     AVStream *stream =
         avformat_new_stream(container_stream_context.format_context_, nullptr);
     stream->id = container_stream_context.format_context_->nb_streams - 1;
-    // Here we define format of the output format
-    stream->codecpar->frame_size = audio_stream_parameters.frame_size;
-    stream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
-    stream->codecpar->codec_id =
-        container_stream_context.format_context_->oformat->audio_codec;
-    stream->codecpar->format = audio_stream_parameters.format;
-    stream->codecpar->sample_rate = audio_stream_parameters.sample_rate;
-    stream->codecpar->bit_rate = audio_stream_parameters.bit_rate;
+
+    AVCodecContext *codec_context = avcodec_alloc_context3(codec);
+    if (!codec_context) {
+      return absl::FailedPreconditionError(
+          "failed to allocated memory for AVCodecContext");
+    }
+
+    codec_context->sample_fmt = audio_stream_parameters.format;
+    codec_context->bit_rate = audio_stream_parameters.bit_rate;
+    codec_context->sample_rate = audio_stream_parameters.sample_rate;
     AVChannelLayout audio_channel_layout =
         audio_stream_parameters.channel_layout;
-    av_channel_layout_copy(&stream->codecpar->ch_layout, &audio_channel_layout);
-    stream->time_base = (AVRational){1, stream->codecpar->sample_rate};
+    av_channel_layout_copy(&codec_context->ch_layout, &audio_channel_layout);
 
-    auto audio_stream_context_or =
-        aikit::media::AudioStreamContext::CreateAudioStreamContext(
-            container_stream_context.format_context_, codec, stream->codecpar,
-            stream->id);
+    stream->time_base = (AVRational){1, codec_context->sample_rate};
+
+    /* Some formats want stream headers to be separate. */
+    if (container_stream_context.format_context_->oformat->flags &
+        AVFMT_GLOBALHEADER) {
+      codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    }
+
+    // Initialize the AVCodecContext to use the given AVCodec.
+    // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
+    if (auto res = avcodec_open2(codec_context, codec, nullptr); res < 0) {
+      return absl::FailedPreconditionError(absl::StrCat(
+          "failed to open audio codec through avcodec_open2. Error: ",
+          av_err2string(res)));
+    }
+
+    // Fill the codec context based on the values from the supplied codec
+    // parameters
+    // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
+    if (auto res =
+            avcodec_parameters_from_context(stream->codecpar, codec_context);
+        res < 0) {
+      return absl::FailedPreconditionError(absl::StrCat(
+          "failed to copy codec params from codec context. Error: ",
+          av_err2string(res)));
+    }
+
+    auto audio_stream_context_or = AudioStreamContext::CreateAudioStreamContext(
+        container_stream_context.format_context_, codec, stream->codecpar,
+        codec_context, stream->id);
 
     if (!audio_stream_context_or.ok()) {
       auto s = absl::AbortedError("Failed to initialize audio stream context.");
@@ -178,39 +257,122 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
       return s;
     }
 
-    /* Some formats want stream headers to be separate. */
-    if (container_stream_context.format_context_->oformat->flags &
-        AVFMT_GLOBALHEADER) {
-      audio_stream_context_or->codec_context()->flags |=
-          AV_CODEC_FLAG_GLOBAL_HEADER;
-    }
-
-    // Print to stdout format info.
-    av_dump_format(container_stream_context.format_context_, 0, url.c_str(), 1);
-
-    /* open the output file, if needed */
-    if (!(container_stream_context.format_context_->oformat->flags &
-          AVFMT_NOFILE)) {
-      if (int ret = avio_open(&container_stream_context.format_context_->pb,
-                              url.c_str(), AVIO_FLAG_WRITE);
-          ret < 0) {
-        return absl::AbortedError(
-            absl::StrCat("Could not open ", url, " ", av_err2str(ret)));
-      }
-    }
-
-    /* Write the stream header, if any. */
-    if (int ret = avformat_write_header(
-            container_stream_context.format_context_, nullptr);
-        ret < 0) {
-      return absl::AbortedError(absl::StrCat(
-          "Error occurred when opening output file: ", av_err2str(ret)));
-    }
-    container_stream_context.header_written_ = true;
-
     container_stream_context.audio_stream_context_ =
         std::move(audio_stream_context_or.value());
   }
+
+  /* Add the audio and video streams using the default format codecs
+   * and initialize the codecs. */
+  if (container_stream_context.format_context_->oformat->video_codec !=
+      AV_CODEC_ID_NONE) {
+
+    // Codec defined by avformat_alloc_output_context2, based on the filename
+    const AVCodec *codec = avcodec_find_encoder(
+        container_stream_context.format_context_->oformat->video_codec);
+
+    if (!codec) {
+      return absl::AbortedError("Failed to find encoder for video.");
+    }
+
+    // This call creates and connects stream with AVFormatContext
+    AVStream *stream =
+        avformat_new_stream(container_stream_context.format_context_, nullptr);
+    stream->id = container_stream_context.format_context_->nb_streams - 1;
+
+    AVCodecContext *codec_context = avcodec_alloc_context3(codec);
+    if (!codec_context) {
+      return absl::FailedPreconditionError(
+          "failed to allocated memory for AVCodecContext");
+    }
+    codec_context->codec_id =
+        container_stream_context.format_context_->oformat->video_codec;
+    codec_context->bit_rate = video_stream_parameters.width *
+                              video_stream_parameters.height *
+                              video_stream_parameters.frame_rate.num * 3;
+    codec_context->width = video_stream_parameters.width;
+    codec_context->height = video_stream_parameters.height;
+
+    codec_context->time_base =
+        AVRational{video_stream_parameters.frame_rate.den,
+                   video_stream_parameters.frame_rate.num};
+    codec_context->pkt_timebase = codec_context->time_base;
+    // No idea what it does. Copied from mux.c example
+    codec_context->gop_size =
+        12; /* emit one intra frame every twelve frames at most */
+    codec_context->pix_fmt = video_stream_parameters.format;
+    if (codec_context->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
+      /* just for testing, we also add B-frames */
+      codec_context->max_b_frames = 2;
+    }
+    if (codec_context->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
+      /* Needed to avoid using macroblocks in which some coeffs overflow.
+       * This does not happen with normal video, it just happens here as
+       * the motion of the chroma plane does not match the luma plane. */
+      codec_context->mb_decision = 2;
+    }
+
+    /* Some formats want stream headers to be separate. */
+    if (container_stream_context.format_context_->oformat->flags &
+        AVFMT_GLOBALHEADER) {
+      codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    }
+
+    // Initialize the AVCodecContext to use the given AVCodec.
+    // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
+    if (auto res = avcodec_open2(codec_context, codec, nullptr); res < 0) {
+      return absl::FailedPreconditionError(absl::StrCat(
+          "failed to open video codec through avcodec_open2. Error: ",
+          av_err2string(res)));
+    }
+    // Fill the codec context based on the values from the supplied codec
+    // parameters
+    // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
+    if (auto res =
+            avcodec_parameters_from_context(stream->codecpar, codec_context);
+        res < 0) {
+      return absl::FailedPreconditionError(absl::StrCat(
+          "failed to copy codec params from codec context. Error: ",
+          av_err2string(res)));
+    }
+
+    auto video_stream_context_or = VideoStreamContext::CreateVideoStreamContext(
+        container_stream_context.format_context_, codec, stream->codecpar,
+        codec_context, stream->id);
+
+    if (!video_stream_context_or.ok()) {
+      auto s = absl::AbortedError(absl::StrCat(
+          "Failed to initialize video stream context. Raised from: ",
+          video_stream_context_or.status().message()));
+      s.Update(video_stream_context_or.status());
+      return s;
+    }
+
+    container_stream_context.video_stream_context_ =
+        std::move(video_stream_context_or.value());
+  }
+
+  // Print to stdout format info.
+  av_dump_format(container_stream_context.format_context_, 0, url.c_str(), 1);
+
+  /* open the output file, if needed */
+  if (!(container_stream_context.format_context_->oformat->flags &
+        AVFMT_NOFILE)) {
+    if (int ret = avio_open(&container_stream_context.format_context_->pb,
+                            url.c_str(), AVIO_FLAG_WRITE);
+        ret < 0) {
+      return absl::AbortedError(
+          absl::StrCat("Could not open ", url, " ", av_err2str(ret)));
+    }
+  }
+
+  /* Write the stream header, if any. */
+  if (int ret = avformat_write_header(container_stream_context.format_context_,
+                                      nullptr);
+      ret < 0) {
+    return absl::AbortedError(absl::StrCat(
+        "Error occurred when opening output file: ", av_err2str(ret)));
+  }
+  container_stream_context.header_written_ = true;
 
   return container_stream_context;
 }
@@ -219,6 +381,7 @@ ContainerStreamContext::ContainerStreamContext(
     ContainerStreamContext &&o) noexcept
     : is_reader_(o.is_reader_), header_written_(o.header_written_),
       format_context_(o.format_context_),
+      video_stream_context_(std::move(o.video_stream_context_)),
       audio_stream_context_(std::move(o.audio_stream_context_)) {
 
   o.format_context_ = nullptr;
@@ -230,6 +393,7 @@ ContainerStreamContext::operator=(ContainerStreamContext &&o) noexcept {
     is_reader_ = o.is_reader_;
     header_written_ = o.header_written_;
     audio_stream_context_ = std::move(o.audio_stream_context_);
+    video_stream_context_ = std::move(o.video_stream_context_);
     format_context_ = o.format_context_;
     o.format_context_ = nullptr;
   }
@@ -249,17 +413,6 @@ ContainerStreamContext::~ContainerStreamContext() {
     }
     avformat_close_input(&format_context_);
   }
-}
-
-std::unique_ptr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {
-  if (!audio_stream_context_.has_value()) {
-    return nullptr;
-  }
-
-  auto audio_stream_params = GetAudioStreamParameters();
-  return AudioFrame::CreateAudioFrame(
-      audio_stream_params.format, &audio_stream_params.channel_layout,
-      audio_stream_params.sample_rate, audio_stream_params.frame_size);
 }
 
 absl::Status
@@ -282,9 +435,23 @@ ContainerStreamContext::PacketToFrame(AVCodecContext *codec_context,
   return absl::OkStatus();
 }
 
+bool ContainerStreamContext::IsPacketAudio(AVPacket *packet) {
+  return packet->stream_index == audio_stream_context_->stream_index();
+}
+
+bool ContainerStreamContext::IsPacketVideo(AVPacket *packet) {
+  return packet->stream_index == video_stream_context_->stream_index();
+}
+
 absl::Status ContainerStreamContext::PacketToFrame(AVPacket *packet,
                                                    AudioFrame *frame) {
   return PacketToFrame(audio_stream_context_->codec_context(), packet,
+                       frame->c_frame());
+}
+
+absl::Status ContainerStreamContext::PacketToFrame(AVPacket *packet,
+                                                   VideoFrame *frame) {
+  return PacketToFrame(video_stream_context_->codec_context(), packet,
                        frame->c_frame());
 }
 
@@ -298,7 +465,7 @@ absl::Status ContainerStreamContext::ReadPacket(AVPacket *packet) {
   // https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61
   int res = av_read_frame(format_context_, packet);
   for (; res == 0; res = av_read_frame(format_context_, packet)) {
-    if (packet->stream_index == audio_stream_context_->stream_index()) {
+    if (IsPacketAudio(packet) || IsPacketVideo(packet)) {
       return absl::OkStatus();
     }
   }
@@ -328,6 +495,8 @@ absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
           absl::StrCat("Error encoding a frame: ", av_err2str(ret)));
     }
     /* rescale output packet timestamp values from codec to stream timebase */
+    av_packet_rescale_ts(packet, codec_context->time_base,
+                         format_context->streams[stream_index]->time_base);
     packet->stream_index = stream_index;
 
     /* Write the compressed frame to the media file. */
@@ -346,6 +515,7 @@ absl::Status ContainerStreamContext::WriteFrame(AVFormatContext *format_context,
   }
   return absl::OkStatus();
 }
+
 absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
                                                 const AudioFrame *frame) {
   if (is_reader_) {
@@ -354,6 +524,17 @@ absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
   }
   return WriteFrame(format_context_, audio_stream_context_->codec_context(),
                     audio_stream_context_->stream_index(), packet,
+                    frame->c_frame());
+}
+
+absl::Status ContainerStreamContext::WriteFrame(AVPacket *packet,
+                                                const VideoFrame *frame) {
+  if (is_reader_) {
+    return absl::AbortedError("The container stream context was created as "
+                              "reader, writing is not allowed.");
+  }
+  return WriteFrame(format_context_, video_stream_context_->codec_context(),
+                    video_stream_context_->stream_index(), packet,
                     frame->c_frame());
 }
 
@@ -376,7 +557,30 @@ ContainerStreamContext::FramePTSInMicroseconds(const AudioFrame *frame) {
 void ContainerStreamContext::SetFramePTS(int64_t microseconds,
                                          AudioFrame *frame) {
   frame->SetPTS(av_rescale_q(microseconds, AVRational{1, 1000000},
-                            audio_stream_context_->time_base()));
+                             audio_stream_context_->time_base()));
+}
+
+int64_t
+ContainerStreamContext::FramePTSInMicroseconds(const VideoFrame *frame) {
+  return av_rescale_q(frame->GetPTS(), video_stream_context_->time_base(),
+                      AVRational{1, 1000000});
+}
+
+void ContainerStreamContext::SetFramePTS(int64_t microseconds,
+                                         VideoFrame *frame) {
+  frame->SetPTS(av_rescale_q(microseconds, AVRational{1, 1000000},
+                             video_stream_context_->time_base()));
+}
+
+std::unique_ptr<AudioFrame> ContainerStreamContext::CreateAudioFrame() {
+  if (!audio_stream_context_.has_value()) {
+    return nullptr;
+  }
+
+  auto audio_stream_params = GetAudioStreamParameters();
+  return AudioFrame::CreateAudioFrame(
+      audio_stream_params.format, &audio_stream_params.channel_layout,
+      audio_stream_params.sample_rate, audio_stream_params.frame_size);
 }
 
 AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {
@@ -397,6 +601,28 @@ AudioStreamParameters ContainerStreamContext::GetAudioStreamParameters() {
   params.format = audio_stream_context_->format();
   av_channel_layout_copy(&params.channel_layout,
                          audio_stream_context_->channel_layout());
+
+  return params;
+}
+
+std::unique_ptr<VideoFrame> ContainerStreamContext::CreateVideoFrame() {
+  if (!video_stream_context_.has_value()) {
+    return nullptr;
+  }
+
+  auto video_stream_params = GetVideoStreamParameters();
+  return VideoFrame::CreateVideoFrame(video_stream_params.format,
+                                      video_stream_params.width,
+                                      video_stream_params.height);
+}
+
+VideoStreamParameters ContainerStreamContext::GetVideoStreamParameters() {
+  auto params = VideoStreamParameters();
+
+  params.width = video_stream_context_->codec_context()->width;
+  params.height = video_stream_context_->codec_context()->height;
+  params.frame_rate = video_stream_context_->codec_context()->framerate;
+  params.format = video_stream_context_->codec_context()->pix_fmt;
 
   return params;
 }

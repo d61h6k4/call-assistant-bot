@@ -1,7 +1,7 @@
-#include "absl/log/absl_log.h"
 
 #include "absl/strings/str_cat.h"
 #include "av_transducer/utils/audio.h"
+#include "av_transducer/utils/video.h"
 #include <cstddef>
 #include <cstdint>
 #ifdef __cplusplus
@@ -202,6 +202,49 @@ absl::Status AudioConverter::LoadAlways(AudioFrame *out_frame) {
   }
 
   out_frame->c_frame()->nb_samples = frame_size;
+  return absl::OkStatus();
+}
+
+absl::StatusOr<VideoConverter> VideoConverter::CreateVideoConverter(
+    const VideoStreamParameters &in_video_stream,
+    const VideoStreamParameters &out_video_stream) {
+  VideoConverter converter;
+  converter.sw_scale_context_ = sws_getContext(
+      in_video_stream.width, in_video_stream.height, in_video_stream.format,
+      out_video_stream.width, out_video_stream.height, out_video_stream.format,
+      SWS_BICUBIC, nullptr, nullptr, nullptr);
+  if (!converter.sw_scale_context_) {
+    return absl::AbortedError("Could not initialize the conversion context");
+  }
+  return converter;
+}
+
+VideoConverter::~VideoConverter() {
+  if (sw_scale_context_) {
+    sws_freeContext(sw_scale_context_);
+  }
+}
+
+VideoConverter::VideoConverter(VideoConverter &&o) noexcept
+    : sw_scale_context_(o.sw_scale_context_) {
+  o.sw_scale_context_ = nullptr;
+}
+
+VideoConverter &VideoConverter::operator=(VideoConverter &&o) noexcept {
+  if (this != &o) {
+    sw_scale_context_ = o.sw_scale_context_;
+    o.sw_scale_context_ = nullptr;
+  }
+}
+
+absl::Status VideoConverter::Convert(const VideoFrame *in_frame,
+                                     VideoFrame *out_frame) {
+  if (auto res = sws_scale_frame(sw_scale_context_, out_frame->c_frame(),
+                                 in_frame->c_frame());
+      res < 0) {
+    return absl::AbortedError(
+        absl::StrCat("Failed to convert frame. Error: ", av_err2string(res)));
+  }
   return absl::OkStatus();
 }
 

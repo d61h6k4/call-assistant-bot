@@ -60,9 +60,11 @@ private:
 
 class AudioStreamContext {
 public:
-  static absl::StatusOr<AudioStreamContext> CreateAudioStreamContext(
-      const AVFormatContext *format_context, const AVCodec *codec,
-      const AVCodecParameters *codec_parameters, int stream_idx);
+  static absl::StatusOr<AudioStreamContext>
+  CreateAudioStreamContext(const AVFormatContext *format_context,
+                           const AVCodec *codec,
+                           const AVCodecParameters *codec_parameters,
+                           AVCodecContext *codec_context, int stream_idx);
 
   AudioStreamContext(const AudioStreamContext &) = delete;
   AudioStreamContext(AudioStreamContext &&) noexcept;

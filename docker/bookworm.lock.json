@@ -6339,6 +6339,635 @@
 			"version": "1.14.10-1~deb12u1"
 		},
 		{
+			"arch": "amd64",
+			"dependencies": [
+				{
+					"key": "libxext6_2-1.3.4-1-p-b1_amd64",
+					"name": "libxext6",
+					"version": "2:1.3.4-1+b1"
+				},
+				{
+					"key": "libx11-6_2-1.8.4-2-p-deb12u2_amd64",
+					"name": "libx11-6",
+					"version": "2:1.8.4-2+deb12u2"
+				},
+				{
+					"key": "libx11-data_2-1.8.4-2-p-deb12u2_amd64",
+					"name": "libx11-data",
+					"version": "2:1.8.4-2+deb12u2"
+				},
+				{
+					"key": "libxcb1_1.15-1_amd64",
+					"name": "libxcb1",
+					"version": "1.15-1"
+				},
+				{
+					"key": "libxdmcp6_1-1.1.2-3_amd64",
+					"name": "libxdmcp6",
+					"version": "1:1.1.2-3"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_amd64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_amd64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_amd64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libbsd0_0.11.7-2_amd64",
+					"name": "libbsd0",
+					"version": "0.11.7-2"
+				},
+				{
+					"key": "libmd0_1.0.4-2_amd64",
+					"name": "libmd0",
+					"version": "1.0.4-2"
+				},
+				{
+					"key": "libxau6_1-1.0.9-1_amd64",
+					"name": "libxau6",
+					"version": "1:1.0.9-1"
+				},
+				{
+					"key": "libimlib2_1.10.0-4-p-deb12u1_amd64",
+					"name": "libimlib2",
+					"version": "1.10.0-4+deb12u1"
+				},
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_amd64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
+				},
+				{
+					"key": "libxcb-shm0_1.15-1_amd64",
+					"name": "libxcb-shm0",
+					"version": "1.15-1"
+				},
+				{
+					"key": "libx11-xcb1_2-1.8.4-2-p-deb12u2_amd64",
+					"name": "libx11-xcb1",
+					"version": "2:1.8.4-2+deb12u2"
+				},
+				{
+					"key": "libwebpdemux2_1.2.4-0.2-p-deb12u1_amd64",
+					"name": "libwebpdemux2",
+					"version": "1.2.4-0.2+deb12u1"
+				},
+				{
+					"key": "libwebp7_1.2.4-0.2-p-deb12u1_amd64",
+					"name": "libwebp7",
+					"version": "1.2.4-0.2+deb12u1"
+				},
+				{
+					"key": "libtiff6_4.5.0-6-p-deb12u1_amd64",
+					"name": "libtiff6",
+					"version": "4.5.0-6+deb12u1"
+				},
+				{
+					"key": "libzstd1_1.5.4-p-dfsg2-5_amd64",
+					"name": "libzstd1",
+					"version": "1.5.4+dfsg2-5"
+				},
+				{
+					"key": "liblzma5_5.4.1-0.2_amd64",
+					"name": "liblzma5",
+					"version": "5.4.1-0.2"
+				},
+				{
+					"key": "liblerc4_4.0.0-p-ds-2_amd64",
+					"name": "liblerc4",
+					"version": "4.0.0+ds-2"
+				},
+				{
+					"key": "libstdc-p--p-6_12.2.0-14_amd64",
+					"name": "libstdc++6",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libjpeg62-turbo_1-2.1.5-2_amd64",
+					"name": "libjpeg62-turbo",
+					"version": "1:2.1.5-2"
+				},
+				{
+					"key": "libjbig0_2.1-6.1_amd64",
+					"name": "libjbig0",
+					"version": "2.1-6.1"
+				},
+				{
+					"key": "libdeflate0_1.14-1_amd64",
+					"name": "libdeflate0",
+					"version": "1.14-1"
+				},
+				{
+					"key": "libspectre1_0.2.12-1_amd64",
+					"name": "libspectre1",
+					"version": "0.2.12-1"
+				},
+				{
+					"key": "libgs10_10.0.0_dfsg-11-p-deb12u3_amd64",
+					"name": "libgs10",
+					"version": "10.0.0~dfsg-11+deb12u3"
+				},
+				{
+					"key": "libxt6_1-1.2.1-1.1_amd64",
+					"name": "libxt6",
+					"version": "1:1.2.1-1.1"
+				},
+				{
+					"key": "libsm6_2-1.2.3-1_amd64",
+					"name": "libsm6",
+					"version": "2:1.2.3-1"
+				},
+				{
+					"key": "libuuid1_2.38.1-5-p-b1_amd64",
+					"name": "libuuid1",
+					"version": "2.38.1-5+b1"
+				},
+				{
+					"key": "libice6_2-1.0.10-1_amd64",
+					"name": "libice6",
+					"version": "2:1.0.10-1"
+				},
+				{
+					"key": "x11-common_1-7.7-p-23_amd64",
+					"name": "x11-common",
+					"version": "1:7.7+23"
+				},
+				{
+					"key": "lsb-base_11.6_amd64",
+					"name": "lsb-base",
+					"version": "11.6"
+				},
+				{
+					"key": "sysvinit-utils_3.06-4_amd64",
+					"name": "sysvinit-utils",
+					"version": "3.06-4"
+				},
+				{
+					"key": "libpng16-16_1.6.39-2_amd64",
+					"name": "libpng16-16",
+					"version": "1.6.39-2"
+				},
+				{
+					"key": "libpaper1_1.1.29_amd64",
+					"name": "libpaper1",
+					"version": "1.1.29"
+				},
+				{
+					"key": "dpkg_1.21.22_amd64",
+					"name": "dpkg",
+					"version": "1.21.22"
+				},
+				{
+					"key": "tar_1.34-p-dfsg-1.2-p-deb12u1_amd64",
+					"name": "tar",
+					"version": "1.34+dfsg-1.2+deb12u1"
+				},
+				{
+					"key": "libselinux1_3.4-1-p-b6_amd64",
+					"name": "libselinux1",
+					"version": "3.4-1+b6"
+				},
+				{
+					"key": "libpcre2-8-0_10.42-1_amd64",
+					"name": "libpcre2-8-0",
+					"version": "10.42-1"
+				},
+				{
+					"key": "libacl1_2.3.1-3_amd64",
+					"name": "libacl1",
+					"version": "2.3.1-3"
+				},
+				{
+					"key": "libbz2-1.0_1.0.8-5-p-b1_amd64",
+					"name": "libbz2-1.0",
+					"version": "1.0.8-5+b1"
+				},
+				{
+					"key": "ucf_3.0043-p-nmu1_amd64",
+					"name": "ucf",
+					"version": "3.0043+nmu1"
+				},
+				{
+					"key": "sensible-utils_0.0.17-p-nmu1_amd64",
+					"name": "sensible-utils",
+					"version": "0.0.17+nmu1"
+				},
+				{
+					"key": "libopenjp2-7_2.5.0-2_amd64",
+					"name": "libopenjp2-7",
+					"version": "2.5.0-2"
+				},
+				{
+					"key": "liblcms2-2_2.14-2_amd64",
+					"name": "liblcms2-2",
+					"version": "2.14-2"
+				},
+				{
+					"key": "libjbig2dec0_0.19-3_amd64",
+					"name": "libjbig2dec0",
+					"version": "0.19-3"
+				},
+				{
+					"key": "libijs-0.35_0.35-15_amd64",
+					"name": "libijs-0.35",
+					"version": "0.35-15"
+				},
+				{
+					"key": "libidn12_1.41-1_amd64",
+					"name": "libidn12",
+					"version": "1.41-1"
+				},
+				{
+					"key": "libfreetype6_2.12.1-p-dfsg-5_amd64",
+					"name": "libfreetype6",
+					"version": "2.12.1+dfsg-5"
+				},
+				{
+					"key": "libbrotli1_1.0.9-2-p-b6_amd64",
+					"name": "libbrotli1",
+					"version": "1.0.9-2+b6"
+				},
+				{
+					"key": "libfontconfig1_2.14.1-4_amd64",
+					"name": "libfontconfig1",
+					"version": "2.14.1-4"
+				},
+				{
+					"key": "fontconfig-config_2.14.1-4_amd64",
+					"name": "fontconfig-config",
+					"version": "2.14.1-4"
+				},
+				{
+					"key": "libexpat1_2.5.0-1_amd64",
+					"name": "libexpat1",
+					"version": "2.5.0-1"
+				},
+				{
+					"key": "libcups2_2.4.2-3-p-deb12u5_amd64",
+					"name": "libcups2",
+					"version": "2.4.2-3+deb12u5"
+				},
+				{
+					"key": "libgssapi-krb5-2_1.20.1-2-p-deb12u1_amd64",
+					"name": "libgssapi-krb5-2",
+					"version": "1.20.1-2+deb12u1"
+				},
+				{
+					"key": "libkrb5support0_1.20.1-2-p-deb12u1_amd64",
+					"name": "libkrb5support0",
+					"version": "1.20.1-2+deb12u1"
+				},
+				{
+					"key": "libkrb5-3_1.20.1-2-p-deb12u1_amd64",
+					"name": "libkrb5-3",
+					"version": "1.20.1-2+deb12u1"
+				},
+				{
+					"key": "libssl3_3.0.11-1_deb12u2_amd64",
+					"name": "libssl3",
+					"version": "3.0.11-1~deb12u2"
+				},
+				{
+					"key": "libkeyutils1_1.6.3-2_amd64",
+					"name": "libkeyutils1",
+					"version": "1.6.3-2"
+				},
+				{
+					"key": "libk5crypto3_1.20.1-2-p-deb12u1_amd64",
+					"name": "libk5crypto3",
+					"version": "1.20.1-2+deb12u1"
+				},
+				{
+					"key": "libcom-err2_1.47.0-2_amd64",
+					"name": "libcom-err2",
+					"version": "1.47.0-2"
+				},
+				{
+					"key": "libgnutls30_3.7.9-2-p-deb12u2_amd64",
+					"name": "libgnutls30",
+					"version": "3.7.9-2+deb12u2"
+				},
+				{
+					"key": "libunistring2_1.0-2_amd64",
+					"name": "libunistring2",
+					"version": "1.0-2"
+				},
+				{
+					"key": "libtasn1-6_4.19.0-2_amd64",
+					"name": "libtasn1-6",
+					"version": "4.19.0-2"
+				},
+				{
+					"key": "libp11-kit0_0.24.1-2_amd64",
+					"name": "libp11-kit0",
+					"version": "0.24.1-2"
+				},
+				{
+					"key": "libffi8_3.4.4-1_amd64",
+					"name": "libffi8",
+					"version": "3.4.4-1"
+				},
+				{
+					"key": "libnettle8_3.8.1-2_amd64",
+					"name": "libnettle8",
+					"version": "3.8.1-2"
+				},
+				{
+					"key": "libidn2-0_2.3.3-1-p-b1_amd64",
+					"name": "libidn2-0",
+					"version": "2.3.3-1+b1"
+				},
+				{
+					"key": "libhogweed6_3.8.1-2_amd64",
+					"name": "libhogweed6",
+					"version": "3.8.1-2"
+				},
+				{
+					"key": "libgmp10_2-6.2.1-p-dfsg1-1.1_amd64",
+					"name": "libgmp10",
+					"version": "2:6.2.1+dfsg1-1.1"
+				},
+				{
+					"key": "libavahi-common3_0.8-10_amd64",
+					"name": "libavahi-common3",
+					"version": "0.8-10"
+				},
+				{
+					"key": "libavahi-common-data_0.8-10_amd64",
+					"name": "libavahi-common-data",
+					"version": "0.8-10"
+				},
+				{
+					"key": "libavahi-client3_0.8-10_amd64",
+					"name": "libavahi-client3",
+					"version": "0.8-10"
+				},
+				{
+					"key": "libdbus-1-3_1.14.10-1_deb12u1_amd64",
+					"name": "libdbus-1-3",
+					"version": "1.14.10-1~deb12u1"
+				},
+				{
+					"key": "libsystemd0_252.22-1_deb12u1_amd64",
+					"name": "libsystemd0",
+					"version": "252.22-1~deb12u1"
+				},
+				{
+					"key": "liblz4-1_1.9.4-1_amd64",
+					"name": "liblz4-1",
+					"version": "1.9.4-1"
+				},
+				{
+					"key": "libgcrypt20_1.10.1-3_amd64",
+					"name": "libgcrypt20",
+					"version": "1.10.1-3"
+				},
+				{
+					"key": "libgpg-error0_1.46-1_amd64",
+					"name": "libgpg-error0",
+					"version": "1.46-1"
+				},
+				{
+					"key": "libcap2_1-2.66-4_amd64",
+					"name": "libcap2",
+					"version": "1:2.66-4"
+				},
+				{
+					"key": "poppler-data_0.4.12-1_amd64",
+					"name": "poppler-data",
+					"version": "0.4.12-1"
+				},
+				{
+					"key": "libgs10-common_10.0.0_dfsg-11-p-deb12u3_amd64",
+					"name": "libgs10-common",
+					"version": "10.0.0~dfsg-11+deb12u3"
+				},
+				{
+					"key": "libgs-common_10.0.0_dfsg-11-p-deb12u3_amd64",
+					"name": "libgs-common",
+					"version": "10.0.0~dfsg-11+deb12u3"
+				},
+				{
+					"key": "fonts-urw-base35_20200910-7_amd64",
+					"name": "fonts-urw-base35",
+					"version": "20200910-7"
+				},
+				{
+					"key": "xfonts-utils_1-7.7-p-6_amd64",
+					"name": "xfonts-utils",
+					"version": "1:7.7+6"
+				},
+				{
+					"key": "xfonts-encodings_1-1.0.4-2.2_amd64",
+					"name": "xfonts-encodings",
+					"version": "1:1.0.4-2.2"
+				},
+				{
+					"key": "libfontenc1_1-1.1.4-1_amd64",
+					"name": "libfontenc1",
+					"version": "1:1.1.4-1"
+				},
+				{
+					"key": "librsvg2-2_2.54.7-p-dfsg-1_deb12u1_amd64",
+					"name": "librsvg2-2",
+					"version": "2.54.7+dfsg-1~deb12u1"
+				},
+				{
+					"key": "libxml2_2.9.14-p-dfsg-1.3_deb12u1_amd64",
+					"name": "libxml2",
+					"version": "2.9.14+dfsg-1.3~deb12u1"
+				},
+				{
+					"key": "libicu72_72.1-3_amd64",
+					"name": "libicu72",
+					"version": "72.1-3"
+				},
+				{
+					"key": "libpangocairo-1.0-0_1.50.12-p-ds-1_amd64",
+					"name": "libpangocairo-1.0-0",
+					"version": "1.50.12+ds-1"
+				},
+				{
+					"key": "libpangoft2-1.0-0_1.50.12-p-ds-1_amd64",
+					"name": "libpangoft2-1.0-0",
+					"version": "1.50.12+ds-1"
+				},
+				{
+					"key": "libpango-1.0-0_1.50.12-p-ds-1_amd64",
+					"name": "libpango-1.0-0",
+					"version": "1.50.12+ds-1"
+				},
+				{
+					"key": "libthai0_0.1.29-1_amd64",
+					"name": "libthai0",
+					"version": "0.1.29-1"
+				},
+				{
+					"key": "libdatrie1_0.2.13-2-p-b1_amd64",
+					"name": "libdatrie1",
+					"version": "0.2.13-2+b1"
+				},
+				{
+					"key": "libthai-data_0.1.29-1_amd64",
+					"name": "libthai-data",
+					"version": "0.1.29-1"
+				},
+				{
+					"key": "libharfbuzz0b_6.0.0-p-dfsg-3_amd64",
+					"name": "libharfbuzz0b",
+					"version": "6.0.0+dfsg-3"
+				},
+				{
+					"key": "libgraphite2-3_1.3.14-1_amd64",
+					"name": "libgraphite2-3",
+					"version": "1.3.14-1"
+				},
+				{
+					"key": "libglib2.0-0_2.74.6-2_amd64",
+					"name": "libglib2.0-0",
+					"version": "2.74.6-2"
+				},
+				{
+					"key": "libmount1_2.38.1-5-p-b1_amd64",
+					"name": "libmount1",
+					"version": "2.38.1-5+b1"
+				},
+				{
+					"key": "libblkid1_2.38.1-5-p-b1_amd64",
+					"name": "libblkid1",
+					"version": "2.38.1-5+b1"
+				},
+				{
+					"key": "libfribidi0_1.0.8-2.1_amd64",
+					"name": "libfribidi0",
+					"version": "1.0.8-2.1"
+				},
+				{
+					"key": "fontconfig_2.14.1-4_amd64",
+					"name": "fontconfig",
+					"version": "2.14.1-4"
+				},
+				{
+					"key": "libcairo2_1.16.0-7_amd64",
+					"name": "libcairo2",
+					"version": "1.16.0-7"
+				},
+				{
+					"key": "libxrender1_1-0.9.10-1.1_amd64",
+					"name": "libxrender1",
+					"version": "1:0.9.10-1.1"
+				},
+				{
+					"key": "libxcb-render0_1.15-1_amd64",
+					"name": "libxcb-render0",
+					"version": "1.15-1"
+				},
+				{
+					"key": "libpixman-1-0_0.42.2-1_amd64",
+					"name": "libpixman-1-0",
+					"version": "0.42.2-1"
+				},
+				{
+					"key": "libgdk-pixbuf-2.0-0_2.42.10-p-dfsg-1-p-b1_amd64",
+					"name": "libgdk-pixbuf-2.0-0",
+					"version": "2.42.10+dfsg-1+b1"
+				},
+				{
+					"key": "shared-mime-info_2.2-1_amd64",
+					"name": "shared-mime-info",
+					"version": "2.2-1"
+				},
+				{
+					"key": "libgdk-pixbuf2.0-common_2.42.10-p-dfsg-1_amd64",
+					"name": "libgdk-pixbuf2.0-common",
+					"version": "2.42.10+dfsg-1"
+				},
+				{
+					"key": "libcairo-gobject2_1.16.0-7_amd64",
+					"name": "libcairo-gobject2",
+					"version": "1.16.0-7"
+				},
+				{
+					"key": "libjxl0.7_0.7.0-10_amd64",
+					"name": "libjxl0.7",
+					"version": "0.7.0-10"
+				},
+				{
+					"key": "libhwy1_1.0.3-3-p-deb12u1_amd64",
+					"name": "libhwy1",
+					"version": "1.0.3-3+deb12u1"
+				},
+				{
+					"key": "libid3tag0_0.15.1b-14_amd64",
+					"name": "libid3tag0",
+					"version": "0.15.1b-14"
+				},
+				{
+					"key": "libheif1_1.15.1-1_amd64",
+					"name": "libheif1",
+					"version": "1.15.1-1"
+				},
+				{
+					"key": "libx265-199_3.5-2-p-b1_amd64",
+					"name": "libx265-199",
+					"version": "3.5-2+b1"
+				},
+				{
+					"key": "libnuma1_2.0.16-1_amd64",
+					"name": "libnuma1",
+					"version": "2.0.16-1"
+				},
+				{
+					"key": "libde265-0_1.0.11-1-p-deb12u2_amd64",
+					"name": "libde265-0",
+					"version": "1.0.11-1+deb12u2"
+				},
+				{
+					"key": "libdav1d6_1.0.0-2_amd64",
+					"name": "libdav1d6",
+					"version": "1.0.0-2"
+				},
+				{
+					"key": "libaom3_3.6.0-1_amd64",
+					"name": "libaom3",
+					"version": "3.6.0-1"
+				},
+				{
+					"key": "libgif7_5.2.1-2.5_amd64",
+					"name": "libgif7",
+					"version": "5.2.1-2.5"
+				},
+				{
+					"key": "libast2_0.7-9_amd64",
+					"name": "libast2",
+					"version": "0.7-9"
+				}
+			],
+			"key": "eterm_0.9.6-7_amd64",
+			"name": "eterm",
+			"sha256": "0d2394b6976c230d8e7ac79874569d8e0e5e2b3524e8460a2410cb86b373f031",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/e/eterm/eterm_0.9.6-7_amd64.deb",
+			"version": "0.9.6-7"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "libast2_0.7-9_amd64",
+			"name": "libast2",
+			"sha256": "c890b15e8c362885fc60061fd4d9ac090d7a898824b502334d38f50b4fd32d31",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/liba/libast/libast2_0.7-9_amd64.deb",
+			"version": "0.7-9"
+		},
+		{
 			"arch": "arm64",
 			"dependencies": [
 				{
@@ -12623,6 +13252,635 @@
 			"sha256": "31f0884383afe2ed80981c0d2c8c92b107b85cda038d968a88aeb97f149f56ea",
 			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/d/dbus/dbus-x11_1.14.10-1~deb12u1_arm64.deb",
 			"version": "1.14.10-1~deb12u1"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [
+				{
+					"key": "libxext6_2-1.3.4-1-p-b1_arm64",
+					"name": "libxext6",
+					"version": "2:1.3.4-1+b1"
+				},
+				{
+					"key": "libx11-6_2-1.8.4-2-p-deb12u2_arm64",
+					"name": "libx11-6",
+					"version": "2:1.8.4-2+deb12u2"
+				},
+				{
+					"key": "libx11-data_2-1.8.4-2-p-deb12u2_arm64",
+					"name": "libx11-data",
+					"version": "2:1.8.4-2+deb12u2"
+				},
+				{
+					"key": "libxcb1_1.15-1_arm64",
+					"name": "libxcb1",
+					"version": "1.15-1"
+				},
+				{
+					"key": "libxdmcp6_1-1.1.2-3_arm64",
+					"name": "libxdmcp6",
+					"version": "1:1.1.2-3"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_arm64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_arm64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_arm64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libbsd0_0.11.7-2_arm64",
+					"name": "libbsd0",
+					"version": "0.11.7-2"
+				},
+				{
+					"key": "libmd0_1.0.4-2_arm64",
+					"name": "libmd0",
+					"version": "1.0.4-2"
+				},
+				{
+					"key": "libxau6_1-1.0.9-1_arm64",
+					"name": "libxau6",
+					"version": "1:1.0.9-1"
+				},
+				{
+					"key": "libimlib2_1.10.0-4-p-deb12u1_arm64",
+					"name": "libimlib2",
+					"version": "1.10.0-4+deb12u1"
+				},
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_arm64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
+				},
+				{
+					"key": "libxcb-shm0_1.15-1_arm64",
+					"name": "libxcb-shm0",
+					"version": "1.15-1"
+				},
+				{
+					"key": "libx11-xcb1_2-1.8.4-2-p-deb12u2_arm64",
+					"name": "libx11-xcb1",
+					"version": "2:1.8.4-2+deb12u2"
+				},
+				{
+					"key": "libwebpdemux2_1.2.4-0.2-p-deb12u1_arm64",
+					"name": "libwebpdemux2",
+					"version": "1.2.4-0.2+deb12u1"
+				},
+				{
+					"key": "libwebp7_1.2.4-0.2-p-deb12u1_arm64",
+					"name": "libwebp7",
+					"version": "1.2.4-0.2+deb12u1"
+				},
+				{
+					"key": "libtiff6_4.5.0-6-p-deb12u1_arm64",
+					"name": "libtiff6",
+					"version": "4.5.0-6+deb12u1"
+				},
+				{
+					"key": "libzstd1_1.5.4-p-dfsg2-5_arm64",
+					"name": "libzstd1",
+					"version": "1.5.4+dfsg2-5"
+				},
+				{
+					"key": "liblzma5_5.4.1-0.2_arm64",
+					"name": "liblzma5",
+					"version": "5.4.1-0.2"
+				},
+				{
+					"key": "liblerc4_4.0.0-p-ds-2_arm64",
+					"name": "liblerc4",
+					"version": "4.0.0+ds-2"
+				},
+				{
+					"key": "libstdc-p--p-6_12.2.0-14_arm64",
+					"name": "libstdc++6",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libjpeg62-turbo_1-2.1.5-2_arm64",
+					"name": "libjpeg62-turbo",
+					"version": "1:2.1.5-2"
+				},
+				{
+					"key": "libjbig0_2.1-6.1_arm64",
+					"name": "libjbig0",
+					"version": "2.1-6.1"
+				},
+				{
+					"key": "libdeflate0_1.14-1_arm64",
+					"name": "libdeflate0",
+					"version": "1.14-1"
+				},
+				{
+					"key": "libspectre1_0.2.12-1_arm64",
+					"name": "libspectre1",
+					"version": "0.2.12-1"
+				},
+				{
+					"key": "libgs10_10.0.0_dfsg-11-p-deb12u3_arm64",
+					"name": "libgs10",
+					"version": "10.0.0~dfsg-11+deb12u3"
+				},
+				{
+					"key": "libxt6_1-1.2.1-1.1_arm64",
+					"name": "libxt6",
+					"version": "1:1.2.1-1.1"
+				},
+				{
+					"key": "libsm6_2-1.2.3-1_arm64",
+					"name": "libsm6",
+					"version": "2:1.2.3-1"
+				},
+				{
+					"key": "libuuid1_2.38.1-5-p-b1_arm64",
+					"name": "libuuid1",
+					"version": "2.38.1-5+b1"
+				},
+				{
+					"key": "libice6_2-1.0.10-1_arm64",
+					"name": "libice6",
+					"version": "2:1.0.10-1"
+				},
+				{
+					"key": "x11-common_1-7.7-p-23_arm64",
+					"name": "x11-common",
+					"version": "1:7.7+23"
+				},
+				{
+					"key": "lsb-base_11.6_arm64",
+					"name": "lsb-base",
+					"version": "11.6"
+				},
+				{
+					"key": "sysvinit-utils_3.06-4_arm64",
+					"name": "sysvinit-utils",
+					"version": "3.06-4"
+				},
+				{
+					"key": "libpng16-16_1.6.39-2_arm64",
+					"name": "libpng16-16",
+					"version": "1.6.39-2"
+				},
+				{
+					"key": "libpaper1_1.1.29_arm64",
+					"name": "libpaper1",
+					"version": "1.1.29"
+				},
+				{
+					"key": "dpkg_1.21.22_arm64",
+					"name": "dpkg",
+					"version": "1.21.22"
+				},
+				{
+					"key": "tar_1.34-p-dfsg-1.2-p-deb12u1_arm64",
+					"name": "tar",
+					"version": "1.34+dfsg-1.2+deb12u1"
+				},
+				{
+					"key": "libselinux1_3.4-1-p-b6_arm64",
+					"name": "libselinux1",
+					"version": "3.4-1+b6"
+				},
+				{
+					"key": "libpcre2-8-0_10.42-1_arm64",
+					"name": "libpcre2-8-0",
+					"version": "10.42-1"
+				},
+				{
+					"key": "libacl1_2.3.1-3_arm64",
+					"name": "libacl1",
+					"version": "2.3.1-3"
+				},
+				{
+					"key": "libbz2-1.0_1.0.8-5-p-b1_arm64",
+					"name": "libbz2-1.0",
+					"version": "1.0.8-5+b1"
+				},
+				{
+					"key": "ucf_3.0043-p-nmu1_arm64",
+					"name": "ucf",
+					"version": "3.0043+nmu1"
+				},
+				{
+					"key": "sensible-utils_0.0.17-p-nmu1_arm64",
+					"name": "sensible-utils",
+					"version": "0.0.17+nmu1"
+				},
+				{
+					"key": "libopenjp2-7_2.5.0-2_arm64",
+					"name": "libopenjp2-7",
+					"version": "2.5.0-2"
+				},
+				{
+					"key": "liblcms2-2_2.14-2_arm64",
+					"name": "liblcms2-2",
+					"version": "2.14-2"
+				},
+				{
+					"key": "libjbig2dec0_0.19-3_arm64",
+					"name": "libjbig2dec0",
+					"version": "0.19-3"
+				},
+				{
+					"key": "libijs-0.35_0.35-15_arm64",
+					"name": "libijs-0.35",
+					"version": "0.35-15"
+				},
+				{
+					"key": "libidn12_1.41-1_arm64",
+					"name": "libidn12",
+					"version": "1.41-1"
+				},
+				{
+					"key": "libfreetype6_2.12.1-p-dfsg-5_arm64",
+					"name": "libfreetype6",
+					"version": "2.12.1+dfsg-5"
+				},
+				{
+					"key": "libbrotli1_1.0.9-2-p-b6_arm64",
+					"name": "libbrotli1",
+					"version": "1.0.9-2+b6"
+				},
+				{
+					"key": "libfontconfig1_2.14.1-4_arm64",
+					"name": "libfontconfig1",
+					"version": "2.14.1-4"
+				},
+				{
+					"key": "fontconfig-config_2.14.1-4_arm64",
+					"name": "fontconfig-config",
+					"version": "2.14.1-4"
+				},
+				{
+					"key": "libexpat1_2.5.0-1_arm64",
+					"name": "libexpat1",
+					"version": "2.5.0-1"
+				},
+				{
+					"key": "libcups2_2.4.2-3-p-deb12u5_arm64",
+					"name": "libcups2",
+					"version": "2.4.2-3+deb12u5"
+				},
+				{
+					"key": "libgssapi-krb5-2_1.20.1-2-p-deb12u1_arm64",
+					"name": "libgssapi-krb5-2",
+					"version": "1.20.1-2+deb12u1"
+				},
+				{
+					"key": "libkrb5support0_1.20.1-2-p-deb12u1_arm64",
+					"name": "libkrb5support0",
+					"version": "1.20.1-2+deb12u1"
+				},
+				{
+					"key": "libkrb5-3_1.20.1-2-p-deb12u1_arm64",
+					"name": "libkrb5-3",
+					"version": "1.20.1-2+deb12u1"
+				},
+				{
+					"key": "libssl3_3.0.11-1_deb12u2_arm64",
+					"name": "libssl3",
+					"version": "3.0.11-1~deb12u2"
+				},
+				{
+					"key": "libkeyutils1_1.6.3-2_arm64",
+					"name": "libkeyutils1",
+					"version": "1.6.3-2"
+				},
+				{
+					"key": "libk5crypto3_1.20.1-2-p-deb12u1_arm64",
+					"name": "libk5crypto3",
+					"version": "1.20.1-2+deb12u1"
+				},
+				{
+					"key": "libcom-err2_1.47.0-2_arm64",
+					"name": "libcom-err2",
+					"version": "1.47.0-2"
+				},
+				{
+					"key": "libgnutls30_3.7.9-2-p-deb12u2_arm64",
+					"name": "libgnutls30",
+					"version": "3.7.9-2+deb12u2"
+				},
+				{
+					"key": "libunistring2_1.0-2_arm64",
+					"name": "libunistring2",
+					"version": "1.0-2"
+				},
+				{
+					"key": "libtasn1-6_4.19.0-2_arm64",
+					"name": "libtasn1-6",
+					"version": "4.19.0-2"
+				},
+				{
+					"key": "libp11-kit0_0.24.1-2_arm64",
+					"name": "libp11-kit0",
+					"version": "0.24.1-2"
+				},
+				{
+					"key": "libffi8_3.4.4-1_arm64",
+					"name": "libffi8",
+					"version": "3.4.4-1"
+				},
+				{
+					"key": "libnettle8_3.8.1-2_arm64",
+					"name": "libnettle8",
+					"version": "3.8.1-2"
+				},
+				{
+					"key": "libidn2-0_2.3.3-1-p-b1_arm64",
+					"name": "libidn2-0",
+					"version": "2.3.3-1+b1"
+				},
+				{
+					"key": "libhogweed6_3.8.1-2_arm64",
+					"name": "libhogweed6",
+					"version": "3.8.1-2"
+				},
+				{
+					"key": "libgmp10_2-6.2.1-p-dfsg1-1.1_arm64",
+					"name": "libgmp10",
+					"version": "2:6.2.1+dfsg1-1.1"
+				},
+				{
+					"key": "libavahi-common3_0.8-10_arm64",
+					"name": "libavahi-common3",
+					"version": "0.8-10"
+				},
+				{
+					"key": "libavahi-common-data_0.8-10_arm64",
+					"name": "libavahi-common-data",
+					"version": "0.8-10"
+				},
+				{
+					"key": "libavahi-client3_0.8-10_arm64",
+					"name": "libavahi-client3",
+					"version": "0.8-10"
+				},
+				{
+					"key": "libdbus-1-3_1.14.10-1_deb12u1_arm64",
+					"name": "libdbus-1-3",
+					"version": "1.14.10-1~deb12u1"
+				},
+				{
+					"key": "libsystemd0_252.22-1_deb12u1_arm64",
+					"name": "libsystemd0",
+					"version": "252.22-1~deb12u1"
+				},
+				{
+					"key": "liblz4-1_1.9.4-1_arm64",
+					"name": "liblz4-1",
+					"version": "1.9.4-1"
+				},
+				{
+					"key": "libgcrypt20_1.10.1-3_arm64",
+					"name": "libgcrypt20",
+					"version": "1.10.1-3"
+				},
+				{
+					"key": "libgpg-error0_1.46-1_arm64",
+					"name": "libgpg-error0",
+					"version": "1.46-1"
+				},
+				{
+					"key": "libcap2_1-2.66-4_arm64",
+					"name": "libcap2",
+					"version": "1:2.66-4"
+				},
+				{
+					"key": "poppler-data_0.4.12-1_arm64",
+					"name": "poppler-data",
+					"version": "0.4.12-1"
+				},
+				{
+					"key": "libgs10-common_10.0.0_dfsg-11-p-deb12u3_arm64",
+					"name": "libgs10-common",
+					"version": "10.0.0~dfsg-11+deb12u3"
+				},
+				{
+					"key": "libgs-common_10.0.0_dfsg-11-p-deb12u3_arm64",
+					"name": "libgs-common",
+					"version": "10.0.0~dfsg-11+deb12u3"
+				},
+				{
+					"key": "fonts-urw-base35_20200910-7_arm64",
+					"name": "fonts-urw-base35",
+					"version": "20200910-7"
+				},
+				{
+					"key": "xfonts-utils_1-7.7-p-6_arm64",
+					"name": "xfonts-utils",
+					"version": "1:7.7+6"
+				},
+				{
+					"key": "xfonts-encodings_1-1.0.4-2.2_arm64",
+					"name": "xfonts-encodings",
+					"version": "1:1.0.4-2.2"
+				},
+				{
+					"key": "libfontenc1_1-1.1.4-1_arm64",
+					"name": "libfontenc1",
+					"version": "1:1.1.4-1"
+				},
+				{
+					"key": "librsvg2-2_2.54.7-p-dfsg-1_deb12u1_arm64",
+					"name": "librsvg2-2",
+					"version": "2.54.7+dfsg-1~deb12u1"
+				},
+				{
+					"key": "libxml2_2.9.14-p-dfsg-1.3_deb12u1_arm64",
+					"name": "libxml2",
+					"version": "2.9.14+dfsg-1.3~deb12u1"
+				},
+				{
+					"key": "libicu72_72.1-3_arm64",
+					"name": "libicu72",
+					"version": "72.1-3"
+				},
+				{
+					"key": "libpangocairo-1.0-0_1.50.12-p-ds-1_arm64",
+					"name": "libpangocairo-1.0-0",
+					"version": "1.50.12+ds-1"
+				},
+				{
+					"key": "libpangoft2-1.0-0_1.50.12-p-ds-1_arm64",
+					"name": "libpangoft2-1.0-0",
+					"version": "1.50.12+ds-1"
+				},
+				{
+					"key": "libpango-1.0-0_1.50.12-p-ds-1_arm64",
+					"name": "libpango-1.0-0",
+					"version": "1.50.12+ds-1"
+				},
+				{
+					"key": "libthai0_0.1.29-1_arm64",
+					"name": "libthai0",
+					"version": "0.1.29-1"
+				},
+				{
+					"key": "libdatrie1_0.2.13-2-p-b1_arm64",
+					"name": "libdatrie1",
+					"version": "0.2.13-2+b1"
+				},
+				{
+					"key": "libthai-data_0.1.29-1_arm64",
+					"name": "libthai-data",
+					"version": "0.1.29-1"
+				},
+				{
+					"key": "libharfbuzz0b_6.0.0-p-dfsg-3_arm64",
+					"name": "libharfbuzz0b",
+					"version": "6.0.0+dfsg-3"
+				},
+				{
+					"key": "libgraphite2-3_1.3.14-1_arm64",
+					"name": "libgraphite2-3",
+					"version": "1.3.14-1"
+				},
+				{
+					"key": "libglib2.0-0_2.74.6-2_arm64",
+					"name": "libglib2.0-0",
+					"version": "2.74.6-2"
+				},
+				{
+					"key": "libmount1_2.38.1-5-p-b1_arm64",
+					"name": "libmount1",
+					"version": "2.38.1-5+b1"
+				},
+				{
+					"key": "libblkid1_2.38.1-5-p-b1_arm64",
+					"name": "libblkid1",
+					"version": "2.38.1-5+b1"
+				},
+				{
+					"key": "libfribidi0_1.0.8-2.1_arm64",
+					"name": "libfribidi0",
+					"version": "1.0.8-2.1"
+				},
+				{
+					"key": "fontconfig_2.14.1-4_arm64",
+					"name": "fontconfig",
+					"version": "2.14.1-4"
+				},
+				{
+					"key": "libcairo2_1.16.0-7_arm64",
+					"name": "libcairo2",
+					"version": "1.16.0-7"
+				},
+				{
+					"key": "libxrender1_1-0.9.10-1.1_arm64",
+					"name": "libxrender1",
+					"version": "1:0.9.10-1.1"
+				},
+				{
+					"key": "libxcb-render0_1.15-1_arm64",
+					"name": "libxcb-render0",
+					"version": "1.15-1"
+				},
+				{
+					"key": "libpixman-1-0_0.42.2-1_arm64",
+					"name": "libpixman-1-0",
+					"version": "0.42.2-1"
+				},
+				{
+					"key": "libgdk-pixbuf-2.0-0_2.42.10-p-dfsg-1-p-b1_arm64",
+					"name": "libgdk-pixbuf-2.0-0",
+					"version": "2.42.10+dfsg-1+b1"
+				},
+				{
+					"key": "shared-mime-info_2.2-1_arm64",
+					"name": "shared-mime-info",
+					"version": "2.2-1"
+				},
+				{
+					"key": "libgdk-pixbuf2.0-common_2.42.10-p-dfsg-1_arm64",
+					"name": "libgdk-pixbuf2.0-common",
+					"version": "2.42.10+dfsg-1"
+				},
+				{
+					"key": "libcairo-gobject2_1.16.0-7_arm64",
+					"name": "libcairo-gobject2",
+					"version": "1.16.0-7"
+				},
+				{
+					"key": "libjxl0.7_0.7.0-10_arm64",
+					"name": "libjxl0.7",
+					"version": "0.7.0-10"
+				},
+				{
+					"key": "libhwy1_1.0.3-3-p-deb12u1_arm64",
+					"name": "libhwy1",
+					"version": "1.0.3-3+deb12u1"
+				},
+				{
+					"key": "libid3tag0_0.15.1b-14_arm64",
+					"name": "libid3tag0",
+					"version": "0.15.1b-14"
+				},
+				{
+					"key": "libheif1_1.15.1-1_arm64",
+					"name": "libheif1",
+					"version": "1.15.1-1"
+				},
+				{
+					"key": "libx265-199_3.5-2-p-b1_arm64",
+					"name": "libx265-199",
+					"version": "3.5-2+b1"
+				},
+				{
+					"key": "libnuma1_2.0.16-1_arm64",
+					"name": "libnuma1",
+					"version": "2.0.16-1"
+				},
+				{
+					"key": "libde265-0_1.0.11-1-p-deb12u2_arm64",
+					"name": "libde265-0",
+					"version": "1.0.11-1+deb12u2"
+				},
+				{
+					"key": "libdav1d6_1.0.0-2_arm64",
+					"name": "libdav1d6",
+					"version": "1.0.0-2"
+				},
+				{
+					"key": "libaom3_3.6.0-1_arm64",
+					"name": "libaom3",
+					"version": "3.6.0-1"
+				},
+				{
+					"key": "libgif7_5.2.1-2.5_arm64",
+					"name": "libgif7",
+					"version": "5.2.1-2.5"
+				},
+				{
+					"key": "libast2_0.7-9_arm64",
+					"name": "libast2",
+					"version": "0.7-9"
+				}
+			],
+			"key": "eterm_0.9.6-7_arm64",
+			"name": "eterm",
+			"sha256": "690b41a007df0d70244d3404a3a918087cf0578ef698dec863a9c748c0a1c467",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/e/eterm/eterm_0.9.6-7_arm64.deb",
+			"version": "0.9.6-7"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [],
+			"key": "libast2_0.7-9_arm64",
+			"name": "libast2",
+			"sha256": "ffcdc4e1f6ec3dd194a7537051ba945c2f8a24c16af3e82b7a38a3a9d09fa767",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/liba/libast/libast2_0.7-9_arm64.deb",
+			"version": "0.7-9"
 		}
 	],
 	"version": 1
