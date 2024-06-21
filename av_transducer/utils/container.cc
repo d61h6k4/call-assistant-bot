@@ -169,6 +169,9 @@ ContainerStreamContext::CreateReaderContainerStreamContext(
         "Video does not contain neither video nor audio streams.");
   }
 
+  // Print to stdout format info.
+  av_dump_format(container_stream_context.format_context_, 0, url.c_str(), 1);
+
   return container_stream_context;
 }
 
@@ -320,9 +323,9 @@ ContainerStreamContext::CreateWriterContainerStreamContext(
     // Initialize the AVCodecContext to use the given AVCodec.
     // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
     if (auto res = avcodec_open2(codec_context, codec, nullptr); res < 0) {
-      return absl::FailedPreconditionError(
-          absl::StrCat("failed to open video codec through avcodec_open2. Error: ",
-                       av_err2string(res)));
+      return absl::FailedPreconditionError(absl::StrCat(
+          "failed to open video codec through avcodec_open2. Error: ",
+          av_err2string(res)));
     }
     // Fill the codec context based on the values from the supplied codec
     // parameters

@@ -129,8 +129,11 @@ FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
         av_packet_unref(packet_);
         return absl::OkStatus();
       } else {
-        ABSL_LOG(WARNING) << "Unmonotonic timestamps " << prev_video_timestamp_
-                          << " and " << timestamp << " current " << current_timestamp;
+        ABSL_LOG(WARNING)
+            << "Unmonotonic timestamps " << prev_video_timestamp_ << " and "
+            << timestamp << " current " << current_timestamp
+            << " PTS: " << video_frame_or->GetPTS() << " diff: "
+            << (current_timestamp - start_timestamp_).Microseconds();
         return absl::OkStatus();
       }
     } else {
