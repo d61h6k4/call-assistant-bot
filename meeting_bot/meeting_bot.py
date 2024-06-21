@@ -279,12 +279,12 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             await bot_part.shutdown()
             await bot_part.close()
 
+        self.working_dir_cleanup()
         # gRPC requires always reply to the request, so here
         # we schedule calling server stop for 1 second
         loop = asyncio.get_running_loop()
         # call_later expects not corutine, so we wrap our corutine in create_task
         loop.call_later(1, asyncio.create_task, self.server.stop(1.0))
-        self.working_dir_cleanup()
 
     def working_dir_cleanup(self):
         with tempfile.TemporaryDirectory() as archive_dir:
