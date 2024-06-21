@@ -16,6 +16,7 @@ import grpc
 import sched
 import time
 
+from grpc.aio import UsageError
 import picologging as logging
 
 from datetime import datetime
@@ -287,7 +288,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             )
             try:
                 await bot_part.shutdown()
-            except grpc.RpcError as e:
+            except UsageError as e:
                 self.logger.error(
                     {
                         "message": f"Failed to off {bot_part.__class__.__name__}",
@@ -296,7 +297,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
                 )
             try:
                 await bot_part.close()
-            except grpc.RpcError as e:
+            except UsageError as e:
                 self.logger.error(
                     {
                         "message": f"Failed to close client of {bot_part.__class__.__name__}",
