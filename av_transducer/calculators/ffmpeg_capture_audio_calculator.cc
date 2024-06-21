@@ -116,17 +116,18 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
         start_timestamp_ = mediapipe::Timestamp(audio_frame_or->GetPTS());
       }
 
-      auto timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());
+      auto current_timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());
       container_stream_context_->SetFramePTS(
-          (timestamp - start_timestamp_).Microseconds(), audio_frame_or.get());
-
+          (current_timestamp - start_timestamp_).Microseconds(),
+          audio_frame_or.get());
+      auto timestamp = mediapipe::Timestamp(
+          container_stream_context_->FramePTSInMicroseconds(
+              audio_frame_or.get()));
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
       if (prev_audio_timestamp_ < timestamp) {
-        auto out_timestamp = mediapipe::Timestamp(
-            container_stream_context_->FramePTSInMicroseconds(
-                audio_frame_or.get()));
-        kOutAudio(cc).Send(std::move(audio_frame_or), out_timestamp);
+
+        kOutAudio(cc).Send(std::move(audio_frame_or), timestamp);
         prev_audio_timestamp_ = timestamp;
 
         // https://ffmpeg.org/doxygen/trunk/group__lavc__packet.html#ga63d5a489b419bd5d45cfd09091cbcbc2

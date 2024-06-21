@@ -139,6 +139,7 @@ PACKAGES = [
     "@bookworm//python3",
     "@bookworm//dbus",
     "@bookworm//dbus-x11",
+    "@bookworm//eterm",
 ]
 
 pkg_tar(

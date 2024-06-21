@@ -130,7 +130,7 @@ FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
         return absl::OkStatus();
       } else {
         ABSL_LOG(WARNING) << "Unmonotonic timestamps " << prev_video_timestamp_
-                          << " and " << timestamp;
+                          << " and " << timestamp << " current " << current_timestamp;
         return absl::OkStatus();
       }
     } else {
