@@ -270,7 +270,11 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
 
     def exit_gracefullt(self, signum):
         self.logger.info({"message": "Got system signal", "signal": signum})
-        asyncio.create_task(self.shutdown())
+        loop = asyncio.get_running_loop()
+        shutdown_task = asyncio.shield(asyncio.create_task(self.shutdown()))
+        shutdown_future = asyncio.run_coroutine_threadsafe(shutdown_task, loop)
+        # Wait until the end
+        shutdown_future.result(None)
 
     async def Shutdown(
         self, request: meeting_bot_pb2.ShutdownRequest, context
@@ -318,16 +322,16 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             archive_name = urllib.parse.quote(self.meeting_name)
             archive_path = Path(archive_dir) / archive_name
             self.logger.info({"message": "Archiving all artifacts"})
-            shutil.make_archive(
+            zip_archive_path = shutil.make_archive(
                 str(archive_path),
-                "xztar",
+                "tar",
                 self.working_dir.name,
                 verbose=True,
                 logger=self.logger,
             )
             self.logger.info({"message": "Archive is created"})
 
-            zip_archive_path = archive_path.with_suffix(".tar.xz")
+            zip_archive_path = Path(zip_archive_path)
             destination_blob_name = str(
                 Path(datetime.now().strftime("%Y/%m/%d")) / zip_archive_path.name
             )
