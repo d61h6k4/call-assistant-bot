@@ -116,9 +116,9 @@ FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
       // x11grab time base is 1/0, so we set pts manually
       video_frame_or->SetPTS(
           av_rescale_q((current_timestamp - start_timestamp_).Microseconds(),
-                       AVRational{1, 1000000}, AVRational{1, 33}));
+                       AVRational{1, 1000000}, AVRational{1, 30}));
       auto timestamp = mediapipe::Timestamp(av_rescale_q(
-          video_frame_or->GetPTS(), AVRational{1, 33}, AVRational{1, 1000000}));
+          video_frame_or->GetPTS(), AVRational{1, 30}, AVRational{1, 1000000}));
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
       if (prev_video_timestamp_ < timestamp) {
@@ -129,10 +129,9 @@ FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
         av_packet_unref(packet_);
         return absl::OkStatus();
       } else {
-        ABSL_LOG(WARNING)
+        ABSL_LOG_EVERY_N_SEC(WARNING, 3)
             << "Unmonotonic timestamps " << prev_video_timestamp_ << " and "
-            << timestamp << " current " << current_timestamp
-            << " PTS: " << video_frame_or->GetPTS() << " diff: "
+            << timestamp << " PTS: " << video_frame_or->GetPTS() << " diff: "
             << (current_timestamp - start_timestamp_).Microseconds();
         return absl::OkStatus();
       }
