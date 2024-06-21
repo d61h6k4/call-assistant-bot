@@ -169,9 +169,6 @@ ContainerStreamContext::CreateReaderContainerStreamContext(
         "Video does not contain neither video nor audio streams.");
   }
 
-  // Print to stdout format info.
-  av_dump_format(container_stream_context.format_context_, 0, url.c_str(), 1);
-
   return container_stream_context;
 }
 
