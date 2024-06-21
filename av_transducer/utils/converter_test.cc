@@ -112,7 +112,7 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
 
   auto write_container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
-          out_audio_stream, out_video_stream, "/tmp/testvideo.m4a");
+          out_audio_stream, out_video_stream, "/tmp/testvideo.mp4");
   auto out_audio_frame = write_container->CreateAudioFrame();
   EXPECT_TRUE(out_audio_frame);
 
@@ -169,7 +169,7 @@ TEST(TestConverterUtils, CheckReadVideoConvertWrite) {
   aikit::media::VideoStreamParameters out_video_stream;
   out_video_stream.width = 640;
   out_video_stream.height = 360;
-  out_video_stream.format = AV_PIX_FMT_NV12;
+  out_video_stream.format = AV_PIX_FMT_YUV420P;
 
   auto write_container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
