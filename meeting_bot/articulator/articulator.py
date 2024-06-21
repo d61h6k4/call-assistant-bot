@@ -47,7 +47,7 @@ class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
             headless=False,
             sandbox=True,
             browser_args=[
-                "--window-size=1024x768",
+                "--window-size=1280x720",
                 "--disable-gpu",
                 "--disable-extensions",
                 "--disable-application-cache",
