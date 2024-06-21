@@ -155,6 +155,11 @@ class Articulator(BotPart):
             ),
             env=env,
         )
+        if proc.returncode is not None:
+            raise RuntimeError(
+                f"Failed to start articulator grpc. Return code: {proc.returncode}"
+            )
+
         client = grpc.aio.insecure_channel(articulator_address)
         return Articulator(process=proc, client=client)
 
@@ -245,9 +250,13 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
     ) -> "MeetingBotServicer":
         working_dir = tempfile.TemporaryDirectory()
 
-        articulator = await Articulator.create(
-            gmeet_link=gmeet_link, working_dir=working_dir.name
-        )
+        try:
+            articulator = await Articulator.create(
+                gmeet_link=gmeet_link, working_dir=working_dir.name
+            )
+        except RuntimeError as e:
+            raise RuntimeError("Failed to run articulator.") from e
+
         perceiver = await Perceiver.create(working_dir=working_dir.name)
         evaluator = await Evaluator.create(address)
         return cls(
@@ -463,9 +472,17 @@ async def serve(args: argparse.Namespace):
     await prepare_env(logger)
 
     server = grpc.aio.server()
-    service = await MeetingBotServicer.create(
-        gmeet_link=args.gmeet_link, address=args.address, server=server, logger=logger
-    )
+    try:
+        service = await MeetingBotServicer.create(
+            gmeet_link=args.gmeet_link,
+            address=args.address,
+            server=server,
+            logger=logger,
+        )
+    except RuntimeError as e:
+        logger.critical({"message": "Failed to start meeting bot.", "error": repr(e)})
+        await server.stop(1.0)
+        return 1
 
     meeting_bot_pb2_grpc.add_MeetingBotServicer_to_server(
         service,
