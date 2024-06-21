@@ -240,6 +240,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         loop.add_signal_handler(
             signal.SIGTERM, lambda: self.exit_gracefullt(signal.SIGTERM)
         )
+        self.shutdown_task = None
 
     @classmethod
     async def create(
@@ -270,8 +271,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
 
     def exit_gracefullt(self, signum):
         self.logger.info({"message": "Got system signal", "signal": signum})
-        loop = asyncio.get_running_loop()
-        loop.call_soon_threadsafe(self.shutdown)
+        self.shutdown_task = asyncio.create_task(self.shutdown())
 
     async def Shutdown(
         self, request: meeting_bot_pb2.ShutdownRequest, context
