@@ -318,18 +318,16 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             archive_name = urllib.parse.quote(self.meeting_name)
             archive_path = Path(archive_dir) / archive_name
             self.logger.info({"message": "Archiving all artifacts"})
-            try:
-                shutil.make_archive(
-                    str(archive_path),
-                    "zip",
-                    self.working_dir.name,
-                    verbose=True,
-                    logger=self.logger,
-                )
-            except Exception as e:
-                self.logger.critical(repr(e))
+            shutil.make_archive(
+                str(archive_path),
+                "xztar",
+                self.working_dir.name,
+                verbose=True,
+                logger=self.logger,
+            )
+            self.logger.info({"message": "Archive is created"})
 
-            zip_archive_path = archive_path.with_suffix(".zip")
+            zip_archive_path = archive_path.with_suffix(".tar.xz")
             destination_blob_name = str(
                 Path(datetime.now().strftime("%Y/%m/%d")) / zip_archive_path.name
             )
