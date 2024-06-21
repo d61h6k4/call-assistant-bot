@@ -308,13 +308,12 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
                         "error": repr(e),
                     }
                 )
-        self.logger.info({"message": "All parts are off. Starting clean up."})
         self.working_dir_cleanup()
         # gRPC requires always reply to the request, so here
         # we schedule calling server stop for 1 second
         loop = asyncio.get_running_loop()
         # call_later expects not corutine, so we wrap our corutine in create_task
-        loop.call_later(300, asyncio.create_task, self.server.stop(1.0))
+        loop.call_later(3, asyncio.create_task, self.server.stop(1.0))
         self.logger.info({"message": "Meeting bot is shutting down in 3 seconds"})
 
     def working_dir_cleanup(self):
