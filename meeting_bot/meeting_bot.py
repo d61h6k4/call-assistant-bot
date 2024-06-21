@@ -2,8 +2,8 @@ from abc import abstractmethod, abstractproperty
 
 import asyncio
 import argparse
-import base64
 import copy
+import urllib.parse
 import uuid
 import shlex
 import signal
@@ -276,8 +276,24 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             self.logger.info(
                 {"message": f"Shutting down {bot_part.__class__.__name__}"}
             )
-            await bot_part.shutdown()
-            await bot_part.close()
+            try:
+                await bot_part.shutdown()
+            except grpc.RpcError as e:
+                self.logger.error(
+                    {
+                        "message": f"Failed to off {bot_part.__class__.__name__}",
+                        "error": repr(e),
+                    }
+                )
+            try:
+                await bot_part.close()
+            except grpc.RpcError as e:
+                self.logger.error(
+                    {
+                        "message": f"Failed to close client of {bot_part.__class__.__name__}",
+                        "error": repr(e),
+                    }
+                )
 
         self.working_dir_cleanup()
         # gRPC requires always reply to the request, so here
@@ -289,9 +305,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
 
     def working_dir_cleanup(self):
         with tempfile.TemporaryDirectory() as archive_dir:
-            archive_name = base64.urlsafe_b64encode(
-                self.meeting_name.encode("utf8")
-            ).decode("ascii")
+            archive_name = urllib.parse.quote(self.meeting_name)
             archive_path = Path(archive_dir) / archive_name
             shutil.make_archive(
                 str(archive_path),
@@ -305,7 +319,20 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
                 Path(datetime.now().strftime("%Y/%m/%d")) / zip_archive_path.name
             )
 
-            upload_blob(zip_archive_path.absolute(), destination_blob_name)
+            try:
+                upload_blob(zip_archive_path.absolute(), destination_blob_name)
+            except grpc.RpcError as e:
+                self.logger.error(
+                    {
+                        "message": "Failed to upload meeting data. Try with different name.",
+                        "meeting_name": self.meeting_name,
+                        "destination": destination_blob_name,
+                        "error": repr(e),
+                    }
+                )
+                destination_blob_name += "-2"
+                upload_blob(zip_archive_path.absolute(), destination_blob_name)
+
             self.logger.info(
                 {
                     "message": f"Artifacts of the meeting {self.meeting_name} uploaded to {destination_blob_name}",
