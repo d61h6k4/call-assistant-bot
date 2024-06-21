@@ -1,4 +1,5 @@
 from google.cloud import storage
+from google.api_core.exceptions import PreconditionFailed
 from pathlib import Path
 
 _MEETING_BOT_BUCKET_NAME = "meeting-bot-artifacts"
@@ -21,6 +22,9 @@ def upload_blob(
     # generation-match precondition using its generation number.
     generation_match_precondition = 0
 
-    blob.upload_from_filename(
-        str(source_file_name), if_generation_match=generation_match_precondition
-    )
+    try:
+        blob.upload_from_filename(
+            str(source_file_name), if_generation_match=generation_match_precondition
+        )
+    except PreconditionFailed as e:
+        raise RuntimeError("Failed to upload. ") from e

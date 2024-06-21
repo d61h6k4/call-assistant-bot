@@ -321,7 +321,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
 
             try:
                 upload_blob(zip_archive_path.absolute(), destination_blob_name)
-            except grpc.RpcError as e:
+            except RuntimeError as e:
                 self.logger.error(
                     {
                         "message": "Failed to upload meeting data. Try with different name.",
