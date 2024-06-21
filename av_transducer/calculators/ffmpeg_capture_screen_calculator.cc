@@ -2,15 +2,10 @@
 #include "av_transducer/utils/video.h"
 #include "mediapipe/framework/api2/node.h"
 #include "mediapipe/framework/api2/packet.h"
-#include <csignal>
 #include <optional>
 
 namespace aikit {
-namespace {
-volatile std::sig_atomic_t gSignalStatus;
 
-void SignalHandler(int signal) { gSignalStatus = signal; }
-} // namespace
 // This Calculator captures screen and produces video packets.
 //
 // Example config:
@@ -85,17 +80,11 @@ absl::Status
 FFMPEGCaptureScreenCalculator::Close(mediapipe::CalculatorContext *cc) {
   av_packet_free(&packet_);
 
-  ABSL_LOG(INFO) << "Screen reader close";
   return absl::OkStatus();
 }
 
 absl::Status
 FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
-  if (gSignalStatus == SIGINT || gSignalStatus == SIGTERM) {
-    ABSL_LOG(WARNING) << "Got system singal. Stopping video processing.";
-    return mediapipe::tool::StatusStop();
-  }
-
   auto status = container_stream_context_->ReadPacket(packet_);
   if (status.ok()) {
 

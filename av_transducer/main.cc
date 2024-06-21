@@ -1,5 +1,8 @@
 
+#include <condition_variable>
+#include <csignal>
 #include <cstdlib>
+#include <mutex>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
@@ -9,6 +12,18 @@
 #include "av_transducer/utils/video.h"
 #include "mediapipe/framework/api2/builder.h"
 #include "mediapipe/framework/calculator_graph.h"
+
+namespace {
+volatile std::sig_atomic_t SIGNAL_STATUS;
+std::mutex SIGNAL_STATUS_MUTEX;
+std::condition_variable SIGNAL_STATUS_COND_V;
+} // namespace
+
+void SignalHandler(int signal) {
+  std::unique_lock<std::mutex> lock(SIGNAL_STATUS_MUTEX);
+  SIGNAL_STATUS = signal;
+  SIGNAL_STATUS_COND_V.notify_one();
+}
 
 ABSL_FLAG(std::string, output_file_path, "", "Full path of video to save.");
 
@@ -66,6 +81,9 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
 }
 
 absl::Status RunMPPGraph() {
+  std::signal(SIGINT, SignalHandler);
+  std::signal(SIGTERM, SignalHandler);
+
   auto config = BuildGraph();
 
   std::map<std::string, mediapipe::Packet> input_side_packets;
@@ -88,6 +106,13 @@ absl::Status RunMPPGraph() {
 
   ABSL_LOG(INFO) << "Start running the calculator graph.";
   MP_RETURN_IF_ERROR(graph.StartRun({}));
+
+  std::unique_lock<std::mutex> lock(SIGNAL_STATUS_MUTEX);
+  SIGNAL_STATUS_COND_V.wait(lock, [&] {
+    return (SIGNAL_STATUS == SIGINT || SIGNAL_STATUS == SIGTERM);
+  });
+
+  MP_RETURN_IF_ERROR(graph.CloseAllPacketSources());
   MP_RETURN_IF_ERROR(graph.WaitUntilDone());
   return absl::OkStatus();
 }

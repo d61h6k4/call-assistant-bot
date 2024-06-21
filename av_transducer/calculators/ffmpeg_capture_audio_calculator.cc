@@ -2,15 +2,10 @@
 #include "av_transducer/utils/container.h"
 #include "mediapipe/framework/api2/node.h"
 #include "mediapipe/framework/api2/packet.h"
-#include <csignal>
 #include <optional>
 namespace aikit {
-namespace {
-volatile std::sig_atomic_t gSignalStatus;
 
-void SignalHandler(int signal) { gSignalStatus = signal; }
-} // namespace
-// This Calculator captures audio from audio driver and stream audio packets.
+    // This Calculator captures audio from audio driver and stream audio packets.
 // All streams and input side packets are specified using tags and all of them
 // are optional.
 //
@@ -51,9 +46,6 @@ MEDIAPIPE_REGISTER_NODE(FFMPEGCaptureAudioCalculator);
 
 absl::Status
 FFMPEGCaptureAudioCalculator::Open(mediapipe::CalculatorContext *cc) {
-  // Register processing system signals
-  std::signal(SIGTERM, SignalHandler);
-  std::signal(SIGINT, SignalHandler);
 
 #if __APPLE__
   auto container_stream_context_or =
@@ -88,17 +80,11 @@ absl::Status
 FFMPEGCaptureAudioCalculator::Close(mediapipe::CalculatorContext *cc) {
   av_packet_free(&packet_);
 
-  ABSL_LOG(INFO) << "Speaker reader close";
   return absl::OkStatus();
 }
 
 absl::Status
 FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
-
-  if (gSignalStatus == SIGINT || gSignalStatus == SIGTERM) {
-    ABSL_LOG(WARNING) << "Got system singal. Stopping audio processing.";
-    return mediapipe::tool::StatusStop();
-  }
 
   auto status = container_stream_context_->ReadPacket(packet_);
   if (status.ok()) {
@@ -137,6 +123,8 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
       } else {
         ABSL_LOG(WARNING) << "Unmonotonic timestamps " << prev_audio_timestamp_
                           << " and " << timestamp;
+        av_packet_unref(packet_);
+        return absl::OkStatus();
       }
     } else {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
