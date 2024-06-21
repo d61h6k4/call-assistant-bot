@@ -85,13 +85,14 @@ absl::Status
 FFMPEGCaptureScreenCalculator::Close(mediapipe::CalculatorContext *cc) {
   av_packet_free(&packet_);
 
+  ABSL_LOG(INFO) << "Screen reader close";
   return absl::OkStatus();
 }
 
 absl::Status
 FFMPEGCaptureScreenCalculator::Process(mediapipe::CalculatorContext *cc) {
   if (gSignalStatus == SIGINT || gSignalStatus == SIGTERM) {
-    ABSL_LOG(WARNING) << "Got system singal. Stopping processing.";
+    ABSL_LOG(WARNING) << "Got system singal. Stopping video processing.";
     return mediapipe::tool::StatusStop();
   }
 

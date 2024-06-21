@@ -88,6 +88,7 @@ absl::Status
 FFMPEGCaptureAudioCalculator::Close(mediapipe::CalculatorContext *cc) {
   av_packet_free(&packet_);
 
+  ABSL_LOG(INFO) << "Speaker reader close";
   return absl::OkStatus();
 }
 
@@ -95,7 +96,7 @@ absl::Status
 FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
 
   if (gSignalStatus == SIGINT || gSignalStatus == SIGTERM) {
-    ABSL_LOG(WARNING) << "Got system singal. Stopping processing.";
+    ABSL_LOG(WARNING) << "Got system singal. Stopping audio processing.";
     return mediapipe::tool::StatusStop();
   }
 
