@@ -87,7 +87,7 @@ TEST_F(AudioConverterCalculatorTest, AudioSanityCheck) {
 
   auto write_container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
-          out_audio_stream, out_video_stream, "/tmp/test_audiosanitycheck.m4a");
+          out_audio_stream, out_video_stream, "/tmp/test_audiosanitycheck.mp4");
   EXPECT_TRUE(write_container.ok()) << write_container.status().message();
 
   for (auto &packet : GetOutputs()) {
