@@ -294,7 +294,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
                         "error": repr(e),
                     }
                 )
-
+        self.logger.info({"message": "All parts are off. Starting clean up."})
         self.working_dir_cleanup()
         # gRPC requires always reply to the request, so here
         # we schedule calling server stop for 1 second
@@ -307,6 +307,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         with tempfile.TemporaryDirectory() as archive_dir:
             archive_name = urllib.parse.quote(self.meeting_name)
             archive_path = Path(archive_dir) / archive_name
+            self.logger.info({"message": "Archiving all artifacts"})
             shutil.make_archive(
                 str(archive_path),
                 "zip",
@@ -319,6 +320,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
                 Path(datetime.now().strftime("%Y/%m/%d")) / zip_archive_path.name
             )
 
+            self.logger.info({"message": "Uploading archive of artifacts to the GCS"})
             try:
                 upload_blob(zip_archive_path.absolute(), destination_blob_name)
             except RuntimeError as e:
