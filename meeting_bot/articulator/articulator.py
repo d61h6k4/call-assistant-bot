@@ -47,7 +47,7 @@ class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
             headless=False,
             sandbox=True,
             browser_args=[
-                "--window-size=1024x768",
+                "--window-size=1280x720",
                 "--disable-gpu",
                 "--disable-extensions",
                 "--disable-application-cache",
@@ -115,7 +115,7 @@ class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
 
 
 async def serve(args: argparse.Namespace):
-    logger = logging.getLogger()
+    logger = logging.getLogger("articulator")
     server = grpc.aio.server()
     service = await ArticulatorServicer.create(
         google_login=args.google_login,

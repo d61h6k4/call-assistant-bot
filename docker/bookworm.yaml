@@ -35,3 +35,4 @@ packages:
   - "python3"
   - "dbus"
   - "dbus-x11"
+  - "eterm"

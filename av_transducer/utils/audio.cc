@@ -55,11 +55,13 @@ AudioFrame::CreateAudioFrame(enum AVSampleFormat sample_fmt,
 }
 
 AudioFrame::AudioFrame(AudioFrame &&o) noexcept {
+  av_frame_unref(c_frame_);
   av_frame_move_ref(c_frame_, o.c_frame_);
 }
 
 AudioFrame &AudioFrame::operator=(AudioFrame &&o) noexcept {
   if (this != &o) {
+    av_frame_unref(c_frame_);
     av_frame_move_ref(c_frame_, o.c_frame_);
   }
 }
@@ -123,7 +125,8 @@ absl::Status AudioFrame::AppendAudioData(std::vector<float> &audio_data) {
 
 absl::StatusOr<AudioStreamContext> AudioStreamContext::CreateAudioStreamContext(
     const AVFormatContext *format_context, const AVCodec *codec,
-    const AVCodecParameters *codec_parameters, int stream_idx) {
+    const AVCodecParameters *codec_parameters, AVCodecContext *codec_context,
+    int stream_idx) {
 
   AudioStreamContext result;
 
@@ -143,28 +146,7 @@ absl::StatusOr<AudioStreamContext> AudioStreamContext::CreateAudioStreamContext(
 
   av_channel_layout_copy(&result.channel_layout_, &codec_parameters->ch_layout);
   result.format_ = AVSampleFormat(codec_parameters->format);
-
-  result.codec_context_ = avcodec_alloc_context3(codec);
-  if (!result.codec_context_) {
-    return absl::FailedPreconditionError(
-        "failed to allocated memory for AVCodecContext");
-  }
-
-  // Fill the codec context based on the values from the supplied codec
-  // parameters
-  // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16
-  if (avcodec_parameters_to_context(result.codec_context_, codec_parameters) !=
-      0) {
-    return absl::FailedPreconditionError(
-        "failed to copy codec params to codec context");
-  }
-
-  // Initialize the AVCodecContext to use the given AVCodec.
-  // https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d
-  if (int ret = avcodec_open2(result.codec_context_, codec, nullptr); ret < 0) {
-    return absl::FailedPreconditionError(absl::StrCat(
-        "failed to open codec through avcodec_open2 ", av_err2str(ret)));
-  }
+  result.codec_context_ = codec_context;
 
   return result;
 }

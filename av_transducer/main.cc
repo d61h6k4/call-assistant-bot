@@ -1,18 +1,49 @@
 
+#include <condition_variable>
+#include <csignal>
 #include <cstdlib>
+#include <mutex>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
 #include "absl/log/absl_log.h"
+#include "av_transducer/utils/audio.h"
+#include "av_transducer/utils/video.h"
 #include "mediapipe/framework/api2/builder.h"
 #include "mediapipe/framework/calculator_graph.h"
-#include "av_transducer/utils/audio.h"
+
+namespace {
+volatile std::sig_atomic_t SIGNAL_STATUS;
+std::mutex SIGNAL_STATUS_MUTEX;
+std::condition_variable SIGNAL_STATUS_COND_V;
+} // namespace
+
+void SignalHandler(int signal) {
+  std::unique_lock<std::mutex> lock(SIGNAL_STATUS_MUTEX);
+  SIGNAL_STATUS = signal;
+  SIGNAL_STATUS_COND_V.notify_one();
+}
 
 ABSL_FLAG(std::string, output_file_path, "", "Full path of video to save.");
 
 mediapipe::CalculatorGraphConfig BuildGraph() {
   mediapipe::api2::builder::Graph graph;
+
+  // Capture video device
+  auto &capture_video_node = graph.AddNode("FFMPEGCaptureScreenCalculator");
+  auto video_header = capture_video_node.SideOut("VIDEO_HEADER");
+  auto video_stream = capture_video_node.Out("VIDEO");
+
+  // Convert to YUV420P
+  auto &video_converter_node = graph.AddNode("VideoConverterCalculator");
+  video_header >> video_converter_node.SideIn("IN_VIDEO_HEADER");
+  graph.SideIn("OUT_VIDEO_HEADER")
+          .SetName("out_video_header")
+          .Cast<aikit::media::VideoStreamParameters>() >>
+      video_converter_node.SideIn("OUT_VIDEO_HEADER");
+  video_stream >> video_converter_node.In("IN_VIDEO");
+  auto yuv_video_stream = video_converter_node.Out("OUT_VIDEO");
 
   // Capture audio device
   auto &capture_audio_node = graph.AddNode("FFMPEGCaptureAudioCalculator");
@@ -39,23 +70,35 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .SetName("out_audio_header")
           .Cast<aikit::media::AudioStreamParameters>() >>
       sink_video_node.SideIn("AUDIO_HEADER");
+  graph.SideIn("OUT_VIDEO_HEADER")
+          .SetName("out_video_header")
+          .Cast<aikit::media::VideoStreamParameters>() >>
+      sink_video_node.SideIn("VIDEO_HEADER");
   float_48kHz_audio_stream >> sink_video_node.In("AUDIO");
+  yuv_video_stream >> sink_video_node.In("VIDEO");
 
   return graph.GetConfig();
 }
 
 absl::Status RunMPPGraph() {
+  std::signal(SIGINT, SignalHandler);
+  std::signal(SIGTERM, SignalHandler);
+
   auto config = BuildGraph();
 
   std::map<std::string, mediapipe::Packet> input_side_packets;
   input_side_packets["output_file_path"] =
       mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_output_file_path));
 
-  // Whisper requires 16kHz float mono stream
   aikit::media::AudioStreamParameters audio_stream_parameters;
   input_side_packets["out_audio_header"] =
       mediapipe::MakePacket<aikit::media::AudioStreamParameters>(
           audio_stream_parameters);
+
+  aikit::media::VideoStreamParameters video_stream_parameters;
+  input_side_packets["out_video_header"] =
+      mediapipe::MakePacket<aikit::media::VideoStreamParameters>(
+          video_stream_parameters);
 
   ABSL_LOG(INFO) << "Initialize the calculator graph.";
   mediapipe::CalculatorGraph graph;
@@ -63,6 +106,13 @@ absl::Status RunMPPGraph() {
 
   ABSL_LOG(INFO) << "Start running the calculator graph.";
   MP_RETURN_IF_ERROR(graph.StartRun({}));
+
+  std::unique_lock<std::mutex> lock(SIGNAL_STATUS_MUTEX);
+  SIGNAL_STATUS_COND_V.wait(lock, [&] {
+    return (SIGNAL_STATUS == SIGINT || SIGNAL_STATUS == SIGTERM);
+  });
+
+  MP_RETURN_IF_ERROR(graph.CloseAllPacketSources());
   MP_RETURN_IF_ERROR(graph.WaitUntilDone());
   return absl::OkStatus();
 }

@@ -2,8 +2,8 @@ from abc import abstractmethod, abstractproperty
 
 import asyncio
 import argparse
-import base64
 import copy
+import urllib.parse
 import uuid
 import shlex
 import signal
@@ -276,22 +276,38 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             self.logger.info(
                 {"message": f"Shutting down {bot_part.__class__.__name__}"}
             )
-            await bot_part.shutdown()
-            await bot_part.close()
-
+            try:
+                await bot_part.shutdown()
+            except grpc.RpcError as e:
+                self.logger.error(
+                    {
+                        "message": f"Failed to off {bot_part.__class__.__name__}",
+                        "error": repr(e),
+                    }
+                )
+            try:
+                await bot_part.close()
+            except grpc.RpcError as e:
+                self.logger.error(
+                    {
+                        "message": f"Failed to close client of {bot_part.__class__.__name__}",
+                        "error": repr(e),
+                    }
+                )
+        self.logger.info({"message": "All parts are off. Starting clean up."})
+        self.working_dir_cleanup()
         # gRPC requires always reply to the request, so here
         # we schedule calling server stop for 1 second
         loop = asyncio.get_running_loop()
         # call_later expects not corutine, so we wrap our corutine in create_task
-        loop.call_later(1, asyncio.create_task, self.server.stop(1.0))
-        self.working_dir_cleanup()
+        loop.call_later(3, asyncio.create_task, self.server.stop(1.0))
+        self.logger.info({"message": "Meeting bot is shutting down in 3 seconds"})
 
     def working_dir_cleanup(self):
         with tempfile.TemporaryDirectory() as archive_dir:
-            archive_name = base64.urlsafe_b64encode(
-                self.meeting_name.encode("utf8")
-            ).decode("ascii")
+            archive_name = urllib.parse.quote(self.meeting_name)
             archive_path = Path(archive_dir) / archive_name
+            self.logger.info({"message": "Archiving all artifacts"})
             shutil.make_archive(
                 str(archive_path),
                 "zip",
@@ -304,7 +320,21 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
                 Path(datetime.now().strftime("%Y/%m/%d")) / zip_archive_path.name
             )
 
-            upload_blob(zip_archive_path.absolute(), destination_blob_name)
+            self.logger.info({"message": "Uploading archive of artifacts to the GCS"})
+            try:
+                upload_blob(zip_archive_path.absolute(), destination_blob_name)
+            except RuntimeError as e:
+                self.logger.error(
+                    {
+                        "message": "Failed to upload meeting data. Try with different name.",
+                        "meeting_name": self.meeting_name,
+                        "destination": destination_blob_name,
+                        "error": repr(e),
+                    }
+                )
+                destination_blob_name += "-2"
+                upload_blob(zip_archive_path.absolute(), destination_blob_name)
+
             self.logger.info(
                 {
                     "message": f"Artifacts of the meeting {self.meeting_name} uploaded to {destination_blob_name}",
@@ -322,7 +352,7 @@ async def prepare_env(logger: logging.Logger):
         from meeting_bot.xvfbwrapper import Xvfb
 
         display = os.environ.get("DISPLAY")
-        vdisplay = Xvfb(width=1024, height=768, colordepth=24, display=display[1:])
+        vdisplay = Xvfb(width=1280, height=720, colordepth=24, display=display[1:])
         vdisplay.start()
         logger.info({"message": f"Xvfb runs on {vdisplay.new_display}"})
 
@@ -429,7 +459,7 @@ async def prepare_env(logger: logging.Logger):
 
 
 async def serve(args: argparse.Namespace):
-    logger = logging.getLogger()
+    logger = logging.getLogger("meeting_bot")
     await prepare_env(logger)
 
     server = grpc.aio.server()

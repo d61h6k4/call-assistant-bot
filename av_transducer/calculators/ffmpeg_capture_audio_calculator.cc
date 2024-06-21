@@ -1,15 +1,10 @@
-#include "mediapipe/framework/api2/node.h"
-#include "mediapipe/framework/api2/packet.h"
 #include "av_transducer/utils/audio.h"
 #include "av_transducer/utils/container.h"
-#include <csignal>
+#include "mediapipe/framework/api2/node.h"
+#include "mediapipe/framework/api2/packet.h"
 #include <optional>
 namespace aikit {
-namespace {
-volatile std::sig_atomic_t gSignalStatus;
 
-void SignalHandler(int signal) { gSignalStatus = signal; }
-} // namespace
 // This Calculator captures audio from audio driver and stream audio packets.
 // All streams and input side packets are specified using tags and all of them
 // are optional.
@@ -51,9 +46,6 @@ MEDIAPIPE_REGISTER_NODE(FFMPEGCaptureAudioCalculator);
 
 absl::Status
 FFMPEGCaptureAudioCalculator::Open(mediapipe::CalculatorContext *cc) {
-  // Register processing system signals
-  std::signal(SIGTERM, SignalHandler);
-  std::signal(SIGINT, SignalHandler);
 
 #if __APPLE__
   auto container_stream_context_or =
@@ -94,11 +86,6 @@ FFMPEGCaptureAudioCalculator::Close(mediapipe::CalculatorContext *cc) {
 absl::Status
 FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
 
-  if (gSignalStatus == SIGINT || gSignalStatus == SIGTERM) {
-    ABSL_LOG(WARNING) << "Got system singal. Stopping processing.";
-    return mediapipe::tool::StatusStop();
-  }
-
   auto status = container_stream_context_->ReadPacket(packet_);
   if (status.ok()) {
 
@@ -116,13 +103,17 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
         start_timestamp_ = mediapipe::Timestamp(audio_frame_or->GetPTS());
       }
 
-      auto timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());
+      auto current_timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());
       container_stream_context_->SetFramePTS(
-          (timestamp - start_timestamp_).Microseconds(), audio_frame_or.get());
-
+          (current_timestamp - start_timestamp_).Microseconds(),
+          audio_frame_or.get());
+      auto timestamp = mediapipe::Timestamp(
+          container_stream_context_->FramePTSInMicroseconds(
+              audio_frame_or.get()));
       // If the timestamp of the current frame is not greater than the one
       // of the previous frame, the new frame will be discarded.
       if (prev_audio_timestamp_ < timestamp) {
+
         kOutAudio(cc).Send(std::move(audio_frame_or), timestamp);
         prev_audio_timestamp_ = timestamp;
 
@@ -130,8 +121,12 @@ FFMPEGCaptureAudioCalculator::Process(mediapipe::CalculatorContext *cc) {
         av_packet_unref(packet_);
         return absl::OkStatus();
       } else {
-        ABSL_LOG(WARNING) << "Unmonotonic timestamps " << prev_audio_timestamp_
-                          << " and " << timestamp;
+        ABSL_LOG_EVERY_N_SEC(WARNING, 3)
+            << "Unmonotonic timestamps " << prev_audio_timestamp_ << " and "
+            << timestamp << " PTS: " << audio_frame_or->GetPTS() << " diff: "
+            << (current_timestamp - start_timestamp_).Microseconds();
+        av_packet_unref(packet_);
+        return absl::OkStatus();
       }
     } else {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)

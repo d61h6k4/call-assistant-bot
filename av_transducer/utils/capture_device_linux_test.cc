@@ -8,9 +8,9 @@ TEST(TestFFmpegUtils, CheckCaptureAudio) {
   EXPECT_TRUE(res.ok());
 }
 
-TEST(TestFFmpegUtils, DISABLED_CheckCaptureScreen) {
+TEST(TestFFmpegUtils, CheckCaptureScreen) {
   auto res = aikit::media::ContainerStreamContext::CaptureDevice(
-      "x11grab", ":0.0+100,200");
+      "x11grab", ":1.0");
   EXPECT_TRUE(res.ok()) << res.status().message();
 }
 
@@ -40,35 +40,29 @@ TEST(TestFFmpegUtils, ReadAudioFrameCheck) {
   av_packet_free(&packet);
 }
 
-// TEST(TestFFmpegUtils, DISABLED_ReadImageFrameCheck) {
-//   auto res = aikit::utils::CaptureDevice("avfoundation", "3:");
-//   EXPECT_TRUE(res.ok());
 
-//   AVFrame *frame = av_frame_alloc();
-//   EXPECT_TRUE(frame != nullptr);
+TEST(TestFFmpegUtils, ReadImageFrameCheck) {
 
-//   AVPacket *packet = av_packet_alloc();
-//   EXPECT_TRUE(packet != nullptr);
+    auto container =
+        aikit::media::ContainerStreamContext::CaptureDevice("x11grab", ":1.0");
+    EXPECT_TRUE(container.ok());
 
-//   int n = 3;
-//   while (n > 0 && av_read_frame(res->format_context, packet) == 0) {
-//     --n;
-//     if (packet->stream_index == res->image_stream_context->stream_index) {
-//       auto s = aikit::utils::PacketToFrame(
-//           res->image_stream_context->codec_context, packet, frame);
+    AVPacket *packet = av_packet_alloc();
+    EXPECT_TRUE(packet) << "failed to allocate memory for AVPacket";
 
-//       if (!s.ok()) {
-//         EXPECT_TRUE(absl::IsFailedPrecondition(s));
-//       } else {
+    auto video_frame_or = container->CreateVideoFrame();
+    EXPECT_TRUE(video_frame_or) ;
 
-//         auto image_data = aikit::utils::ReadImageFrame(
-//             res->image_stream_context.value(), frame);
-//         EXPECT_TRUE(image_data.ok()) << image_data.status().message();
-//       }
-//     }
-//   }
+    int n = 3;
+    for (absl::Status st = container->ReadPacket(packet); st.ok();
+         st = container->ReadPacket(packet)) {
+      st = container->PacketToFrame(packet, video_frame_or.get());
+      EXPECT_TRUE(st.ok());
+      if (n < 1) {
+          break;
+      }
+      --n;
+    }
 
-//   av_packet_free(&packet);
-//   av_frame_free(&frame);
-//   aikit::utils::DestroyVideoStreamContext(res.value());
-// }
+    av_packet_free(&packet);
+  }

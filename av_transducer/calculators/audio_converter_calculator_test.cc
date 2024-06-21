@@ -1,11 +1,12 @@
 
 
 #include "absl/log/absl_log.h"
+#include "av_transducer/utils/audio.h"
+#include "av_transducer/utils/container.h"
+#include "av_transducer/utils/video.h"
 #include "mediapipe/framework/calculator_runner.h"
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/status_matchers.h"
-#include "av_transducer/utils/audio.h"
-#include "av_transducer/utils/container.h"
 #include "gtest/gtest.h"
 
 namespace aikit {
@@ -46,16 +47,18 @@ protected:
     for (absl::Status st = container->ReadPacket(packet_); st.ok();
          st = container->ReadPacket(packet_)) {
 
-      auto audio_frame_or = container->CreateAudioFrame();
-      EXPECT_TRUE(audio_frame_or);
-      st = container->PacketToFrame(packet_, audio_frame_or.get());
-      EXPECT_TRUE(st.ok());
+      if (container->IsPacketAudio(packet_)) {
+        auto audio_frame_or = container->CreateAudioFrame();
+        EXPECT_TRUE(audio_frame_or);
+        st = container->PacketToFrame(packet_, audio_frame_or.get());
+        EXPECT_TRUE(st.ok());
 
-      auto timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());
-      runner_.MutableInputs()
-          ->Tag("IN_AUDIO")
-          .packets.push_back(
-              mediapipe::Adopt(audio_frame_or.release()).At(timestamp));
+        auto timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());
+        runner_.MutableInputs()
+            ->Tag("IN_AUDIO")
+            .packets.push_back(
+                mediapipe::Adopt(audio_frame_or.release()).At(timestamp));
+      }
     }
   }
 
@@ -73,6 +76,7 @@ TEST_F(AudioConverterCalculatorTest, AudioSanityCheck) {
 
   aikit::media::AudioStreamParameters out_audio_stream;
   // out_audio_stream.sample_rate = 44100;
+  aikit::media::VideoStreamParameters out_video_stream;
 
   SetInput(out_audio_stream);
 
@@ -83,7 +87,8 @@ TEST_F(AudioConverterCalculatorTest, AudioSanityCheck) {
 
   auto write_container =
       aikit::media::ContainerStreamContext::CreateWriterContainerStreamContext(
-          out_audio_stream, "/tmp/testvideo.m4a");
+          out_audio_stream, out_video_stream, "/tmp/test_audiosanitycheck.mp4");
+  EXPECT_TRUE(write_container.ok()) << write_container.status().message();
 
   for (auto &packet : GetOutputs()) {
     auto &audio_frame = packet.Get<media::AudioFrame>();

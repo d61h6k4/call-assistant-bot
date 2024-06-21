@@ -51,6 +51,7 @@ class PerceiverServicer(perceiver_pb2_grpc.PerceiverServicer):
         self.logger.info(
             {"message": "Shutting down the perceiver", "reason": request.reason}
         )
+        await self.av_transducer_operator.exit()
 
         # gRPC requires always reply to the request, so here
         # we schedule calling server stop for 1 second
@@ -58,7 +59,6 @@ class PerceiverServicer(perceiver_pb2_grpc.PerceiverServicer):
         # call_later expects not corutine, so we wrap our corutine in create_task
         loop.call_later(1, asyncio.create_task, self.server.stop(1.0))
 
-        await self.av_transducer_operator.exit()
         self.health_status = health_pb2.HealthCheckResponse.NOT_SERVING
         return perceiver_pb2.ShutdownReply()
 
@@ -75,7 +75,7 @@ class PerceiverServicer(perceiver_pb2_grpc.PerceiverServicer):
 
 
 async def serve(args: argparse.Namespace):
-    logger = logging.getLogger()
+    logger = logging.getLogger("perceiver")
     server = grpc.aio.server()
     service = await PerceiverServicer.create(
         working_dir=args.working_dir,
