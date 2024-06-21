@@ -321,7 +321,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             self.logger.info({"message": "Archiving all artifacts"})
             zip_archive_path = shutil.make_archive(
                 str(archive_path),
-                "tar",
+                "xztar",
                 self.working_dir.name,
                 verbose=True,
                 logger=self.logger,
