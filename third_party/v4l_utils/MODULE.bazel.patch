@@ -1,0 +1,15 @@
+--- /dev/null	2024-06-22 10:33:30
++++ MODULE.bazel	2024-06-22 10:31:59
+@@ -0,0 +1,12 @@
++
++module(
++    name = "v4l-utils",
++    version = "1.26.1",
++)
++
++bazel_dep(name = "platforms", version = "0.0.10")
++
++bazel_dep(
++    name = "rules_foreign_cc",
++    version = "0.10.1",
++)

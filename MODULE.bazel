@@ -127,6 +127,17 @@ http_archive(
     url = "https://github.com/google/mediapipe/archive/refs/tags/v{}.tar.gz".format(_MEDIAPIPE_VERSION),
 )
 
+bazel_dep(name = "v4l-utils", version = "1.26.1")
+archive_override(
+    module_name = "v4l-utils",
+    patches = [
+        "@//third_party/v4l_utils:BUILD.patch",
+        "@//third_party/v4l_utils:MODULE.bazel.patch",
+    ],
+    strip_prefix = "v4l-utils-1.26.1",
+    urls = "https://linuxtv.org/downloads/v4l-utils/v4l-utils-1.26.1.tar.xz",
+)
+
 bazel_dep(name = "libyuv", version = "0.1.0", repo_name = "libyuv")
 archive_override(
     module_name = "libyuv",

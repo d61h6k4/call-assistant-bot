@@ -1,0 +1,21 @@
+
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "meson")
+
+filegroup(
+    name = "srcs",
+    srcs = glob(
+        ["**"],
+    ),
+)
+
+meson(
+    name = "libv4l",
+    copts = [
+        "-fPIC",
+    ],
+    lib_source = ":srcs",
+    out_shared_libs = [
+        "libpulse-simple.so",
+    ],
+    visibility = ["//visibility:public"],
+)
