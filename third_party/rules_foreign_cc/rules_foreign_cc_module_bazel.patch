@@ -1,0 +1,33 @@
+diff --git a/MODULE.bazel b/MODULE.bazel
+index 2b9a0b1..e0ee521 100644
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -17,13 +17,14 @@ bazel_dep(name = "stardoc", version = "0.5.6", dev_dependency = True, repo_name
+ bazel_dep(name = "rules_cc", version = "0.0.9", dev_dependency = True)
+ 
+ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+-python.toolchain(python_version = "3.9")
+-use_repo(python, "python_3_9")
++python.toolchain(python_version = "3.11")
++use_repo(python, "python_3_11")
+ 
+ tools = use_extension("@rules_foreign_cc//foreign_cc:extensions.bzl", "tools")
++tools.cmake(version = "3.29.5")
+ use_repo(
+     tools,
+-    "cmake_3.23.2_toolchains",
++    "cmake_3.29.5_toolchains",
+     "cmake_src",
+     "gettext_runtime",
+     "glib_dev",
+@@ -38,8 +39,8 @@ use_repo(
+ 
+ register_toolchains(
+     "@rules_foreign_cc_framework_toolchains//:all",
+-    "@cmake_3.23.2_toolchains//:all",
++    "@cmake_3.29.5_toolchains//:all",
+     "@ninja_1.12.0_toolchains//:all",
+-    "@python_3_9//:all",
++    "@python_3_11//:all",
+     "@rules_foreign_cc//toolchains:all",
+ )

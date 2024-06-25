@@ -1,0 +1,11 @@
+--- cmake/global_variables.cmake.old	2024-06-25 19:36:43
++++ cmake/global_variables.cmake	2024-06-25 19:36:55
+@@ -9,7 +9,7 @@
+ # Define the project directories
+ set(GENERATORS_ROOT ${PROJECT_SOURCE_DIR}/src)
+ set(MODELS_ROOT ${PROJECT_SOURCE_DIR}/src/models)
+-set(ORT_HOME ${CMAKE_SOURCE_DIR}/ort CACHE PATH "Path to the onnxruntime root directory.")
++# set(ORT_HOME ${CMAKE_SOURCE_DIR}/ort CACHE PATH "Path to the onnxruntime root directory.")
+ 
+ if (ANDROID)
+   # Paths are based on the directory structure of the ORT Android AAR.

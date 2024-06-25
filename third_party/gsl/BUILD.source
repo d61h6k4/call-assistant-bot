@@ -1,0 +1,6 @@
+cc_library(
+    name = "gsl",
+    hdrs = glob(["include/gsl/*"]),
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,61 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+
+config_setting(
+    name = "osx_arm64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
+)
+
+config_setting(
+    name = "linux_aarch64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+)
+
+filegroup(
+    name = "srcs",
+    srcs = glob([
+        "**",
+    ]),
+)
+
+cmake(
+    name = "libonnxruntime_genai",
+    build_args = [
+        "-j `nproc`",
+    ],
+    generate_args = [
+        "-GNinja",
+    ],
+    # Values to be passed as -Dkey=value on the CMake command line;
+    # here are serving to provide some CMake script configuration options
+    cache_entries = {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_TESTS": "OFF",
+        "ENABLE_PYTHON": "OFF",
+        "ENABLE_MODEL_BENCHMARK": "OFF",
+        "USE_DML": "OFF",
+        "USE_CUDA": "OFF",
+        "ORT_HOME": "$EXT_BUILD_DEPS",
+        "onnxruntime_extensions_SOURCE_DIR": "$EXT_BUILD_DEPS",
+    },
+    lib_source = ":srcs",
+    visibility = ["//visibility:public"],
+    out_static_libs = ["libonnxruntime-genai-static.a"],
+    out_shared_libs =select({
+        ":osx_arm64": ["libonnxruntime-genai.dylib"],
+        "//conditions:default": ["libonnxruntime-genai.so"],
+    }),
+    deps = [
+        "@onnxruntime_extensions//:libonnxruntime_extensions",
+    ] + select({
+        ":osx_arm64": ["@onnxruntime_osx_arm64//:libonnxruntime"],
+        ":linux_aarch64": ["@onnxruntime_linux_aarch64//:libonnxruntime"],
+        "//conditions:default": ["@onnxruntime_linux_x64//:libonnxruntime"],
+    }),
+)

@@ -17,9 +17,9 @@ OPENCV_MODULES = [
 ]
 
 cmake(
-    name = "opencv",
+    name = "foreign_opencv",
     build_args = [
-        "-j8",
+        "-j `nproc`",
     ],
     generate_args = [
         "-GNinja",
@@ -77,6 +77,7 @@ cmake(
         "ENABLE_CCACHE": "OFF",
         "BUILD_ZLIB": "OFF",
         "WITH_IPP": "OFF",
+        "WITH_LAPACK": "OFF",
     },
     lib_source = ":opencv_srcs",
     linkopts = [
@@ -101,4 +102,11 @@ cmake(
         "@libpng",
         "@zlib",
     ],
+)
+
+cc_library(
+    name = "opencv",
+    deps = [":foreign_opencv"],
+    linkstatic = 1,
+    visibility = ["//visibility:public"],
 )
