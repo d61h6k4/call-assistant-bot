@@ -26,8 +26,8 @@ build:windows --copt=/D_USE_MATH_DEFINES
 build:windows --host_copt=/D_USE_MATH_DEFINES
 
 # macOS
-build:macos --cxxopt=-std=c++20
-build:macos --host_cxxopt=-std=c++20
+build:macos --cxxopt='-std=c++20'
+build:macos --host_cxxopt='-std=c++20'
 build:macos --copt=-w
 
 # Suppress most C++ compiler warnings to reduce log size but allow

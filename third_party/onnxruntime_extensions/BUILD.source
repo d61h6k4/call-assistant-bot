@@ -1,0 +1,124 @@
+config_setting(
+    name = "osx_arm64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
+)
+
+config_setting(
+    name = "linux_aarch64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+)
+
+DEFINES = [
+    "ENABLE_GPT2_TOKENIZER",
+    "ENABLE_C_API",
+    "ENABLE_CV2",
+    "ENABLE_OPENCV_CODECS",
+    "ORT_API_VERSION=18",
+]
+
+
+cc_library(
+    name = "includes",
+    hdrs = glob([
+        "include/*.h*",
+        "include/custom_op/*.h*",
+        "include/custom_op/tensor_tuple.inc",
+    ]),
+    local_defines = DEFINES,
+    strip_include_prefix = "include",
+    deps = select({
+        ":osx_arm64": ["@onnxruntime_osx_arm64//:libonnxruntime"],
+        ":linux_aarch64": ["@onnxruntime_linux_aarch64//:libonnxruntime"],
+        "//conditions:default": ["@onnxruntime_linux_x64//:libonnxruntime"],
+    }),
+    alwayslink = True,
+)
+
+cc_library(
+    name = "base",
+    hdrs = glob([
+        "base/*.h",
+    ]),
+    srcs = glob([
+        "base/*.cc",
+    ]),
+    local_defines = DEFINES,
+    strip_include_prefix = "base",
+    deps = [
+        ":includes",
+        "@gsl"
+    ],
+    alwayslink = True,
+)
+
+
+cc_library(
+    name = "gpt2_tokenizer",
+    hdrs = glob([
+        "operators/tokenizer/bpe_*.h*",
+        "operators/tokenizer/unicode*.h*",
+        "operators/tokenizer/trietree.hpp",
+    ]),
+    srcs = glob([
+        "operators/tokenizer/bpe_*.cc",
+        "operators/tokenizer/unicode*.cc",
+        "operators/tokenizer/tokenizers.cc",
+    ]),
+    local_defines = DEFINES,
+    strip_include_prefix = "operators/tokenizer",
+    deps = [
+        ":includes",
+        ":base",
+        "@nlohmann_json//:json",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cv2",
+    hdrs = glob([
+        "operators/cv2/*.h*",
+        "operators/cv2/imgproc/*.h*",
+        "operators/cv2/imgcodecs/*.h*",
+    ]),
+    srcs = glob([
+        "operators/cv2/*.cc",
+        "operators/cv2/imgproc/*.cc",
+        "operators/cv2/imgcodecs/*.cc",
+    ]),
+    local_defines = DEFINES,
+    strip_include_prefix = "operators",
+    deps = [
+        ":includes",
+        ":base",
+        "@opencv",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "shared",
+    hdrs = glob([
+        "shared/api/*.h*",
+    ]),
+    srcs = glob([
+        "shared/api/*.cc",
+        "shared/lib/*.cc",
+        "shared/extensions.cc",
+    ]),
+    local_defines = DEFINES,
+    strip_include_prefix = "shared/api",
+    deps = [
+        ":includes",
+        ":base",
+        ":gpt2_tokenizer",
+        ":cv2",
+    ],
+    visibility = ["//visibility:public"],
+)

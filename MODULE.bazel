@@ -13,22 +13,11 @@ bazel_dep(name = "bazel_skylib", version = "1.5.0")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
 bazel_dep(name = "rules_apple", version = "3.5.1", repo_name = "build_bazel_rules_apple")
-bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
-git_override(
-    module_name = "rules_foreign_cc",
-    commit = "7ce62009557d73da9aa0d2a1ca7eded49078b3cf",
-    patch_strip = 1,
-    patches = ["//third_party/rules_foreign_cc:update_meson.patch"],
-    remote = "https://github.com/bazelbuild/rules_foreign_cc",
-)
-
-bazel_dep(name = "rules_proto", version = "6.0.0")
-bazel_dep(name = "protobuf", version = "27.1", repo_name = "com_google_protobuf")
-bazel_dep(name = "abseil-cpp", version = "20240116.2", repo_name = "com_google_absl")
-bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
-bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
-bazel_dep(name = "re2", version = "2024-06-01", repo_name = "com_googlesource_code_re2")
 bazel_dep(name = "rules_python", version = "0.32.2")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(python_version = "3.11")
+use_repo(python, "python_3_11")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
@@ -38,6 +27,24 @@ pip.parse(
 )
 use_repo(pip, "pip")
 
+bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
+git_override(
+    module_name = "rules_foreign_cc",
+    commit = "0ed9aaa68282f8a7de56ae4f96191891a75d4dfb",
+    patch_strip = 1,
+    patches = [
+        "//third_party/rules_foreign_cc:update_meson.patch",
+        "//third_party/rules_foreign_cc:rules_foreign_cc_module_bazel.patch",
+    ],
+    remote = "https://github.com/bazelbuild/rules_foreign_cc",
+)
+
+bazel_dep(name = "rules_proto", version = "6.0.0")
+bazel_dep(name = "protobuf", version = "27.1", repo_name = "com_google_protobuf")
+bazel_dep(name = "abseil-cpp", version = "20240116.2", repo_name = "com_google_absl")
+bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
+bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
+bazel_dep(name = "re2", version = "2024-06-01", repo_name = "com_googlesource_code_re2")
 bazel_dep(name = "grpc", version = "1.64.2")
 archive_override(
     module_name = "grpc",
@@ -288,6 +295,71 @@ archive_override(
     ],
     strip_prefix = "opencv-3.4.20",
     urls = "https://github.com/opencv/opencv/archive/refs/tags/3.4.20.zip",
+)
+# opencv deps
+bazel_dep(name = "imath", version = "3.1.9")
+bazel_dep(name = "zlib", version = "1.3.1")
+bazel_dep(name = "libpng", version = "1.6.40")
+bazel_dep(name = "libjpeg_turbo", version = "2.1.91")
+
+ONNX_VERSION = "1.18.0"
+bazel_dep(name = "onnxruntime_osx_arm64", version = ONNX_VERSION, repo_name = "onnxruntime_osx_arm64")
+archive_override(
+    module_name = "onnxruntime_osx_arm64",
+    integrity = "sha256-xf9SDSkT4zYGcJecpP5DcX/DqgwMNnp1+7by8VwMtI0=",
+    patches = [
+        "@//third_party/onnxruntime_osx_arm64:BUILD.patch",
+        "@//third_party/onnxruntime_osx_arm64:MODULE.bazel.patch",
+    ],
+    strip_prefix = "onnxruntime-osx-arm64-{}".format(ONNX_VERSION),
+    urls = "https://github.com/microsoft/onnxruntime/releases/download/v{}/onnxruntime-osx-arm64-{}.tgz".format(ONNX_VERSION, ONNX_VERSION),
+)
+bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION)
+archive_override(
+    module_name = "onnxruntime_linux_x64",
+    integrity = "sha256-+k0Rs/obK/HDsu+o+VhjS8NO3JXjUawqBAjGrVxVBPA=",
+    patches = [
+        "@//third_party/onnxruntime_linux_x64:BUILD.patch",
+        "@//third_party/onnxruntime_linux_x64:MODULE.bazel.patch",
+    ],
+    strip_prefix = "onnxruntime-linux-x64-{}".format(ONNX_VERSION),
+    urls = "https://github.com/microsoft/onnxruntime/releases/download/v{}/onnxruntime-linux-x64-{}.tgz".format(ONNX_VERSION, ONNX_VERSION),
+)
+
+bazel_dep(name = "gsl", version = "4.0.0")
+archive_override(
+    module_name = "gsl",
+    integrity = "sha256-65H8sQpqpcyx0iTgelbI7P/pobtgH6GEgnbsRqIgC/s=",
+    patches = [
+        "@//third_party/gsl:BUILD.patch",
+        "@//third_party/gsl:MODULE.bazel.patch",
+    ],
+    strip_prefix = "GSL-4.0.0",
+    urls = "https://github.com/microsoft/GSL/archive/refs/tags/v4.0.0.zip",
+)
+
+bazel_dep(name = "onnxruntime_extensions", version = "0.11.0")
+git_override(
+    module_name = "onnxruntime_extensions",
+    remote = "https://github.com/microsoft/onnxruntime-extensions.git",
+    commit = "f1abea14e88422a16e8337f86820bf306b506c61",
+    patches = [
+        "@//third_party/onnxruntime_extensions:BUILD.patch",
+        "@//third_party/onnxruntime_extensions:MODULE.bazel.patch",
+    ],
+)
+
+
+bazel_dep(name = "onnxruntime_genai", version = "0.3.0")
+archive_override(
+    module_name = "onnxruntime_genai",
+    integrity = "sha256-j1pr2zaxvCwfNEONKPbYEntoogjsUXkRC6NmORXzLa4=",
+    patches = [
+        "@//third_party/onnxruntime_genai:BUILD.patch",
+        "@//third_party/onnxruntime_genai:MODULE.bazel.patch",
+    ],
+    strip_prefix = "onnxruntime-genai-0.3.0",
+    urls = "https://github.com/microsoft/onnxruntime-genai/archive/refs/tags/v0.3.0.tar.gz",
 )
 
 # linter
