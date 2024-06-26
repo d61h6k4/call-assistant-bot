@@ -317,7 +317,7 @@ archive_override(
 bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION)
 archive_override(
     module_name = "onnxruntime_linux_x64",
-    integrity = "sha256-xf9SDSkT4zYGcJecpP5DcX/DqgwMNnp1+7by8VwMtI0=",
+    integrity = "sha256-+k0Rs/obK/HDsu+o+VhjS8NO3JXjUawqBAjGrVxVBPA=",
     patches = [
         "@//third_party/onnxruntime_linux_x64:BUILD.patch",
         "@//third_party/onnxruntime_linux_x64:MODULE.bazel.patch",
