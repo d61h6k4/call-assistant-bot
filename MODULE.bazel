@@ -357,8 +357,6 @@ archive_override(
     patches = [
         "@//third_party/onnxruntime_genai:BUILD.patch",
         "@//third_party/onnxruntime_genai:MODULE.bazel.patch",
-        "@//third_party/onnxruntime_genai:onnxruntime_genai_cmakelist.patch",
-        "@//third_party/onnxruntime_genai:onnxruntime_genai_cmake_global_variables.path",
     ],
     strip_prefix = "onnxruntime-genai-0.3.0",
     urls = "https://github.com/microsoft/onnxruntime-genai/archive/refs/tags/v0.3.0.tar.gz",
