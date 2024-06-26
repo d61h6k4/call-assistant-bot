@@ -47,9 +47,8 @@ cc_library(
         "@mediapipe//mediapipe/framework/api2:packet",
         "@mediapipe//mediapipe/framework/formats:yuv_image",
         "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/stream_handler:immediate_input_stream_handler",
         "@mediapipe//mediapipe/framework/tool:status_util",
-
-"@mediapipe//mediapipe/framework/stream_handler:immediate_input_stream_handler",
     ],
     alwayslink = True,
 )
@@ -71,13 +70,12 @@ cc_library(
     alwayslink = True,
 )
 
-
 cc_library(
     name = "video_converter_calculator",
     srcs = ["video_converter_calculator.cc"],
     deps = [
-        "//av_transducer/utils:video",
         "//av_transducer/utils:converter",
+        "//av_transducer/utils:video",
         "@com_google_absl//absl/log:absl_log",
         "@mediapipe//mediapipe/framework:calculator_framework",
         "@mediapipe//mediapipe/framework/api2:node",

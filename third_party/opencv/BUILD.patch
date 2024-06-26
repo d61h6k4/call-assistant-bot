@@ -1,6 +1,6 @@
---- /dev/null	2024-05-28 21:02:14
-+++ BUILD	2024-05-28 21:01:58
-@@ -0,0 +1,104 @@
+--- /dev/null	2024-06-25 21:54:48
++++ BUILD	2024-06-25 21:54:47
+@@ -0,0 +1,112 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 +
 +filegroup(
@@ -20,9 +20,9 @@
 +]
 +
 +cmake(
-+    name = "opencv",
++    name = "foreign_opencv",
 +    build_args = [
-+        "-j8",
++        "-j `nproc`",
 +    ],
 +    generate_args = [
 +        "-GNinja",
@@ -80,6 +80,7 @@
 +        "ENABLE_CCACHE": "OFF",
 +        "BUILD_ZLIB": "OFF",
 +        "WITH_IPP": "OFF",
++        "WITH_LAPACK": "OFF",
 +    },
 +    lib_source = ":opencv_srcs",
 +    linkopts = [
@@ -104,4 +105,11 @@
 +        "@libpng",
 +        "@zlib",
 +    ],
++)
++
++cc_library(
++    name = "opencv",
++    deps = [":foreign_opencv"],
++    linkstatic = 1,
++    visibility = ["//visibility:public"],
 +)

@@ -1,0 +1,9 @@
+--- /dev/null	2024-06-25 17:56:56
++++ BUILD	2024-06-25 17:56:46
+@@ -0,0 +1,6 @@
++cc_library(
++    name = "gsl",
++    hdrs = glob(["include/gsl/*"]),
++    includes = ["include"],
++    visibility = ["//visibility:public"],
++)

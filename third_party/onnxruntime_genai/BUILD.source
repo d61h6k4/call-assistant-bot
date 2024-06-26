@@ -1,0 +1,109 @@
+
+config_setting(
+    name = "osx_arm64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
+)
+
+config_setting(
+    name = "linux_aarch64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+)
+
+DEFINES = [
+    "USE_DML=OFF",
+    "USE_CUDA=OFF",
+]
+
+
+cc_library(
+    name = "genai",
+    hdrs = [
+        "src/beam_search_scorer.h",
+        "src/beam_search_topk.h",
+        "src/config.h",
+        "src/filesystem.h",
+        "src/generators.h",
+        "src/json.h",
+        "src/logging.h",
+        "src/ort_genai.h",
+        "src/ort_genai_c.h",
+        "src/search.h",
+        "src/sequences.h",
+        "src/smartptrs.h",
+        "src/softmax.h",
+        "src/span.h",
+        "src/tensor.h",
+        "src/models/captured_graph_pool.h",
+        "src/models/debugging.h",
+        "src/models/decoder_only.h",
+        "src/models/embeddings.h",
+        "src/models/extra_inputs.h",
+        "src/models/gpt.h",
+        "src/models/input_ids.h",
+        "src/models/kv_cache.h",
+        "src/models/logits.h",
+        "src/models/model.h",
+        "src/models/multi_modal_vision_model.h",
+        "src/models/onnxruntime_api.h",
+        "src/models/onnxruntime_inline.h",
+        "src/models/position_inputs.h",
+        "src/models/prompt_image_processor.h",
+        "src/models/static_buffer.h",
+        "src/models/utils.h",
+        "src/models/whisper.h",
+        # use_cuda
+        "src/models/kernels.h",
+    ],
+    srcs = [
+        "src/beam_search_scorer.cpp",
+        "src/top_k_cpu.cpp",
+        "src/config.cpp",
+        "src/generators.cpp",
+        "src/json.cpp",
+        "src/logging.cpp",
+        "src/ort_genai_c.cpp",
+        "src/search.cpp",
+        "src/sequences.cpp",
+        "src/softmax_cpu.cpp",
+        "src/models/captured_graph_pool.cpp",
+        "src/models/debugging.cpp",
+        "src/models/decoder_only.cpp",
+        "src/models/embeddings.cpp",
+        "src/models/extra_inputs.cpp",
+        "src/models/gpt.cpp",
+        "src/models/input_ids.cpp",
+        "src/models/kv_cache.cpp",
+        "src/models/logits.cpp",
+        "src/models/model.cpp",
+        "src/models/multi_modal_vision_model.cpp",
+        "src/models/position_inputs.cpp",
+        "src/models/prompt_image_processor.cpp",
+        "src/models/static_buffer.cpp",
+        "src/models/utils.cpp",
+        "src/models/whisper.cpp",
+    ],
+    local_defines = DEFINES,
+    deps = [
+        "@onnxruntime_extensions//:shared",
+    ] + select({
+        ":osx_arm64": ["@onnxruntime_osx_arm64//:libonnxruntime"],
+        ":linux_aarch64": ["@onnxruntime_linux_aarch64//:libonnxruntime"],
+        "//conditions:default": ["@onnxruntime_linux_x64//:libonnxruntime"],
+    }),
+    visibility = ["//visibility:public"],
+    strip_include_prefix = "src",
+)
+
+cc_binary(
+    name = "phi3v",
+    srcs = ["examples/c/src/phi3v.cpp"],
+    local_defines = ["USE_CXX"],
+    deps = [":genai"],
+    visibility = ["//visibility:public"],
+)
