@@ -303,7 +303,6 @@ bazel_dep(name = "libpng", version = "1.6.40")
 bazel_dep(name = "libjpeg_turbo", version = "2.1.91")
 
 ONNX_VERSION = "1.18.0"
-
 bazel_dep(name = "onnxruntime_osx_arm64", version = ONNX_VERSION, repo_name = "onnxruntime_osx_arm64")
 archive_override(
     module_name = "onnxruntime_osx_arm64",
@@ -314,6 +313,17 @@ archive_override(
     ],
     strip_prefix = "onnxruntime-osx-arm64-{}".format(ONNX_VERSION),
     urls = "https://github.com/microsoft/onnxruntime/releases/download/v{}/onnxruntime-osx-arm64-{}.tgz".format(ONNX_VERSION, ONNX_VERSION),
+)
+bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION)
+archive_override(
+    module_name = "onnxruntime_linux_x64",
+    integrity = "sha256-xf9SDSkT4zYGcJecpP5DcX/DqgwMNnp1+7by8VwMtI0=",
+    patches = [
+        "@//third_party/onnxruntime_linux_x64:BUILD.patch",
+        "@//third_party/onnxruntime_linux_x64:MODULE.bazel.patch",
+    ],
+    strip_prefix = "onnxruntime-linux-x64-{}".format(ONNX_VERSION),
+    urls = "https://github.com/microsoft/onnxruntime/releases/download/v{}/onnxruntime-linux-x64-{}.tgz".format(ONNX_VERSION, ONNX_VERSION),
 )
 
 bazel_dep(name = "gsl", version = "4.0.0")
@@ -329,16 +339,14 @@ archive_override(
 )
 
 bazel_dep(name = "onnxruntime_extensions", version = "0.11.0")
-archive_override(
+git_override(
     module_name = "onnxruntime_extensions",
-    integrity = "sha256-KVmqz6zWasXfMQv7ZT0eRiE5FFYEt8rOPZEn6xWzQ0k=",
+    remote = "https://github.com/microsoft/onnxruntime-extensions.git",
+    commit = "f1abea14e88422a16e8337f86820bf306b506c61",
     patches = [
         "@//third_party/onnxruntime_extensions:BUILD.patch",
         "@//third_party/onnxruntime_extensions:MODULE.bazel.patch",
-        "@//third_party/onnxruntime_extensions:onnxruntime_extensions_cmakelist.patch",
     ],
-    strip_prefix = "onnxruntime-extensions-v.0.11.0",
-    urls = "https://github.com/microsoft/onnxruntime-extensions/archive/refs/tags/v.0.11.0.tar.gz",
 )
 
 

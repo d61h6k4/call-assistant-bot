@@ -1,6 +1,6 @@
---- /dev/null	2024-06-25 21:09:27
-+++ MODULE.bazel	2024-06-25 21:04:07
-@@ -0,0 +1,25 @@
+--- /dev/null	2024-06-26 12:51:08
++++ MODULE.bazel	2024-06-26 12:49:17
+@@ -0,0 +1,24 @@
 +module(
 +    name = "onnxruntime_extensions",
 +    version = "0.11.0",
@@ -23,6 +23,5 @@
 +
 +ONNX_VERSION = "1.18.0"
 +bazel_dep(name = "onnxruntime_osx_arm64", version = ONNX_VERSION, repo_name = "onnxruntime_osx_arm64")
-+# bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_x64")
-+# bazel_dep(name = "onnxruntime_linux_aarch64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_aarch64")
++bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_x64")
 +bazel_dep(name = "opencv", version = "3.4.20", repo_name = "opencv")

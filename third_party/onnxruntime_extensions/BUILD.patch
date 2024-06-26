@@ -1,9 +1,6 @@
---- /dev/null	2024-06-25 22:05:38
-+++ BUILD	2024-06-25 22:05:26
-@@ -0,0 +1,99 @@
-+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
-+
-+
+--- /dev/null	2024-06-26 11:53:32
++++ BUILD	2024-06-26 11:53:18
+@@ -0,0 +1,124 @@
 +config_setting(
 +    name = "osx_arm64",
 +    constraint_values = [
@@ -20,83 +17,111 @@
 +    ],
 +)
 +
-+filegroup(
-+    name = "srcs",
-+    srcs = glob([
-+        "**",
-+    ]),
-+)
++DEFINES = [
++    "ENABLE_GPT2_TOKENIZER",
++    "ENABLE_C_API",
++    "ENABLE_CV2",
++    "ENABLE_OPENCV_CODECS",
++    "ORT_API_VERSION=18",
++]
 +
-+cmake(
-+    name = "foreign_libortextensions",
-+    build_args = [
-+        "-j `nproc`",
-+    ],
-+    generate_args = [
-+        "-GNinja",
-+    ],
-+    # Values to be passed as -Dkey=value on the CMake command line;
-+    # here are serving to provide some CMake script configuration options
-+    cache_entries = {
-+        "CMAKE_BUILD_TYPE": "Release",
-+        "OCOS_ENABLE_CTEST": "OFF",
-+        "OCOS_ENABLE_TF_STRING": "ON",
-+        "OCOS_ENABLE_RE2_REGEX": "OFF",
-+        "OCOS_ENABLE_GPT2_TOKENIZER": "ON",
-+        "OCOS_ENABLE_TRIE_TOKENIZER": "OFF",
-+        "OCOS_ENABLE_SPM_TOKENIZER": "OFF",
-+        "OCOS_ENABLE_WORDPIECE_TOKENIZER": "OFF",
-+        "OCOS_ENABLE_BERT_TOKENIZER": "ON",
-+        "OCOS_ENABLE_BLINGFIRE": "OFF",
-+        "OCOS_ENABLE_MATH": "ON",
-+        "OCOS_ENABLE_DLIB": "OFF",
-+        "OCOS_ENABLE_OPENCV_CODECS": "ON",
-+        "OCOS_ENABLE_CV2": "ON",
-+        "OCOS_ENABLE_VISION": "OFF",
-+        "OCOS_ENABLE_AUDIO": "OFF",
-+        "OCOS_ENABLE_AZURE": "OFF",
-+        "OCOS_ENABLE_C_API": "ON",
-+        "OCOS_ENABLE_STATIC_LIB": "ON",
-+        "OCOS_ONNXRUNTIME_VERSION": "1.18.0",
-+        "ONNXRUNTIME_PKG_DIR": "$EXT_BUILD_DEPS",
-+        "GSL_INCLUDE_DIR": "$EXT_BUILD_DEPS",
-+        "nlohmann_json_SOURCE_DIR": "$EXT_BUILD_DEPS",
-+        "opencv_INCLUDE_DIRS": "$EXT_BUILD_DEPS",
-+        "opencv_LIBS": "$EXT_BUILD_DEPS/lib/libopencv_core.a;$EXT_BUILD_DEPS/lib/libopencv_imgcodecs.a;$EXT_BUILD_DEPS/lib/libopencv_imgproc.a;$EXT_BUILD_DEPS/lib/libzlib.a;$EXT_BUILD_DEPS/lib/libpng.a;$EXT_BUILD_DEPS/lib/libjpeg.a;$EXT_BUILD_DEPS/lib/libjpeg12.a;$EXT_BUILD_DEPS/lib/libjpeg16.a",
-+    },
-+    lib_source = ":srcs",
-+    visibility = ["//visibility:public"],
-+    out_shared_libs = [
-+        "libortextensions.0.11.0.dylib",
-+        "libortextensions.0.dylib",
-+        "libortextensions.dylib",
-+    ],
-+    deps = [
-+        "@gsl",
-+        "@nlohmann_json//:json",
-+        "@opencv",
-+    ] + select({
++
++cc_library(
++    name = "includes",
++    hdrs = glob([
++        "include/*.h*",
++        "include/custom_op/*.h*",
++        "include/custom_op/tensor_tuple.inc",
++    ]),
++    local_defines = DEFINES,
++    strip_include_prefix = "include",
++    deps = select({
 +        ":osx_arm64": ["@onnxruntime_osx_arm64//:libonnxruntime"],
 +        ":linux_aarch64": ["@onnxruntime_linux_aarch64//:libonnxruntime"],
 +        "//conditions:default": ["@onnxruntime_linux_x64//:libonnxruntime"],
 +    }),
-+    targets = [
-+        "extensions_shared",
-+    ],
++    alwayslink = True,
 +)
 +
 +cc_library(
-+    name = "libonnxruntime_extensions",
++    name = "base",
 +    hdrs = glob([
-+        "include/*.h",
-+        "include/custom_op/*.h",
++        "base/*.h",
++    ]),
++    srcs = glob([
++        "base/*.cc",
++    ]),
++    local_defines = DEFINES,
++    strip_include_prefix = "base",
++    deps = [
++        ":includes",
++        "@gsl"
++    ],
++    alwayslink = True,
++)
++
++
++cc_library(
++    name = "gpt2_tokenizer",
++    hdrs = glob([
++        "operators/tokenizer/bpe_*.h*",
++        "operators/tokenizer/unicode*.h*",
++        "operators/tokenizer/trietree.hpp",
++    ]),
++    srcs = glob([
++        "operators/tokenizer/bpe_*.cc",
++        "operators/tokenizer/unicode*.cc",
++        "operators/tokenizer/tokenizers.cc",
++    ]),
++    local_defines = DEFINES,
++    strip_include_prefix = "operators/tokenizer",
++    deps = [
++        ":includes",
++        ":base",
++        "@nlohmann_json//:json",
++    ],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "cv2",
++    hdrs = glob([
++        "operators/cv2/*.h*",
++        "operators/cv2/imgproc/*.h*",
++        "operators/cv2/imgcodecs/*.h*",
++    ]),
++    srcs = glob([
++        "operators/cv2/*.cc",
++        "operators/cv2/imgproc/*.cc",
++        "operators/cv2/imgcodecs/*.cc",
++    ]),
++    local_defines = DEFINES,
++    strip_include_prefix = "operators",
++    deps = [
++        ":includes",
++        ":base",
++        "@opencv",
++    ],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "shared",
++    hdrs = glob([
 +        "shared/api/*.h*",
 +    ]),
 +    srcs = glob([
 +        "shared/api/*.cc",
++        "shared/lib/*.cc",
++        "shared/extensions.cc",
 +    ]),
++    local_defines = DEFINES,
++    strip_include_prefix = "shared/api",
 +    deps = [
-+        ":foreign_libortextensions"
++        ":includes",
++        ":base",
++        ":gpt2_tokenizer",
++        ":cv2",
 +    ],
 +    visibility = ["//visibility:public"],
 +)

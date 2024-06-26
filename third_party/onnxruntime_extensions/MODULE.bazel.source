@@ -20,6 +20,5 @@ bazel_dep(name = "re2", version = "2024-06-01", repo_name = "com_googlesource_co
 
 ONNX_VERSION = "1.18.0"
 bazel_dep(name = "onnxruntime_osx_arm64", version = ONNX_VERSION, repo_name = "onnxruntime_osx_arm64")
-# bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_x64")
-# bazel_dep(name = "onnxruntime_linux_aarch64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_aarch64")
+bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_x64")
 bazel_dep(name = "opencv", version = "3.4.20", repo_name = "opencv")

@@ -1,5 +1,5 @@
---- /dev/null	2024-06-25 19:31:18
-+++ MODULE.bazel	2024-06-25 19:20:20
+--- /dev/null	2024-06-26 12:51:14
++++ MODULE.bazel	2024-06-26 12:49:51
 @@ -0,0 +1,23 @@
 +module(
 +    name = "onnxruntime_genai",
@@ -20,7 +20,7 @@
 +
 +ONNX_VERSION = "1.18.0"
 +bazel_dep(name = "onnxruntime_osx_arm64", version = ONNX_VERSION, repo_name = "onnxruntime_osx_arm64")
-+# bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_x64")
++bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_x64")
 +# bazel_dep(name = "onnxruntime_linux_aarch64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_aarch64")
 +
 +bazel_dep(name = "onnxruntime_extensions", version = "0.11.0")

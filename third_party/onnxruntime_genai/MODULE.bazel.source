@@ -17,7 +17,7 @@ bazel_dep(
 
 ONNX_VERSION = "1.18.0"
 bazel_dep(name = "onnxruntime_osx_arm64", version = ONNX_VERSION, repo_name = "onnxruntime_osx_arm64")
-# bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_x64")
+bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_x64")
 # bazel_dep(name = "onnxruntime_linux_aarch64", version = ONNX_VERSION, repo_name = "onnxruntime_linux_aarch64")
 
 bazel_dep(name = "onnxruntime_extensions", version = "0.11.0")

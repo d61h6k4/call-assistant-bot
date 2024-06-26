@@ -1,0 +1,16 @@
+--- /dev/null	2024-06-26 12:48:37
++++ BUILD	2024-06-26 12:48:33
+@@ -0,0 +1,13 @@
++
++cc_library(
++    name = "libonnxruntime",
++    srcs = [
++        "lib/libonnxruntime.so",
++        "lib/libonnxruntime.1.18.0.so",
++    ],
++    includes = ["include"],
++    hdrs = glob(["include/*.h"]),
++    strip_include_prefix = "include",
++    visibility = ["//visibility:public"],
++    alwayslink = 1,
++)
