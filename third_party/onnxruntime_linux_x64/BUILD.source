@@ -3,7 +3,7 @@ cc_library(
     name = "libonnxruntime",
     srcs = [
         "lib/libonnxruntime.so",
-        "lib/libonnxruntime.1.18.0.so",
+        "lib/libonnxruntime.so.1.18.0",
     ],
     includes = ["include"],
     hdrs = glob(["include/*.h"]),

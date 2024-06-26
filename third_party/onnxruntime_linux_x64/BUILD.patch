@@ -1,12 +1,12 @@
---- /dev/null	2024-06-26 12:48:37
-+++ BUILD	2024-06-26 12:48:33
+--- /dev/null	2024-06-26 12:57:27
++++ BUILD	2024-06-26 12:57:04
 @@ -0,0 +1,13 @@
 +
 +cc_library(
 +    name = "libonnxruntime",
 +    srcs = [
 +        "lib/libonnxruntime.so",
-+        "lib/libonnxruntime.1.18.0.so",
++        "lib/libonnxruntime.so.1.18.0",
 +    ],
 +    includes = ["include"],
 +    hdrs = glob(["include/*.h"]),
