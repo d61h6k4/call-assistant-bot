@@ -67,7 +67,11 @@ class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
             except Exception:
                 attempts -= 1
 
-        browser = await nodriver.start(config=browser_config)
+        try:
+            browser = await nodriver.start(config=browser_config)
+        except Exception as e:
+            raise RuntimeError("Failed to start browser.") from e
+
         await browser.wait()
         await browser.grant_all_permissions()
 
@@ -117,14 +121,19 @@ class ArticulatorServicer(articulator_pb2_grpc.ArticulatorServicer):
 async def serve(args: argparse.Namespace):
     logger = logging.getLogger("articulator")
     server = grpc.aio.server()
-    service = await ArticulatorServicer.create(
-        google_login=args.google_login,
-        google_password=args.google_password,
-        gmeet_link=args.gmeet_link,
-        working_dir=args.working_dir,
-        server=server,
-        logger=logger,
-    )
+    try:
+        service = await ArticulatorServicer.create(
+            google_login=args.google_login,
+            google_password=args.google_password,
+            gmeet_link=args.gmeet_link,
+            working_dir=args.working_dir,
+            server=server,
+            logger=logger,
+        )
+    except RuntimeError as e:
+        logger.critical({"message": "Failed to start browser", "error": repr(e)})
+        await server.stop(1.0)
+        return
 
     articulator_pb2_grpc.add_ArticulatorServicer_to_server(
         service,
