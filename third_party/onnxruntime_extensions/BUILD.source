@@ -19,6 +19,7 @@ DEFINES = [
     "ENABLE_C_API",
     "ENABLE_CV2",
     "ENABLE_OPENCV_CODECS",
+    "ENABLE_VISION",
     "ORT_API_VERSION=18",
 ]
 
@@ -86,11 +87,14 @@ cc_library(
         "operators/cv2/*.h*",
         "operators/cv2/imgproc/*.h*",
         "operators/cv2/imgcodecs/*.h*",
+        # Decode image
+        "operators/vision/*.h*",
     ]),
     srcs = glob([
         "operators/cv2/*.cc",
         "operators/cv2/imgproc/*.cc",
         "operators/cv2/imgcodecs/*.cc",
+        "operators/vision/*.cc",
     ]),
     local_defines = DEFINES,
     strip_include_prefix = "operators",

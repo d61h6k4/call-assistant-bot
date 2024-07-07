@@ -98,6 +98,7 @@ cc_library(
     }),
     visibility = ["//visibility:public"],
     strip_include_prefix = "src",
+    includes = ["."],
 )
 
 cc_binary(
