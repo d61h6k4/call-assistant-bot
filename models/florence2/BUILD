@@ -1,6 +1,22 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@pip//:requirements.bzl", "requirement")
 
+
+py_binary(
+    name = "converter",
+    srcs = ["converter.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@pip//numpy",
+        "@pip//onnx",
+        "@pip//onnxruntime",
+        "@pip//onnxruntime_extensions",
+        "@pip//onnxruntime_genai",
+    ],
+)
+
 py_binary(
     name = "preprocessing_converter",
     srcs = ["preprocessing_converter.py"],
@@ -16,25 +32,6 @@ py_binary(
         "@pip//onnx",
         "@pip//onnxruntime",
         "@pip//onnxruntime_extensions",
-    ],
-)
-
-py_test(
-    name = "preprocessing_converter_test",
-    size = "small",
-    srcs = ["preprocessing_converter_test.py"],
-    data = [
-        "//models/florence2/data:test_image",
-    ],
-    tags = ["manual"],
-    deps = [
-        "@pip//numpy",
-        "@pip//onnx",
-        "@pip//onnxruntime",
-        "@pip//onnxruntime_extensions",
-        "@pip//pillow",
-        "@pip//torch",
-        "@pip//transformers",
     ],
 )
 
@@ -126,5 +123,18 @@ cc_test(
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@onnxruntime_extensions//:shared",
+    ],
+)
+
+
+cc_binary(
+    name = "example",
+    srcs = ["example.cc"],
+    data = [
+        "//models/florence2/data:test_image",
+    ],
+    deps = [
+        ":model",
+        ":processor",
     ],
 )
