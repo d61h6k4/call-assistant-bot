@@ -27,7 +27,7 @@ class Model:
 
         target_sizes = torch.tensor([image.size[::-1]])
         output = ConditionalDetrObjectDetectionOutput(logits=torch.tensor(onnx_output[0]), pred_boxes=torch.tensor(onnx_output[1]))
-        results = self.processor.post_process_object_detection(output, target_sizes=target_sizes, threshold=0.51)[0]
+        results = self.processor.post_process_object_detection(output, target_sizes=target_sizes, threshold=0.29)[0]
 
         _LOGGER.debug(results)
 
