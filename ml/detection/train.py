@@ -22,7 +22,6 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--exported_json", help="Specify path to the json file exported from Label Studio.", type=Path, required=True)
-    parser.add_argument("--images_folder", help="Specify path to the folder with images that were labeled.", type=Path, required=True)
     parser.add_argument("--output_model", help="Specify path to the folder to store the trained model", type=Path, required=True)
 
     return parser.parse_args()
@@ -50,11 +49,12 @@ def show_example(example):
     image.show()
 
 
-def gen_dataset(exported_json, images_folder):
+def gen_dataset(exported_json):
     tasks = json.loads(exported_json.read_text())
     for task in tasks:
         image_id = task["id"]
-        image = Image.open(images_folder / task["file_upload"].split('-')[1])
+        image_path = "/" + task["data"]["image"].split("=")[1]
+        image = Image.open(image_path)
         width = image.size[0]
         height = image.size[1]
 
@@ -247,7 +247,7 @@ def compute_metrics(evaluation_results, image_processor, threshold=0.0, id2label
 
 def main():
     args = parse_args()
-    ds = Dataset.from_generator(gen_dataset, gen_kwargs={"exported_json": args.exported_json, "images_folder": args.images_folder})
+    ds = Dataset.from_generator(gen_dataset, gen_kwargs={"exported_json": args.exported_json})
 
     model_name = "microsoft/conditional-detr-resnet-50"
     image_processor = AutoImageProcessor.from_pretrained(model_name)
@@ -314,7 +314,6 @@ def main():
         remove_unused_columns=False,
         eval_do_concat_batches=False,
         push_to_hub=False,
-        use_cpu=True,
     )
 
     trainer = Trainer(
