@@ -299,7 +299,7 @@ def main():
         output_dir="detr_finetuned_cppe5",
         num_train_epochs=30,
         fp16=False,
-        per_device_train_batch_size=32,
+        per_device_train_batch_size=16,
         dataloader_num_workers=1,
         learning_rate=5e-5,
         lr_scheduler_type="cosine",
