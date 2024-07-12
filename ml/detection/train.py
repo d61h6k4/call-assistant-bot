@@ -255,7 +255,7 @@ def main():
     image_processor = AutoImageProcessor.from_pretrained(
         model_name,
         do_resize=True,
-        size={"height": 720, "width": 1280},
+        size={"height": 504, "width": 896},
     )
 
     train_augment_and_transform = A.Compose(
