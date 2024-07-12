@@ -249,7 +249,7 @@ def compute_metrics(evaluation_results, image_processor, threshold=0.0, id2label
 
 def main():
     args = parse_args()
-    ds = Dataset.from_generator(gen_dataset, gen_kwargs={"exported_json": args.exported_json})
+    ds = Dataset.from_generator(gen_dataset, gen_kwargs={"exported_json": args.exported_json}).train_test_split(test_size=0.1)
 
     model_name = "microsoft/conditional-detr-resnet-50"
     image_processor = AutoImageProcessor.from_pretrained(
@@ -281,10 +281,8 @@ def main():
     validation_transform_batch = partial(
         augment_and_transform_batch, transform=validation_transform, image_processor=image_processor
     )
-    train_ds = ds.with_transform(validation_transform_batch)
-    # train_ds.set_format("torch", device="mps")
-    val_ds = ds.with_transform(validation_transform_batch)
-    # val_ds.set_format("torch", device="mps")
+    train_ds = ds["train"].with_transform(train_augment_and_transform)
+    val_ds = ds["test"].with_transform(validation_transform_batch)
 
 
     label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
@@ -305,8 +303,8 @@ def main():
         output_dir="detr_finetuned_cppe5",
         num_train_epochs=30,
         fp16=False,
-        per_device_train_batch_size=16,
-        dataloader_num_workers=1,
+        per_device_train_batch_size=24,
+        dataloader_num_workers=4,
         learning_rate=5e-5,
         lr_scheduler_type="cosine",
         weight_decay=1e-4,
@@ -314,7 +312,7 @@ def main():
         metric_for_best_model="eval_map",
         greater_is_better=True,
         load_best_model_at_end=True,
-        eval_strategy="no",
+        eval_strategy="epoch",
         save_strategy="no",
         save_total_limit=1,
         remove_unused_columns=False,
