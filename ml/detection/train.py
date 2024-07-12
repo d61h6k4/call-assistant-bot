@@ -248,21 +248,14 @@ def compute_metrics(evaluation_results, image_processor, threshold=0.0, id2label
 
 
 def main():
-    if not _TORCHVISION_GREATER_EQUAL_0_8:
-        print(_TORCHVISION_GREATER_EQUAL_0_8.message)
-        return 1
-
     args = parse_args()
     ds = Dataset.from_generator(gen_dataset, gen_kwargs={"exported_json": args.exported_json})
 
     model_name = "microsoft/conditional-detr-resnet-50"
-    MAX_SIZE = 1280
     image_processor = AutoImageProcessor.from_pretrained(
         model_name,
         do_resize=True,
-        size={"max_height": MAX_SIZE, "max_width": MAX_SIZE},
-        do_pad=True,
-        pad_size={"height": MAX_SIZE, "width": MAX_SIZE},
+        size={"height": 720, "width": 1280},
     )
 
     train_augment_and_transform = A.Compose(
