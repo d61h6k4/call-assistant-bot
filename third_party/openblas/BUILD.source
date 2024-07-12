@@ -1,0 +1,30 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+filegroup(
+    name = "srcs",
+    srcs = glob([
+        "**",
+    ]),
+)
+
+cmake(
+    name = "openblas",
+    build_args = [
+        "-j `nproc`",
+    ],
+    generate_args = [
+        "-GNinja",
+    ],
+    # Values to be passed as -Dkey=value on the CMake command line;
+    # here are serving to provide some CMake script configuration options
+    cache_entries = {
+        "CMAKE_BUILD_TYPE": "Release",
+    },
+    lib_source = ":srcs",
+    out_data_dirs = ["share"],
+    out_include_dir = "include/openblas",
+    out_static_libs = [
+        "libopenblas.a",
+    ],
+    visibility = ["//visibility:public"],
+)

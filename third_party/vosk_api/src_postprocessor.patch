@@ -1,0 +1,20 @@
+--- src/postprocessor.cc.old	2024-07-12 17:41:11
++++ src/postprocessor.cc	2024-07-12 17:38:59
+@@ -14,14 +14,14 @@
+ 
+ #include "postprocessor.h"
+ 
+-using fst::TokenType;
++using fst::StringTokenType;
+ 
+ Processor::Processor(const std::string& tagger_path,
+                      const std::string& verbalizer_path) {
+   tagger_.reset(StdVectorFst::Read(tagger_path));
+   verbalizer_.reset(StdVectorFst::Read(verbalizer_path));
+-  compiler_ = std::make_shared<StringCompiler<StdArc>>(TokenType::BYTE);
+-  printer_ = std::make_shared<StringPrinter<StdArc>>(TokenType::BYTE);
++  compiler_ = std::make_shared<StringCompiler<StdArc>>(StringTokenType::BYTE);
++  printer_ = std::make_shared<StringPrinter<StdArc>>(StringTokenType::BYTE);
+ }
+ 
+ std::string Processor::ShortestPath(const StdVectorFst& lattice) {

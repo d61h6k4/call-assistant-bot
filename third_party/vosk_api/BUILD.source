@@ -1,0 +1,31 @@
+
+cc_library(
+    name = "vosk",
+    srcs = glob([
+        "src/recognizer.cc",
+        "src/language_model.cc",
+        "src/model.cc",
+        "src/spk_model.cc",
+        "src/vosk_api.cc",
+        "src/postprocessor.cc",
+    ]),
+    hdrs = glob([
+        "src/recognizer.h",
+        "src/language_model.h",
+        "src/model.h",
+        "src/spk_model.h",
+        "src/vosk_api.h",
+        "src/postprocessor.h",
+        "src/json.h",
+    ]),
+    deps = [
+        "@openblas",
+        "@openfst//:fst",
+        "@openfst//:ngram",
+        "@kaldi//:base",
+        "@kaldi//:online2",
+        "@kaldi//:rnnlm",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
