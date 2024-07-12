@@ -44,6 +44,7 @@ py_binary(
         "@pip//albumentations",
         "@pip//torchmetrics",
         "@pip//pycocotools",
+        "@pip//matplotlib",
         "@pip//torchvision",
     ],
 )
