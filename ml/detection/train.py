@@ -16,7 +16,9 @@ import albumentations as A
 import numpy as np
 from dataclasses import dataclass
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
-
+from torchmetrics.utilities.imports import (
+    _TORCHVISION_GREATER_EQUAL_0_8,
+)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -246,6 +248,10 @@ def compute_metrics(evaluation_results, image_processor, threshold=0.0, id2label
 
 
 def main():
+    if not _TORCHVISION_GREATER_EQUAL_0_8:
+        print(_TORCHVISION_GREATER_EQUAL_0_8.message)
+        return 1
+
     args = parse_args()
     ds = Dataset.from_generator(gen_dataset, gen_kwargs={"exported_json": args.exported_json})
 
