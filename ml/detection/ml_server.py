@@ -12,7 +12,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from PIL import Image
-import torch
+import numpy as np
 
 _LOGGER = logging.getLogger("uvicorn.error")
 LB_SERVER = "http://0.0.0.0:8080"
@@ -21,14 +21,10 @@ ACCESS_TOKEN = None
 
 class Model:
     def __init__(self):
-        self.processor = AutoImageProcessor.from_pretrained(
-            "ml/detection/models/preprocessor_config.json"
-        )
         self.onnx_model = OrtPyFunction.from_model("ml/detection/models/model.onnx")
 
     def __call__(self, image_name: str, image: Image.Image):
-        inputs = self.processor(images=image, return_tensors="np")
-        onnx_output = self.onnx_model(inputs["pixel_values"])
+        onnx_output = self.onnx_model(np.transpose(np.array(image), (2, 0, 1)))
 
         label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
         id2label = {v: k for k, v in label2id.items()}
