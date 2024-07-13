@@ -1,6 +1,8 @@
 from typing import NamedTuple
 from transformers import AutoImageProcessor
-from transformers.models.conditional_detr.modeling_conditional_detr import ConditionalDetrObjectDetectionOutput
+from transformers.models.conditional_detr.modeling_conditional_detr import (
+    ConditionalDetrObjectDetectionOutput,
+)
 from onnxruntime_extensions import OrtPyFunction
 import httpx
 import uvicorn
@@ -16,9 +18,12 @@ _LOGGER = logging.getLogger("uvicorn.error")
 LB_SERVER = "http://0.0.0.0:8080"
 ACCESS_TOKEN = None
 
+
 class Model:
     def __init__(self):
-        self.processor = AutoImageProcessor.from_pretrained("ml/detection/models/preprocessor_config.json")
+        self.processor = AutoImageProcessor.from_pretrained(
+            "ml/detection/models/preprocessor_config.json"
+        )
         self.onnx_model = OrtPyFunction.from_model("ml/detection/models/model.onnx")
 
     def __call__(self, image_name: str, image: Image.Image):
@@ -26,8 +31,12 @@ class Model:
         onnx_output = self.onnx_model(inputs["pixel_values"])
 
         target_sizes = torch.tensor([image.size[::-1]])
-        output = ConditionalDetrObjectDetectionOutput(logits=torch.tensor(onnx_output[0]), pred_boxes=torch.tensor(onnx_output[1]))
-        results = self.processor.post_process_object_detection(output, target_sizes=target_sizes, threshold=0.29)[0]
+        output = ConditionalDetrObjectDetectionOutput(
+            logits=torch.tensor(onnx_output[0]), pred_boxes=torch.tensor(onnx_output[1])
+        )
+        results = self.processor.post_process_object_detection(
+            output, target_sizes=target_sizes, threshold=0.7
+        )[0]
 
         _LOGGER.debug(results)
 
@@ -48,14 +57,25 @@ class Model:
                     "rotation": 0,
                     "x": results["boxes"][idx][0].item() / width * 100,
                     "y": results["boxes"][idx][1].item() / height * 100,
-                    "width": (results["boxes"][idx][2].item() - results["boxes"][idx][0].item()) / width * 100,
-                    "height": (results["boxes"][idx][3].item() - results["boxes"][idx][1].item()) / height * 100,
+                    "width": (
+                        results["boxes"][idx][2].item()
+                        - results["boxes"][idx][0].item()
+                    )
+                    / width
+                    * 100,
+                    "height": (
+                        results["boxes"][idx][3].item()
+                        - results["boxes"][idx][1].item()
+                    )
+                    / height
+                    * 100,
                     "rectanglelabels": [id2label[results["labels"][idx].item()]],
-                    "score": results["scores"][idx].item()
+                    "score": results["scores"][idx].item(),
                 },
             }
             for idx in range(len(results["scores"]))
         ]
+
 
 class HealthResponse(BaseModel):
     status: str
@@ -72,20 +92,25 @@ MODEL = Model()
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-	exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
-	logging.error(f"{request}: {exc_str}")
-	content = {'status_code': 10422, 'message': exc_str, 'data': None}
-	return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+    exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
+    logging.error(f"{request}: {exc_str}")
+    content = {"status_code": 10422, "message": exc_str, "data": None}
+    return JSONResponse(
+        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 
 
 @app.post("/predict")
 async def predict(request: Request):
-    body =  await request.json()
+    body = await request.json()
 
     predictions = []
     for task in body.get("tasks", []):
         path_to_image = task["data"]["image"]
-        r = httpx.get(f"{LB_SERVER}{path_to_image}", headers={"Authorization": f"Token {ACCESS_TOKEN}"})
+        r = httpx.get(
+            f"{LB_SERVER}{path_to_image}",
+            headers={"Authorization": f"Token {ACCESS_TOKEN}"},
+        )
         r.raise_for_status()
         image = Image.open(r)
         result = MODEL(path_to_image.split("/")[-1].split("-")[0], image)
@@ -95,9 +120,11 @@ async def predict(request: Request):
     _LOGGER.info(predictions)
     return {"results": predictions}
 
+
 @app.get("/health")
 async def health() -> HealthResponse:
     return HealthResponse.ok()
+
 
 @app.post("/setup")
 async def setup(request: Request):
@@ -106,6 +133,7 @@ async def setup(request: Request):
     ACCESS_TOKEN = body["access_token"]
     _LOGGER.debug(body)
     return {"model_version": "CDETR"}
+
 
 if __name__ == "__main__":
     uvicorn.run("ml.detection.ml_server:app", port=5000, log_level="debug")

@@ -1,4 +1,3 @@
-
 from pprint import pprint
 import argparse
 import json
@@ -20,13 +19,25 @@ from torchmetrics.utilities.imports import (
     _TORCHVISION_GREATER_EQUAL_0_8,
 )
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--exported_json", help="Specify path to the json file exported from Label Studio.", type=Path, required=True)
-    parser.add_argument("--output_model", help="Specify path to the folder to store the trained model", type=Path, required=True)
+    parser.add_argument(
+        "--exported_json",
+        help="Specify path to the json file exported from Label Studio.",
+        type=Path,
+        required=True,
+    )
+    parser.add_argument(
+        "--output_model",
+        help="Specify path to the folder to store the trained model",
+        type=Path,
+        required=True,
+    )
 
     return parser.parse_args()
+
 
 def show_example(example):
     from PIL import ImageDraw
@@ -34,7 +45,6 @@ def show_example(example):
     image = example["image"]
     annotations = example["objects"]
     draw = ImageDraw.Draw(image)
-
 
     label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
     id2label = {v: k for k, v in label2id.items()}
@@ -66,22 +76,27 @@ def gen_dataset(exported_json):
         annotation = task["annotations"][0]
         for result in annotation["result"]:
             objects["id"].append(result["id"])
-            objects["bbox"].append([
-                result["value"]["x"] / 100.0 * result["original_width"],
-                result["value"]["y"] / 100.0 * result["original_height"],
-                result["value"]["width"] / 100.0 * result["original_width"],
-                result["value"]["height"] / 100.0 * result["original_height"],
-            ])
+            objects["bbox"].append(
+                [
+                    result["value"]["x"] / 100.0 * result["original_width"],
+                    result["value"]["y"] / 100.0 * result["original_height"],
+                    result["value"]["width"] / 100.0 * result["original_width"],
+                    result["value"]["height"] / 100.0 * result["original_height"],
+                ]
+            )
             objects["area"].append(result["value"]["width"] * result["value"]["height"])
-            objects["category"].append(label_to_category[result["value"]["rectanglelabels"][0]])
+            objects["category"].append(
+                label_to_category[result["value"]["rectanglelabels"][0]]
+            )
         example = {
             "image_id": image_id,
             "image": image,
             "width": width,
             "height": height,
-            "objects": objects
+            "objects": objects,
         }
         yield example
+
 
 def format_image_annotations_as_coco(image_id, categories, areas, bboxes):
     """Format one set of image annotations to the COCO format
@@ -115,16 +130,23 @@ def format_image_annotations_as_coco(image_id, categories, areas, bboxes):
         "annotations": annotations,
     }
 
-def augment_and_transform_batch(examples, transform, image_processor, return_pixel_mask=False):
+
+def augment_and_transform_batch(
+    examples, transform, image_processor, return_pixel_mask=False
+):
     """Apply augmentations and format annotations in COCO format for object detection task"""
 
     images = []
     annotations = []
-    for image_id, image, objects in zip(examples["image_id"], examples["image"], examples["objects"]):
+    for image_id, image, objects in zip(
+        examples["image_id"], examples["image"], examples["objects"]
+    ):
         image = np.array(image.convert("RGB"))
 
         # apply augmentations
-        output = transform(image=image, bboxes=objects["bbox"], category=objects["category"])
+        output = transform(
+            image=image, bboxes=objects["bbox"], category=objects["category"]
+        )
         images.append(output["image"])
 
         # format annotations in COCO format
@@ -134,7 +156,9 @@ def augment_and_transform_batch(examples, transform, image_processor, return_pix
         annotations.append(formatted_annotations)
 
     # Apply the image processor transformations: resizing, rescaling, normalization
-    result = image_processor(images=images, annotations=annotations, return_tensors="pt")
+    result = image_processor(
+        images=images, annotations=annotations, return_tensors="pt"
+    )
 
     if not return_pixel_mask:
         result.pop("pixel_mask", None)
@@ -149,6 +173,7 @@ def collate_fn(batch):
     if "pixel_mask" in batch[0]:
         data["pixel_mask"] = torch.stack([x["pixel_mask"] for x in batch])
     return data
+
 
 def convert_bbox_yolo_to_pascal(boxes, image_size):
     """
@@ -170,7 +195,6 @@ def convert_bbox_yolo_to_pascal(boxes, image_size):
     boxes = boxes * torch.tensor([[width, height, width, height]])
 
     return boxes
-
 
 
 @dataclass
@@ -221,7 +245,9 @@ def compute_metrics(evaluation_results, image_processor, threshold=0.0, id2label
     # model produce boxes in YOLO format, then image_processor convert them to Pascal VOC format
     for batch, target_sizes in zip(predictions, image_sizes):
         batch_logits, batch_boxes = batch[1], batch[2]
-        output = ModelOutput(logits=torch.tensor(batch_logits), pred_boxes=torch.tensor(batch_boxes))
+        output = ModelOutput(
+            logits=torch.tensor(batch_logits), pred_boxes=torch.tensor(batch_boxes)
+        )
         post_processed_output = image_processor.post_process_object_detection(
             output, threshold=threshold, target_sizes=target_sizes
         )
@@ -236,8 +262,12 @@ def compute_metrics(evaluation_results, image_processor, threshold=0.0, id2label
     classes = metrics.pop("classes")
     map_per_class = metrics.pop("map_per_class")
     mar_100_per_class = metrics.pop("mar_100_per_class")
-    for class_id, class_map, class_mar in zip(classes, map_per_class, mar_100_per_class):
-        class_name = id2label[class_id.item()] if id2label is not None else class_id.item()
+    for class_id, class_map, class_mar in zip(
+        classes, map_per_class, mar_100_per_class
+    ):
+        class_name = (
+            id2label[class_id.item()] if id2label is not None else class_id.item()
+        )
         metrics[f"map_{class_name}"] = class_map
         metrics[f"mar_100_{class_name}"] = class_mar
 
@@ -246,16 +276,15 @@ def compute_metrics(evaluation_results, image_processor, threshold=0.0, id2label
     return metrics
 
 
-
 def main():
     args = parse_args()
-    ds = Dataset.from_generator(gen_dataset, gen_kwargs={"exported_json": args.exported_json}).train_test_split(test_size=0.1)
+    ds = Dataset.from_generator(
+        gen_dataset, gen_kwargs={"exported_json": args.exported_json}
+    ).train_test_split(test_size=0.2)
 
     model_name = "microsoft/conditional-detr-resnet-50"
     image_processor = AutoImageProcessor.from_pretrained(
-        model_name,
-        do_resize=True,
-        size={"height": 504, "width": 896},
+        model_name, do_resize=True, size={"shortest_edge": 504, "longest_edge": 896}
     )
 
     train_augment_and_transform = A.Compose(
@@ -265,7 +294,9 @@ def main():
             A.RandomBrightnessContrast(p=0.5),
             A.HueSaturationValue(p=0.1),
         ],
-        bbox_params=A.BboxParams(format="coco", label_fields=["category"], clip=True, min_area=25),
+        bbox_params=A.BboxParams(
+            format="coco", label_fields=["category"], clip=True, min_area=25
+        ),
     )
 
     validation_transform = A.Compose(
@@ -273,23 +304,28 @@ def main():
         bbox_params=A.BboxParams(format="coco", label_fields=["category"], clip=True),
     )
 
-
     # Make transform functions for batch and apply for dataset splits
     train_transform_batch = partial(
-        augment_and_transform_batch, transform=train_augment_and_transform, image_processor=image_processor
+        augment_and_transform_batch,
+        transform=train_augment_and_transform,
+        image_processor=image_processor,
     )
     validation_transform_batch = partial(
-        augment_and_transform_batch, transform=validation_transform, image_processor=image_processor
+        augment_and_transform_batch,
+        transform=validation_transform,
+        image_processor=image_processor,
     )
     train_ds = ds["train"].with_transform(train_augment_and_transform)
     val_ds = ds["test"].with_transform(validation_transform_batch)
-
 
     label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
     id2label = {v: k for k, v in label2id.items()}
 
     eval_compute_metrics_fn = partial(
-        compute_metrics, image_processor=image_processor, id2label=id2label, threshold=0.0
+        compute_metrics,
+        image_processor=image_processor,
+        id2label=id2label,
+        threshold=0.0,
     )
 
     model = ConditionalDetrForObjectDetection.from_pretrained(
@@ -301,9 +337,9 @@ def main():
 
     training_args = TrainingArguments(
         output_dir="detr_finetuned_cppe5",
-        num_train_epochs=30,
+        num_train_epochs=24,
         fp16=False,
-        per_device_train_batch_size=24,
+        per_device_train_batch_size=12,
         dataloader_num_workers=4,
         learning_rate=5e-5,
         lr_scheduler_type="cosine",
