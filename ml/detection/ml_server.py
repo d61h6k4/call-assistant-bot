@@ -44,7 +44,7 @@ class Model:
                     "x": float((onnx_output[idx][0] - 0.5 * onnx_output[idx][2]) * 100),
                     "y": float((onnx_output[idx][1] - 0.5 * onnx_output[idx][3]) * 100),
                     "width": float(onnx_output[idx][2] * 100),
-                    "height": float(onnx_output[idx][2] * 100),
+                    "height": float(onnx_output[idx][3] * 100),
                     "rectanglelabels": [id2label[onnx_output[idx][5]]],
                     "score": float(onnx_output[idx][4]),
                 },
