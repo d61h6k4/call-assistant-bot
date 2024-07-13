@@ -1,4 +1,3 @@
-
 filegroup(
     name = "cdetr",
     srcs = [

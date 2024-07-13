@@ -1,32 +1,29 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@pip//:requirements.bzl", "requirement")
 
-
-
 py_binary(
     name = "ml_server",
     srcs = ["ml_server.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
     data = [
         "//ml/detection/models:cdetr",
     ],
+    python_version = "PY3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         "@pip//fastapi",
-        "@pip//uvicorn",
-        "@pip//pydantic",
-        "@pip//pillow",
         "@pip//httpx",
         "@pip//numpy",
-        "@pip//torch",
-        "@pip//transformers",
         "@pip//onnx",
         "@pip//onnxruntime",
         "@pip//onnxruntime_extensions",
+        "@pip//pillow",
+        "@pip//pydantic",
+        "@pip//torch",
+        "@pip//transformers",
+        "@pip//uvicorn",
     ],
 )
-
 
 py_binary(
     name = "train",
@@ -35,20 +32,19 @@ py_binary(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        "@pip//transformers",
-        "@pip//torch",
-        "@pip//pillow",
-        "@pip//timm",
         "@pip//accelerate",
-        "@pip//datasets",
         "@pip//albumentations",
-        "@pip//torchmetrics",
-        "@pip//pycocotools",
+        "@pip//datasets",
         "@pip//matplotlib",
+        "@pip//pillow",
+        "@pip//pycocotools",
+        "@pip//timm",
+        "@pip//torch",
+        "@pip//torchmetrics",
         "@pip//torchvision",
+        "@pip//transformers",
     ],
 )
-
 
 py_binary(
     name = "converter",
@@ -57,37 +53,41 @@ py_binary(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        "@pip//transformers",
-        "@pip//torch",
-        "@pip//pillow",
-        "@pip//timm",
         "@pip//accelerate",
         "@pip//onnx",
         "@pip//onnxruntime",
+        "@pip//onnxruntime_extensions",
         "@pip//onnxscript",
         "@pip//optimum",
+        "@pip//pillow",
+        "@pip//timm",
+        "@pip//torch",
+        "@pip//transformers",
     ],
 )
 
 py_test(
     name = "converter_test",
     srcs = ["converter_test.py"],
+    data = [
+        "//testdata:test_images",
+    ],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        "@pip//transformers",
-        "@pip//torch",
-        "@pip//pillow",
-        "@pip//timm",
+        ":converter",
         "@pip//accelerate",
         "@pip//onnx",
-        "@pip//onnxscript",
         "@pip//onnxruntime",
         "@pip//onnxruntime_extensions",
+        "@pip//onnxscript",
+        "@pip//pillow",
+        "@pip//timm",
+        "@pip//torch",
+        "@pip//transformers",
     ],
 )
-
 
 py_test(
     name = "ml_server_test",

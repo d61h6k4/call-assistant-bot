@@ -30,16 +30,6 @@ class Model:
         inputs = self.processor(images=image, return_tensors="np")
         onnx_output = self.onnx_model(inputs["pixel_values"])
 
-        target_sizes = torch.tensor([image.size[::-1]])
-        output = ConditionalDetrObjectDetectionOutput(
-            logits=torch.tensor(onnx_output[0]), pred_boxes=torch.tensor(onnx_output[1])
-        )
-        results = self.processor.post_process_object_detection(
-            output, target_sizes=target_sizes, threshold=0.7
-        )[0]
-
-        _LOGGER.debug(results)
-
         label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
         id2label = {v: k for k, v in label2id.items()}
         width = image.size[0]
@@ -55,25 +45,15 @@ class Model:
                 "image_rotation": 0,
                 "value": {
                     "rotation": 0,
-                    "x": results["boxes"][idx][0].item() / width * 100,
-                    "y": results["boxes"][idx][1].item() / height * 100,
-                    "width": (
-                        results["boxes"][idx][2].item()
-                        - results["boxes"][idx][0].item()
-                    )
-                    / width
-                    * 100,
-                    "height": (
-                        results["boxes"][idx][3].item()
-                        - results["boxes"][idx][1].item()
-                    )
-                    / height
-                    * 100,
-                    "rectanglelabels": [id2label[results["labels"][idx].item()]],
-                    "score": results["scores"][idx].item(),
+                    "x": (onnx_output[idx][0] - 0.5 * onnx_output[idx][2]) * 100,
+                    "y": (onnx_output[idx][1] - 0.5 * onnx_output[idx][3]) * 100,
+                    "width": onnx_output[idx][2] * 100,
+                    "height": onnx_output[idx][2] * 100,
+                    "rectanglelabels": [id2label[onnx_output[idx][5]]],
+                    "score": onnx_output[idx][4],
                 },
             }
-            for idx in range(len(results["scores"]))
+            for idx in range(len(onnx_output))
         ]
 
 
