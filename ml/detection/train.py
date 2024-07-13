@@ -337,9 +337,9 @@ def main():
 
     training_args = TrainingArguments(
         output_dir="detr_finetuned_cppe5",
-        num_train_epochs=24,
+        num_train_epochs=30,
         fp16=False,
-        per_device_train_batch_size=12,
+        per_device_train_batch_size=24,
         dataloader_num_workers=4,
         learning_rate=5e-5,
         lr_scheduler_type="cosine",
