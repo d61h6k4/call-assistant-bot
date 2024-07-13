@@ -315,7 +315,7 @@ def main():
         transform=validation_transform,
         image_processor=image_processor,
     )
-    train_ds = ds["train"].with_transform(train_augment_and_transform)
+    train_ds = ds["train"].with_transform(train_transform_batch)
     val_ds = ds["test"].with_transform(validation_transform_batch)
 
     label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
@@ -340,7 +340,7 @@ def main():
         num_train_epochs=30,
         fp16=False,
         per_device_train_batch_size=24,
-        dataloader_num_workers=1,
+        dataloader_num_workers=4,
         learning_rate=5e-5,
         lr_scheduler_type="cosine",
         weight_decay=1e-4,
