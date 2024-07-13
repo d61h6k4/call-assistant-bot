@@ -3,7 +3,11 @@ import argparse
 import json
 from functools import partial
 from pathlib import Path
-from transformers import AutoImageProcessor, ConditionalDetrForObjectDetection, Trainer
+from transformers import (
+    ConditionalDetrImageProcessor,
+    ConditionalDetrForObjectDetection,
+    Trainer,
+)
 from transformers.image_transforms import center_to_corners_format
 from datasets import Dataset
 import torch
@@ -283,7 +287,7 @@ def main():
     ).train_test_split(test_size=0.2)
 
     model_name = "microsoft/conditional-detr-resnet-50"
-    image_processor = AutoImageProcessor.from_pretrained(
+    image_processor = ConditionalDetrImageProcessor.from_pretrained(
         model_name, do_resize=True, size={"shortest_edge": 504, "longest_edge": 896}
     )
 
@@ -348,8 +352,8 @@ def main():
         metric_for_best_model="eval_map",
         greater_is_better=True,
         load_best_model_at_end=True,
-        eval_strategy="epoch",
-        save_strategy="epoch",
+        eval_strategy="no",
+        save_strategy="no",
         save_total_limit=1,
         remove_unused_columns=False,
         eval_do_concat_batches=False,
