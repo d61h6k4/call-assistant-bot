@@ -92,6 +92,9 @@ py_test(
 py_test(
     name = "ml_server_test",
     srcs = ["ml_server_test.py"],
+    data = [
+        "//testdata:test_images",
+    ],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],

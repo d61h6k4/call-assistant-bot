@@ -41,12 +41,12 @@ class Model:
                 "image_rotation": 0,
                 "value": {
                     "rotation": 0,
-                    "x": (onnx_output[idx][0] - 0.5 * onnx_output[idx][2]) * 100,
-                    "y": (onnx_output[idx][1] - 0.5 * onnx_output[idx][3]) * 100,
-                    "width": onnx_output[idx][2] * 100,
-                    "height": onnx_output[idx][2] * 100,
+                    "x": float((onnx_output[idx][0] - 0.5 * onnx_output[idx][2]) * 100),
+                    "y": float((onnx_output[idx][1] - 0.5 * onnx_output[idx][3]) * 100),
+                    "width": float(onnx_output[idx][2] * 100),
+                    "height": float(onnx_output[idx][2] * 100),
                     "rectanglelabels": [id2label[onnx_output[idx][5]]],
-                    "score": onnx_output[idx][4],
+                    "score": float(onnx_output[idx][4]),
                 },
             }
             for idx in range(len(onnx_output))

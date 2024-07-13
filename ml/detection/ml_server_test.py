@@ -1,18 +1,16 @@
 from ml.detection.ml_server import Model
 import unittest
-import httpx
+import json
 from PIL import Image
 
 
 class TestModel(unittest.TestCase):
     def setUp(self) -> None:
         self.model = Model()
-        self.image = Image.open(
-            httpx.get("http://images.cocodataset.org/val2017/000000039769.jpg")
-        )
+        self.image = Image.open("testdata/meeting_frame.png")
 
     def test_sanity_check(self):
-        print(self.model(self.image))
+        print(json.dumps({"result": self.model("test_image", self.image)}))
 
 
 if __name__ == "__main__":
