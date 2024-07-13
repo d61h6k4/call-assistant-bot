@@ -349,7 +349,7 @@ def main():
         greater_is_better=True,
         load_best_model_at_end=True,
         eval_strategy="epoch",
-        save_strategy="no",
+        save_strategy="epoch",
         save_total_limit=1,
         remove_unused_columns=False,
         eval_do_concat_batches=False,
