@@ -362,6 +362,55 @@ archive_override(
     urls = "https://github.com/microsoft/onnxruntime-genai/archive/refs/tags/v0.3.0.tar.gz",
 )
 
+# Vosk-API
+bazel_dep(name = "openblas", version = "0.3.27")
+archive_override(
+    module_name = "openblas",
+    integrity = "sha256-qi1osVZP4rE7wpJnJgjpze7rbcNJlVEuZcOxD0WZ6Jc=",
+    patches = [
+        "@//third_party/openblas:BUILD.patch",
+        "@//third_party/openblas:MODULE.bazel.patch",
+    ],
+    strip_prefix = "OpenBLAS-0.3.27",
+    urls = "https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.27/OpenBLAS-0.3.27.tar.gz",
+)
+
+bazel_dep(name = "openfst", version = "1.7.3")
+archive_override(
+    module_name = "openfst",
+    integrity = "sha256-uNxrTKD5ZPqvBGV35K2GsabvVE416sxqXxYjfzgwCg0=",
+    patches = [
+        "@//third_party/openfst:MODULE.bazel.patch",
+    ],
+    strip_prefix = "openfst-1.7.3",
+    urls = "https://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.7.3.tar.gz",
+)
+
+bazel_dep(name = "kaldi", version = "2024.6.3")
+git_override(
+    module_name = "kaldi",
+    commit = "67548a31c45f93d8b25ee553c5969d6a6d5d9408",
+    remote = "https://github.com/kaldi-asr/kaldi.git",
+    patches = [
+        "@//third_party/kaldi:BUILD.patch",
+        "@//third_party/kaldi:MODULE.bazel.patch",
+    ],
+)
+
+bazel_dep(name = "vosk_api", version = "0.3.50")
+archive_override(
+    module_name = "vosk_api",
+    integrity = "sha256-zBBnvMWZyaL1841CV8ryrGNrokT3yWXO4gKTpBAk9w8=",
+    patches = [
+        "@//third_party/vosk_api:BUILD.patch",
+        "@//third_party/vosk_api:MODULE.bazel.patch",
+        "//third_party/vosk_api:src_postprocessor.patch",
+        "//third_party/vosk_api:src_recognizer.patch",
+    ],
+    strip_prefix = "vosk-api-0.3.50",
+    urls = "https://github.com/alphacep/vosk-api/archive/refs/tags/v0.3.50.tar.gz",
+)
+
 # linter
 bazel_dep(name = "aspect_rules_lint", version = "0.21.0")
 bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
