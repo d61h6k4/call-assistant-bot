@@ -171,6 +171,7 @@ cc_library(
             "src/lat/kaldi-lattice-test.cc",
             "src/lat/minimize-lattice-test.cc",
             "src/lat/word-align-lattice-lexicon-test.cc",
+            "src/lat/push-lattice-test.cc",
         ]
     ),
     hdrs = glob([
