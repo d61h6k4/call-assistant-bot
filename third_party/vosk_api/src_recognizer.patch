@@ -1,0 +1,11 @@
+--- src/recognizer.cc.old	2024-07-12 17:45:35
++++ src/recognizer.cc	2024-07-12 17:45:44
+@@ -844,7 +844,7 @@
+ 
+         clat = decoder_->GetLattice(decoder_->NumFramesInLattice(), false);
+         if (model_->winfo_) {
+-            WordAlignLatticePartial(clat, *model_->trans_model_, *model_->winfo_, 0, &aligned_lat);
++            WordAlignLattice(clat, *model_->trans_model_, *model_->winfo_, 0, &aligned_lat);
+         } else {
+             CopyLatticeForMbr(clat, &aligned_lat);
+         }

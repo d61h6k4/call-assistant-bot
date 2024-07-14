@@ -1,0 +1,9 @@
+module(
+    name = "vosk_api",
+    version = "0.3.50"
+)
+
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "openfst", version = "1.7.3")
+bazel_dep(name = "openblas", version = "0.3.27")
+bazel_dep(name = "kaldi", version = "2024.6.3")
