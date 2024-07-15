@@ -140,6 +140,16 @@ def convert(model_name: str, output_model: Path, quantization: str):
         dqconfig = getattr(AutoQuantizationConfig, quantization)(
             is_static=False, per_channel=False
         )
+        dqconfig.nodes_to_exclude = ["Conv_quant"]
+        dqconfig.operators_to_quantize = [
+            "MatMul",
+            "Attention",
+            "LSTM",
+            "Gather",
+            "Transpose",
+            "EmbedLayerNormalization",
+        ]
+
         model_quantized_path = quantizer.quantize(
             save_dir=output_model, quantization_config=dqconfig
         )
