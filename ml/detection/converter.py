@@ -109,33 +109,33 @@ def convert(model_name: str, output_model: Path, quantization: str):
     custom_onnx_config = {"model": ConditionalDetrOnnxConfig(model_name)}
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        # main_export(
-        #     model_name,
-        #     output=tmpdir,
-        #     task="object-detection",
-        #     custom_onnx_configs=custom_onnx_config,
-        # )
+        main_export(
+            model_name,
+            output=tmpdir,
+            task="object-detection",
+            custom_onnx_configs=custom_onnx_config,
+        )
 
-        # onnx_model_body = tmpdir + "/model.onnx"
-        # model = onnx.load(onnx_model_body)
-        # inputs = [
-        #     create_named_value("image", onnx.TensorProto.UINT8, [3, "height", "width"])
-        # ]
+        onnx_model_body = tmpdir + "/model.onnx"
+        model = onnx.load(onnx_model_body)
+        inputs = [
+            create_named_value("image", onnx.TensorProto.UINT8, [3, "height", "width"])
+        ]
 
-        # pipeline = PrePostProcessor(
-        #     inputs, custom_onnx_config["model"].DEFAULT_ONNX_OPSET
-        # )
+        pipeline = PrePostProcessor(
+            inputs, custom_onnx_config["model"].DEFAULT_ONNX_OPSET
+        )
 
-        # preprocessing = image_processor()
-        # pipeline.add_pre_processing(preprocessing)
-        # pipeline._pre_processing_joins = [(preprocessing[-1], 0, "pixel_values")]
-        # pipeline.add_post_processing(object_detection_postprocessor())
-        # model_with_preprocessing = pipeline.run(model)
+        preprocessing = image_processor()
+        pipeline.add_pre_processing(preprocessing)
+        pipeline._pre_processing_joins = [(preprocessing[-1], 0, "pixel_values")]
+        pipeline.add_post_processing(object_detection_postprocessor())
+        model_with_preprocessing = pipeline.run(model)
 
         output_file = output_model / "model.onnx"
-        # onnx.save_model(model_with_preprocessing, output_file)
+        onnx.save_model(model_with_preprocessing, output_file)
 
-        quantizer = ORTQuantizer.from_pretrained(output_file)
+        quantizer = ORTQuantizer.from_pretrained(model_with_preprocessing)
 
         dqconfig = getattr(AutoQuantizationConfig, quantization)(
             is_static=False, per_channel=False
