@@ -140,9 +140,8 @@ def convert(model_name: str, output_model: Path, quantization: str):
         dqconfig = getattr(AutoQuantizationConfig, quantization)(
             is_static=False, per_channel=False
         )
-        quantized_file = output_model / "model_quantized.onnx"
         model_quantized_path = quantizer.quantize(
-            save_dir=quantized_file, quantization_config=dqconfig
+            save_dir=output_model, quantization_config=dqconfig
         )
 
 
