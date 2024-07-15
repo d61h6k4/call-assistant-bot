@@ -1,4 +1,5 @@
 from transformers import AutoImageProcessor, ConditionalDetrForObjectDetection
+import platform
 import numpy as np
 import torch
 from PIL import Image
@@ -22,7 +23,11 @@ class CDetrOnnxTest(unittest.TestCase):
     def test_compare(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_model = Path(tmpdir)
-            convert(self.model_name, output_model)
+            convert(
+                self.model_name,
+                output_model,
+                "avx512_vnni" if platform.system() == "Linux" else arm64,
+            )
 
             processor = AutoImageProcessor.from_pretrained(
                 self.model_name,
@@ -34,7 +39,9 @@ class CDetrOnnxTest(unittest.TestCase):
             with torch.no_grad():
                 outputs = model(**inputs)
 
-            onnx_model = OrtPyFunction.from_model(str(output_model / "model.onnx"))
+            onnx_model = OrtPyFunction.from_model(
+                str(output_model / "model_quantized.onnx")
+            )
             onnx_output = onnx_model(np.transpose(np.array(self.image), (2, 0, 1)))
 
             print(processor.post_process_object_detection(outputs))
