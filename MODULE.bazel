@@ -393,11 +393,11 @@ bazel_dep(name = "kaldi", version = "2024.6.3")
 git_override(
     module_name = "kaldi",
     commit = "67548a31c45f93d8b25ee553c5969d6a6d5d9408",
-    remote = "https://github.com/kaldi-asr/kaldi.git",
     patches = [
         "@//third_party/kaldi:BUILD.patch",
         "@//third_party/kaldi:MODULE.bazel.patch",
     ],
+    remote = "https://github.com/kaldi-asr/kaldi.git",
 )
 
 bazel_dep(name = "vosk_api", version = "0.3.50")
