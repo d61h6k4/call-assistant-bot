@@ -135,7 +135,7 @@ def convert(model_name: str, output_model: Path, quantization: str):
         output_file = output_model / "model.onnx"
         onnx.save_model(model_with_preprocessing, output_file)
 
-        quantizer = ORTQuantizer.from_pretrained(output_file)
+        quantizer = ORTQuantizer.from_pretrained(output_model)
 
         dqconfig = getattr(AutoQuantizationConfig, quantization)(
             is_static=False, per_channel=False
