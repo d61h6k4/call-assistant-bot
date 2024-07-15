@@ -29,6 +29,19 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "model_benchmark",
+    srcs = ["model_benchmark.cc"],
+    data = [
+        "//testdata:test_images",
+    ],
+    deps = [
+        ":model",
+        "//third_party:opencv",
+        "@google_benchmark//:benchmark_main",
+    ],
+)
+
 py_binary(
     name = "ml_server",
     srcs = ["ml_server.py"],

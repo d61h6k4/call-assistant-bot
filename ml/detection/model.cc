@@ -17,6 +17,9 @@ CDetr::CDetr() {
       std::max(min_thread_nums,
                static_cast<int>(std::thread::hardware_concurrency() / 2));
   session_options_.SetIntraOpNumThreads(num_of_cores);
+  session_options_.SetInterOpNumThreads(num_of_cores);
+  session_options_.EnableCpuMemArena();
+  session_options_.EnableMemPattern();
 
   session_options_.SetLogId(log_id_.c_str());
   session_options_.SetLogSeverityLevel(logging_level_);
