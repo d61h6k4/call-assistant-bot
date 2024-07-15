@@ -1,11 +1,14 @@
 import argparse
 import tempfile
+import platform
 from pathlib import Path
 
 import onnx
 from onnxruntime_extensions.tools.pre_post_processing.utils import IoMapEntry
 from optimum.exporters.onnx.model_configs import DetrOnnxConfig
 from optimum.exporters.onnx import main_export
+from optimum.onnxruntime import ORTQuantizer
+from optimum.onnxruntime.configuration import AutoQuantizationConfig
 from transformers import AutoConfig
 from onnxruntime_extensions.tools.pre_post_processing import (
     Identity,
@@ -35,6 +38,12 @@ def parse_args():
         help="Specify path to store a converted model.",
         required=True,
         type=Path,
+    )
+    parser.add_argument(
+        "--quantization",
+        help="Specify architecture or instruction set to quantize for",
+        choices=["arm64", "avx2", "avx512", "avx512_vnni"],
+        default="arm64" if platform.system() == "Darwin" else "avx512_vnni",
     )
     return parser.parse_args()
 
@@ -96,41 +105,51 @@ def object_detection_postprocessor():
     ]
 
 
-def convert(model_name: str, output_model: Path):
+def convert(model_name: str, output_model: Path, quantization: str):
     custom_onnx_config = {"model": ConditionalDetrOnnxConfig(model_name)}
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        main_export(
-            model_name,
-            output=tmpdir,
-            task="object-detection",
-            custom_onnx_configs=custom_onnx_config,
-        )
+        # main_export(
+        #     model_name,
+        #     output=tmpdir,
+        #     task="object-detection",
+        #     custom_onnx_configs=custom_onnx_config,
+        # )
 
-        onnx_model_body = tmpdir + "/model.onnx"
-        model = onnx.load(onnx_model_body)
-        inputs = [
-            create_named_value("image", onnx.TensorProto.UINT8, [3, "height", "width"])
-        ]
+        # onnx_model_body = tmpdir + "/model.onnx"
+        # model = onnx.load(onnx_model_body)
+        # inputs = [
+        #     create_named_value("image", onnx.TensorProto.UINT8, [3, "height", "width"])
+        # ]
 
-        pipeline = PrePostProcessor(
-            inputs, custom_onnx_config["model"].DEFAULT_ONNX_OPSET
-        )
+        # pipeline = PrePostProcessor(
+        #     inputs, custom_onnx_config["model"].DEFAULT_ONNX_OPSET
+        # )
 
-        preprocessing = image_processor()
-        pipeline.add_pre_processing(preprocessing)
-        pipeline._pre_processing_joins = [(preprocessing[-1], 0, "pixel_values")]
-        pipeline.add_post_processing(object_detection_postprocessor())
-        model_with_preprocessing = pipeline.run(model)
+        # preprocessing = image_processor()
+        # pipeline.add_pre_processing(preprocessing)
+        # pipeline._pre_processing_joins = [(preprocessing[-1], 0, "pixel_values")]
+        # pipeline.add_post_processing(object_detection_postprocessor())
+        # model_with_preprocessing = pipeline.run(model)
 
         output_file = output_model / "model.onnx"
-        onnx.save_model(model_with_preprocessing, output_file)
+        # onnx.save_model(model_with_preprocessing, output_file)
+
+        quantizer = ORTQuantizer.from_pretrained(output_file)
+
+        dqconfig = getattr(AutoQuantizationConfig, quantization)(
+            is_static=False, per_channel=False
+        )
+        quantized_file = output_model / "model_quantized.onnx"
+        model_quantized_path = quantizer.quantize(
+            save_dir=quantized_file, quantization_config=dqconfig
+        )
 
 
 def main():
     args = parse_args()
     model_name = str(args.input_model)
-    convert(model_name, args.output_model)
+    convert(model_name, args.output_model, args.quantization)
 
 
 if __name__ == "__main__":
