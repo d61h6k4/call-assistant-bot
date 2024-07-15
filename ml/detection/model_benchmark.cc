@@ -42,5 +42,5 @@ static void BM_CDetr(benchmark::State &state) {
   }
 }
 
-BENCHMARK(BM_CDetr);
+BENCHMARK(BM_CDetr)->MinWarmUpTime(2.0);
 BENCHMARK_MAIN();

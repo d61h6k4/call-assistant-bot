@@ -135,20 +135,25 @@ def convert(model_name: str, output_model: Path, quantization: str):
         output_file = output_model / "model.onnx"
         onnx.save_model(model_with_preprocessing, output_file)
 
-        quantizer = ORTQuantizer.from_pretrained(output_model)
+        if (output_model / "model_quantized.onnx").exists():
+            (output_model / "model_quantized.onnx").unlink()
 
+        quantizer = ORTQuantizer.from_pretrained(output_model)
         dqconfig = getattr(AutoQuantizationConfig, quantization)(
             is_static=False, per_channel=False
         )
-        dqconfig.nodes_to_exclude = ["Conv_quant"]
-        dqconfig.operators_to_quantize = [
-            "MatMul",
-            "Attention",
-            "LSTM",
-            "Gather",
-            "Transpose",
-            "EmbedLayerNormalization",
-        ]
+        # quantization avx512* uses int8
+        # onnxruntime doesn't have Conv_quant for int8 only for uint8
+        if quantization == "avx512" or quantization == "avx512_vnni":
+            dqconfig.nodes_to_exclude = ["Conv_quant"]
+            dqconfig.operators_to_quantize = [
+                "MatMul",
+                "Attention",
+                "LSTM",
+                "Gather",
+                "Transpose",
+                "EmbedLayerNormalization",
+            ]
 
         model_quantized_path = quantizer.quantize(
             save_dir=output_model, quantization_config=dqconfig
