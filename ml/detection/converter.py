@@ -49,7 +49,7 @@ def parse_args():
 
 
 class ConditionalDetrOnnxConfig(DetrOnnxConfig):
-    DEFAULT_ONNX_OPSET = 18
+    DEFAULT_ONNX_OPSET = 17
 
     def __init__(self, model_name):
         config = AutoConfig.from_pretrained(model_name)
@@ -135,7 +135,7 @@ def convert(model_name: str, output_model: Path, quantization: str):
         output_file = output_model / "model.onnx"
         onnx.save_model(model_with_preprocessing, output_file)
 
-        quantizer = ORTQuantizer.from_pretrained(model_with_preprocessing)
+        quantizer = ORTQuantizer.from_pretrained(output_file)
 
         dqconfig = getattr(AutoQuantizationConfig, quantization)(
             is_static=False, per_channel=False
