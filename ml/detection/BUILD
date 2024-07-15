@@ -1,6 +1,34 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@pip//:requirements.bzl", "requirement")
 
+cc_library(
+    name = "model",
+    srcs = [
+        "model.cc",
+    ],
+    hdrs = ["model.h"],
+    data = [
+        "//ml/detection/models:cdetr",
+    ],
+    visibility = ["//visibility:public"],
+    deps = ["//third_party:libonnxruntime"],
+)
+
+cc_test(
+    name = "model_test",
+    srcs = ["model_test.cc"],
+    data = [
+        "//testdata:test_images",
+    ],
+    deps = [
+        ":model",
+        "//third_party:opencv",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 py_binary(
     name = "ml_server",
     srcs = ["ml_server.py"],
