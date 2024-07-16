@@ -1,11 +1,14 @@
 import argparse
 import tempfile
+import platform
 from pathlib import Path
 
 import onnx
 from onnxruntime_extensions.tools.pre_post_processing.utils import IoMapEntry
 from optimum.exporters.onnx.model_configs import DetrOnnxConfig
 from optimum.exporters.onnx import main_export
+from optimum.onnxruntime import ORTQuantizer
+from optimum.onnxruntime.configuration import AutoQuantizationConfig
 from transformers import AutoConfig
 from onnxruntime_extensions.tools.pre_post_processing import (
     Identity,
@@ -36,11 +39,17 @@ def parse_args():
         required=True,
         type=Path,
     )
+    parser.add_argument(
+        "--quantization",
+        help="Specify architecture or instruction set to quantize for",
+        choices=["arm64", "avx2", "avx512", "avx512_vnni"],
+        default="arm64" if platform.system() == "Darwin" else "avx512_vnni",
+    )
     return parser.parse_args()
 
 
 class ConditionalDetrOnnxConfig(DetrOnnxConfig):
-    DEFAULT_ONNX_OPSET = 18
+    DEFAULT_ONNX_OPSET = 17
 
     def __init__(self, model_name):
         config = AutoConfig.from_pretrained(model_name)
@@ -87,7 +96,7 @@ def object_detection_postprocessor():
             [IoMapEntry(producer="Identity", producer_idx=1, consumer_idx=0)],
         ),
         (
-            SelectBestBoundingBoxesByNMS(),
+            SelectBestBoundingBoxesByNMS(max_detections=50),
             [
                 IoMapEntry(producer="SqueezeBoxes", producer_idx=0, consumer_idx=0),
                 IoMapEntry(producer="SqueezeLogits", producer_idx=0, consumer_idx=1),
@@ -96,7 +105,7 @@ def object_detection_postprocessor():
     ]
 
 
-def convert(model_name: str, output_model: Path):
+def convert(model_name: str, output_model: Path, quantization: str):
     custom_onnx_config = {"model": ConditionalDetrOnnxConfig(model_name)}
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -126,11 +135,35 @@ def convert(model_name: str, output_model: Path):
         output_file = output_model / "model.onnx"
         onnx.save_model(model_with_preprocessing, output_file)
 
+        if (output_model / "model_quantized.onnx").exists():
+            (output_model / "model_quantized.onnx").unlink()
+
+        quantizer = ORTQuantizer.from_pretrained(output_model)
+        dqconfig = getattr(AutoQuantizationConfig, quantization)(
+            is_static=False, per_channel=False
+        )
+        # quantization avx512* uses int8
+        # onnxruntime doesn't have Conv_quant for int8 only for uint8
+        if quantization == "avx512" or quantization == "avx512_vnni":
+            dqconfig.nodes_to_exclude = ["Conv_quant"]
+            dqconfig.operators_to_quantize = [
+                "MatMul",
+                "Attention",
+                "LSTM",
+                "Gather",
+                "Transpose",
+                "EmbedLayerNormalization",
+            ]
+
+        model_quantized_path = quantizer.quantize(
+            save_dir=output_model, quantization_config=dqconfig
+        )
+
 
 def main():
     args = parse_args()
     model_name = str(args.input_model)
-    convert(model_name, args.output_model)
+    convert(model_name, args.output_model, args.quantization)
 
 
 if __name__ == "__main__":

@@ -45,6 +45,7 @@ bazel_dep(name = "protobuf", version = "27.1", repo_name = "com_google_protobuf"
 bazel_dep(name = "abseil-cpp", version = "20240116.2", repo_name = "com_google_absl")
 bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
+bazel_dep(name = "google_benchmark", version = "1.8.4")
 bazel_dep(name = "re2", version = "2024-06-01", repo_name = "com_googlesource_code_re2")
 bazel_dep(name = "grpc", version = "1.64.2")
 archive_override(
@@ -393,11 +394,11 @@ bazel_dep(name = "kaldi", version = "2024.6.3")
 git_override(
     module_name = "kaldi",
     commit = "67548a31c45f93d8b25ee553c5969d6a6d5d9408",
-    remote = "https://github.com/kaldi-asr/kaldi.git",
     patches = [
         "@//third_party/kaldi:BUILD.patch",
         "@//third_party/kaldi:MODULE.bazel.patch",
     ],
+    remote = "https://github.com/kaldi-asr/kaldi.git",
 )
 
 bazel_dep(name = "vosk_api", version = "0.3.50")
