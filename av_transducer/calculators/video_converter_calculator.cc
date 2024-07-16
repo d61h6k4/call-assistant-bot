@@ -17,7 +17,7 @@ namespace aikit {
 //   input_stream: "IN_VIDEO:in_video"
 //   output_stream: "OUT_VIDEO:out_video"
 // }
-class VideoConverterCalculator : public mediapipe::api2::Node {
+class VideoConverterCalculator: public mediapipe::api2::Node {
 public:
   static constexpr mediapipe::api2::SideInput<media::VideoStreamParameters>
       kInInVideoHeader{"IN_VIDEO_HEADER"};
