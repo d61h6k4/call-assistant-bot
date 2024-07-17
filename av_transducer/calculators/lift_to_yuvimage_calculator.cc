@@ -25,8 +25,7 @@ public:
       "IN_VIDEO"};
   static constexpr mediapipe::api2::Output<mediapipe::YUVImage> kOutVideo{
       "OUT_VIDEO"};
-  MEDIAPIPE_NODE_CONTRACT(
-      kInInVideoHeader, kInVideo, kOutVideo);
+  MEDIAPIPE_NODE_CONTRACT(kInInVideoHeader, kInVideo, kOutVideo);
 
   absl::Status Open(mediapipe::CalculatorContext *cc) override;
   absl::Status Process(mediapipe::CalculatorContext *cc) override;
@@ -62,13 +61,14 @@ LiftToYUVImageCalculator::Process(mediapipe::CalculatorContext *cc) {
       frame->data[2], frame->linesize[2], y.get(), frame->linesize[0], u.get(),
       frame->linesize[1], v.get(), frame->linesize[2],
       in_video_stream_parameters_.width, in_video_stream_parameters_.height);
-  mediapipe::api2::PacketAdopting<mediapipe::YUVImage>(
-      new mediapipe::YUVImage(
-          libyuv::FOURCC_I420, std::move(y), frame->linesize[0], std::move(u),
-          frame->linesize[1], std::move(v), frame->linesize[2],
-          in_video_stream_parameters_.width,
-          in_video_stream_parameters_.height))
-      .At(cc->InputTimestamp());
+  kOutVideo(cc).Send(
+      mediapipe::api2::PacketAdopting<mediapipe::YUVImage>(
+          new mediapipe::YUVImage(
+              libyuv::FOURCC_I420, std::move(y), frame->linesize[0],
+              std::move(u), frame->linesize[1], std::move(v),
+              frame->linesize[2], in_video_stream_parameters_.width,
+              in_video_stream_parameters_.height))
+          .At(cc->InputTimestamp()));
 
   return absl::OkStatus();
 }

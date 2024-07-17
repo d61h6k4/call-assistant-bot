@@ -34,10 +34,8 @@ public:
   static constexpr mediapipe::api2::Output<media::AudioFrame>::Optional
       kOutAudio{"AUDIO"};
 
-  MEDIAPIPE_NODE_CONTRACT(
-      kInFilePath, kOutAudioHeader, kOutVideoHeader, kOutAudio, kOutVideo,
-      mediapipe::api2::StreamHandler("ImmediateInputStreamHandler"),
-      mediapipe::api2::TimestampChange::Arbitrary());
+  MEDIAPIPE_NODE_CONTRACT(kInFilePath, kOutAudioHeader, kOutVideoHeader,
+                          kOutAudio, kOutVideo);
 
   absl::Status Open(mediapipe::CalculatorContext *cc) override;
   absl::Status Process(mediapipe::CalculatorContext *cc) override;
@@ -103,20 +101,23 @@ FFMPEGSourceVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
     status =
         container_stream_context_->PacketToFrame(packet_, audio_frame_or.get());
     if (status.ok()) {
-      kOutAudio(cc).Send(std::move(audio_frame_or));
+      auto timestamp = mediapipe::Timestamp(
+          container_stream_context_->FramePTSInMicroseconds(
+              audio_frame_or.get()));
+      kOutAudio(cc).Send(std::move(audio_frame_or), timestamp);
       return absl::OkStatus();
+    } else {
+      ABSL_LOG_EVERY_N_SEC(INFO, 1)
+          << "failed to decode an audio packet. " << status.message();
     }
-    // else {
-    //   return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-    //          << "failed to decode an audio packet. " << status.message();
-    // }
   } else if (container_stream_context_->IsPacketVideo(packet_)) {
-
     auto video_frame_or = container_stream_context_->CreateVideoFrame();
     status =
         container_stream_context_->PacketToFrame(packet_, video_frame_or.get());
     if (status.ok()) {
-      kOutVideo(cc).Send(std::move(video_frame_or));
+      auto timestamp = mediapipe::Timestamp(
+          container_stream_context_->FramePTSInMicroseconds(video_frame_or.get())) + 1;
+      kOutVideo(cc).Send(std::move(video_frame_or), timestamp);
       return absl::OkStatus();
     } else {
       return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)

@@ -1,15 +1,11 @@
-
-
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
 #include "absl/log/absl_log.h"
 #include "av_transducer/utils/audio.h"
 #include "av_transducer/utils/video.h"
-#include "mediapipe/calculators/core/packet_thinner_calculator.pb.h"
 #include "mediapipe/framework/api2/builder.h"
 #include "mediapipe/framework/calculator_graph.h"
-#include "mediapipe/framework/formats/yuv_image.h"
 
 ABSL_FLAG(std::string, input_file_path, "", "Full path of video to read.");
 
@@ -27,20 +23,6 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   auto audio_stream = source_video_node.Out("AUDIO");
   auto video_stream = source_video_node.Out("VIDEO");
 
-  // Create 1 FPS stream
-  auto &packet_thinner_node = graph.AddNode("PacketThinnerCalculator");
-  auto &packet_thinner_node_opts =
-      packet_thinner_node
-          .GetOptions<mediapipe::PacketThinnerCalculatorOptions>();
-  // Period controls how frequently we want to take a new packets (in
-  // microseconds) 1 FPS is 1 frame in 1 seconds
-  packet_thinner_node_opts.set_period(1000000);
-  packet_thinner_node_opts.set_thinner_type(
-      mediapipe::PacketThinnerCalculatorOptions::ASYNC);
-  video_stream >> packet_thinner_node.In("");
-  auto resampled_video_stream =
-      packet_thinner_node.Out("").Cast<aikit::media::VideoFrame>();
-
   // Convert to YUV420P
   auto &video_converter_node = graph.AddNode("VideoConverterCalculator");
   video_header >> video_converter_node.SideIn("IN_VIDEO_HEADER");
@@ -48,27 +30,16 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .SetName("out_video_header")
           .Cast<aikit::media::VideoStreamParameters>() >>
       video_converter_node.SideIn("OUT_VIDEO_HEADER");
-  resampled_video_stream >> video_converter_node.In("IN_VIDEO");
+  video_stream >> video_converter_node.In("IN_VIDEO");
   auto yuv_video_stream = video_converter_node.Out("OUT_VIDEO");
 
-  // Lift to Mediapipe YUVImage
-  auto &lift_yuvimage_node = graph.AddNode("LiftToYUVImageCalculator");
+  auto &visual_subgraph = graph.AddNode("VisualGraph");
   graph.SideIn("OUT_VIDEO_HEADER")
           .SetName("out_video_header")
           .Cast<aikit::media::VideoStreamParameters>() >>
-      lift_yuvimage_node.SideIn("IN_VIDEO_HEADER");
-  yuv_video_stream >> lift_yuvimage_node.In("IN_VIDEO");
-  auto yuvimage_stream = lift_yuvimage_node.Out("OUT_VIDEO");
-
-  // YUV to Image (RGB)
-  auto &yuv_to_image_node = graph.AddNode("YUVToImageCalculator");
-  yuvimage_stream >> yuv_to_image_node.In("YUV_IMAGE");
-  auto images_stream = yuv_to_image_node.Out("IMAGE");
-
-  // Apply CDETR
-  auto &cdetr_node = graph.AddNode("CDETRCalculator");
-  images_stream >> cdetr_node.In("IMAGE");
-  auto detections_stream = cdetr_node.Out("DETECTIONS");
+      visual_subgraph.SideIn("OUT_VIDEO_HEADER");
+  yuv_video_stream >> visual_subgraph.In("IN_VIDEO");
+  auto detections_stream = visual_subgraph.Out("DETECTIONS");
 
   // Dump to stdout
   auto &dumper_node = graph.AddNode("DumperCalculator");
