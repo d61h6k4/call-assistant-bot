@@ -38,6 +38,20 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
             logger=logger,
         )
 
+    async def Detections(
+        self, request: evaluator_pb2.DetectionsRequest, context
+    ) -> evaluator_pb2.DetectionsReply:
+        self.logger.info(
+            {
+                "message": "Processing detections",
+                "event_timestamp": request.event_timestamp,
+                "particiapnts_num": sum(
+                    1 for detection in request.detections if detection.label_id == 1
+                ),
+            }
+        )
+        return evaluator_pb2.DetectionsReply()
+
     async def Shutdown(
         self, request: evaluator_pb2.ShutdownRequest, context
     ) -> evaluator_pb2.ShutdownReply:

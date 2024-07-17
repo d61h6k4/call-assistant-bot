@@ -24,7 +24,7 @@ class Model:
         self.onnx_model = OrtPyFunction.from_model("ml/detection/models/model.onnx")
 
     def __call__(self, image_name: str, image: Image.Image):
-        onnx_output = self.onnx_model(np.transpose(np.array(image), (2, 0, 1)))
+        onnx_output = self.onnx_model(np.array(image))
 
         label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
         id2label = {v: k for k, v in label2id.items()}

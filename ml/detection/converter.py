@@ -11,6 +11,7 @@ from optimum.onnxruntime import ORTQuantizer
 from optimum.onnxruntime.configuration import AutoQuantizationConfig
 from transformers import AutoConfig
 from onnxruntime_extensions.tools.pre_post_processing import (
+    ChannelsLastToChannelsFirst,
     Identity,
     create_named_value,
     Resize,
@@ -59,6 +60,7 @@ class ConditionalDetrOnnxConfig(DetrOnnxConfig):
 def image_processor():
     steps = []
 
+    steps.append(ChannelsLastToChannelsFirst())
     steps.append(Resize((504, 896), layout="CHW"))
     steps.append(ImageBytesToFloat(rescale_factor=0.00392156862745098))
     mean_std = list(zip([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
@@ -119,7 +121,7 @@ def convert(model_name: str, output_model: Path, quantization: str):
         onnx_model_body = tmpdir + "/model.onnx"
         model = onnx.load(onnx_model_body)
         inputs = [
-            create_named_value("image", onnx.TensorProto.UINT8, [3, "height", "width"])
+            create_named_value("image", onnx.TensorProto.UINT8, ["height", "width", 3])
         ]
 
         pipeline = PrePostProcessor(
@@ -144,7 +146,7 @@ def convert(model_name: str, output_model: Path, quantization: str):
         )
         # quantization avx512* uses int8
         # onnxruntime doesn't have Conv_quant for int8 only for uint8
-        if quantization == "avx512" or quantization == "avx512_vnni":
+        if quantization in ("avx512", "avx512_vnni", "arm64"):
             dqconfig.nodes_to_exclude = ["Conv_quant"]
             dqconfig.operators_to_quantize = [
                 "MatMul",

@@ -47,7 +47,7 @@ bazel_dep(name = "glog", version = "0.7.0", repo_name = "com_github_glog_glog")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1", repo_name = "com_google_googletest")
 bazel_dep(name = "google_benchmark", version = "1.8.4")
 bazel_dep(name = "re2", version = "2024-06-01", repo_name = "com_googlesource_code_re2")
-bazel_dep(name = "grpc", version = "1.64.2")
+bazel_dep(name = "grpc", version = "1.64.2", repo_name = "com_github_grpc_grpc")
 archive_override(
     module_name = "grpc",
     integrity = "sha256-xoL8ObrvxugE1zXmtIFBFXtyE2Asxm2+C/N1uQTYtfk=",

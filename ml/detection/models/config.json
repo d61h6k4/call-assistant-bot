@@ -1,5 +1,5 @@
 {
-  "_name_or_path": "/Users/danilapetrov/dev/personal/meeting-bot/model/detr",
+  "_name_or_path": "/Users/danilapetrov/dev/personal/meeting-bot/ml/detection/models",
   "activation_dropout": 0.0,
   "activation_function": "relu",
   "architectures": [
@@ -58,7 +58,7 @@
   "num_queries": 300,
   "position_embedding_type": "sine",
   "scale_embedding": false,
-  "transformers_version": "4.42.3",
+  "transformers_version": "4.42.4",
   "use_pretrained_backbone": true,
   "use_timm_backbone": true
 }

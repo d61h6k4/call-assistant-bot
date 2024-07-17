@@ -26,7 +26,7 @@ class CDetrOnnxTest(unittest.TestCase):
             convert(
                 self.model_name,
                 output_model,
-                "avx512_vnni" if platform.system() == "Linux" else arm64,
+                "avx512_vnni" if platform.system() == "Linux" else "arm64",
             )
 
             processor = AutoImageProcessor.from_pretrained(
@@ -42,7 +42,7 @@ class CDetrOnnxTest(unittest.TestCase):
             onnx_model = OrtPyFunction.from_model(
                 str(output_model / "model_quantized.onnx")
             )
-            onnx_output = onnx_model(np.transpose(np.array(self.image), (2, 0, 1)))
+            onnx_output = onnx_model(np.array(self.image))
 
             print(processor.post_process_object_detection(outputs))
             print(onnx_output)

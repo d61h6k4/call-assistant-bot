@@ -60,6 +60,22 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   audio_stream >> audio_converter_node.In("IN_AUDIO");
   auto float_48kHz_audio_stream = audio_converter_node.Out("OUT_AUDIO");
 
+  // Processing
+
+  auto &visual_subgraph = graph.AddNode("VisualGraph");
+  graph.SideIn("OUT_VIDEO_HEADER")
+          .SetName("out_video_header")
+          .Cast<aikit::media::VideoStreamParameters>() >>
+      visual_subgraph.SideIn("OUT_VIDEO_HEADER");
+  yuv_video_stream >> visual_subgraph.In("IN_VIDEO");
+  auto detections_stream = visual_subgraph.Out("DETECTIONS");
+
+  // End of processing
+
+  // Send to Evaluator
+  auto& evaluator_client_node = graph.AddNode("EvaluatorClientCalculator");
+  detections_stream >> evaluator_client_node.In("DETECTIONS");
+
   // Write audio
   auto &sink_video_node = graph.AddNode("FFMPEGSinkVideoCalculator");
   graph.SideIn("OUTPUT_FILE_PATH")

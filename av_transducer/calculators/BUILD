@@ -87,6 +87,105 @@ cc_library(
     alwayslink = True,
 )
 
+cc_library(
+    name = "lift_to_yuvimage_calculator",
+    srcs = ["lift_to_yuvimage_calculator.cc"],
+    deps = [
+        "//av_transducer/utils:video",
+        "@//third_party:libyuv",
+        "@mediapipe//mediapipe/framework:calculator_framework",
+        "@mediapipe//mediapipe/framework/api2:node",
+        "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/formats:yuv_image",
+        "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/tool:status_util",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "cdetr_calculator",
+    srcs = ["cdetr_calculator.cc"],
+    deps = [
+        "//ml/detection:model",
+        "@mediapipe//mediapipe/framework:calculator_framework",
+        "@mediapipe//mediapipe/framework/api2:node",
+        "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/formats:image",
+        "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/tool:status_util",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "dumper_calculator",
+    srcs = ["dumper_calculator.cc"],
+    deps = [
+        "//ml/detection:model",
+        "@com_google_absl//absl/log:absl_log",
+        "@mediapipe//mediapipe/framework:calculator_framework",
+        "@mediapipe//mediapipe/framework/api2:node",
+        "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/tool:status_util",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "ffmpeg_source_video_calculator",
+    srcs = ["ffmpeg_source_video_calculator.cc"],
+    deps = [
+        "//av_transducer/utils:audio",
+        "//av_transducer/utils:container",
+        "//av_transducer/utils:video",
+        "@com_google_absl//absl/log:absl_log",
+        "@mediapipe//mediapipe/framework:calculator_framework",
+        "@mediapipe//mediapipe/framework/api2:node",
+        "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/formats:yuv_image",
+        "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/stream_handler:immediate_input_stream_handler",
+        "@mediapipe//mediapipe/framework/tool:status_util",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "evaluator_client_calculator",
+    srcs = ["evaluator_client_calculator.cc"],
+    deps = [
+        "@com_github_grpc_grpc//:grpc++",
+        "//meeting_bot/evaluator:evaluator_proto_grpc",
+        "//ml/detection:model",
+        "@com_google_absl//absl/log:absl_log",
+        "@mediapipe//mediapipe/framework:calculator_framework",
+        "@mediapipe//mediapipe/framework/api2:node",
+        "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/tool:status_util",
+    ],
+    alwayslink = True,
+)
+
+cc_test(
+    name = "cdetr_calculator_test",
+    srcs = ["cdetr_calculator_test.cc"],
+    data = [
+        "//testdata:test_images",
+    ],
+    deps = [
+        ":cdetr_calculator",
+        "@com_google_absl//absl/log:absl_log",
+        "@mediapipe//mediapipe/framework:calculator_runner",
+        "@mediapipe//mediapipe/framework/formats:image_frame_opencv",
+        "@mediapipe//mediapipe/framework/port:gtest",
+        "@mediapipe//mediapipe/framework/port:gtest_main",
+        "@mediapipe//mediapipe/framework/port:parse_text_proto",
+    ],
+)
+
 cc_test(
     name = "ffmpeg_capture_audio_calculator_test",
     srcs = ["ffmpeg_capture_audio_calculator_test.cc"],

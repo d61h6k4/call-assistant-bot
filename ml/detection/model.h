@@ -40,8 +40,7 @@ private:
   Ort::Allocator allocator_device_{nullptr};
 
   Ort::Value input_tensor_{nullptr};
-  std::array<int64_t, 3> input_shape_{3, height, width};
-  std::array<int64_t, 2> output_shape_{5, 6};
+  std::array<int64_t, 3> input_shape_{height, width, 3};
 
   static constexpr std::array<const char *, 1> input_names_ = {"image"};
   static constexpr std::array<const char *, 1> output_names_ = {"nms_out"};

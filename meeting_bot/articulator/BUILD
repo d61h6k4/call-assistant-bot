@@ -1,5 +1,5 @@
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@grpc//bazel:python_rules.bzl", "py_grpc_library", "py_proto_library")
+load("@com_github_grpc_grpc//bazel:python_rules.bzl", "py_grpc_library", "py_proto_library")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@pip//:requirements.bzl", "requirement")
 
@@ -41,7 +41,7 @@ py_binary(
     deps = [
         ":articulator_py_pb2_grpc",
         ":gmeet",
-        "@grpc//src/python/grpcio/grpc:grpcio",
+        "@com_github_grpc_grpc//src/python/grpcio/grpc:grpcio",
         "@pip//grpcio_health_checking",
         "@pip//nodriver",
         "@pip//picologging",
