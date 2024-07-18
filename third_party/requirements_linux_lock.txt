@@ -1,6 +1,6 @@
 accelerate==0.32.1
 picologging==0.9.3
-grpcio-health-checking==1.64.1
+grpcio-health-checking
 google-cloud-storage==2.17.0
 nodriver==0.34
 aiohttp==3.9.5
@@ -139,7 +139,7 @@ pillow==10.4.0
 pip==24.0
 plotly==5.22.0
 proto-plus==1.24.0
-protobuf==4.25.3
+protobuf
 psutil==6.0.0
 psycopg2-binary==2.9.9
 pyarrow==16.1.0
@@ -211,3 +211,5 @@ wheel==0.40.0
 xmljson==0.2.0
 xxhash==3.4.1
 yarl==1.9.4
+deprecated
+mss

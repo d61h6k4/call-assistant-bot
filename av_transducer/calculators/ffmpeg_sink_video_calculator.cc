@@ -20,7 +20,7 @@ namespace aikit {
 //   input_stream: "VIDEO:video_frames"
 //   input_stream: "AUDIO:audio_frames"
 // }
-class FFMPEGSourceVideoCalculator : public mediapipe::api2::Node {
+class FFMPEGSinkVideoCalculator : public mediapipe::api2::Node {
 public:
   static constexpr mediapipe::api2::SideInput<std::string> kInFilePath{
       "OUTPUT_FILE_PATH"};
@@ -52,9 +52,9 @@ private:
   AVPacket *audio_packet_ = nullptr;
   AVPacket *video_packet_ = nullptr;
 };
-MEDIAPIPE_REGISTER_NODE(FFMPEGSourceVideoCalculator);
+MEDIAPIPE_REGISTER_NODE(FFMPEGSinkVideoCalculator);
 
-absl::Status FFMPEGSourceVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
+absl::Status FFMPEGSinkVideoCalculator::Open(mediapipe::CalculatorContext *cc) {
   const auto &output_file_path = kInFilePath(cc).Get();
   const auto &audio_stream_parameters = kInAudioHeader(cc).Get();
   const auto &video_stream_parameters = kInVideoHeader(cc).Get();
@@ -84,7 +84,7 @@ absl::Status FFMPEGSourceVideoCalculator::Open(mediapipe::CalculatorContext *cc)
 }
 
 absl::Status
-FFMPEGSourceVideoCalculator::Close(mediapipe::CalculatorContext *cc) {
+FFMPEGSinkVideoCalculator::Close(mediapipe::CalculatorContext *cc) {
   av_packet_free(&audio_packet_);
   av_packet_free(&video_packet_);
 
@@ -92,7 +92,7 @@ FFMPEGSourceVideoCalculator::Close(mediapipe::CalculatorContext *cc) {
 }
 
 absl::Status
-FFMPEGSourceVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
+FFMPEGSinkVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
 
   if (kInVideo(cc).IsConnected() && !kInVideo(cc).IsEmpty()) {
 

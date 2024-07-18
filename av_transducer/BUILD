@@ -3,6 +3,9 @@ package(default_visibility = ["//visibility:public"])
 cc_binary(
     name = "av_transducer",
     srcs = ["main.cc"],
+    data = [
+        "//ml/detection/models:cdetr",
+    ],
     deps = [
         "//av_transducer/tasks:visual_graph",
         "//av_transducer/calculators:evaluator_client_calculator",
@@ -23,6 +26,9 @@ cc_binary(
 cc_binary(
     name = "debug",
     srcs = ["debug.cc"],
+    data = [
+        "//ml/detection/models:cdetr",
+    ],
     deps = [
         "//av_transducer/tasks:visual_graph",
         "//av_transducer/calculators:dumper_calculator",

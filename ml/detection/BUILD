@@ -7,9 +7,6 @@ cc_library(
         "model.cc",
     ],
     hdrs = ["model.h"],
-    data = [
-        "//ml/detection/models:cdetr",
-    ],
     visibility = ["//visibility:public"],
     deps = ["//third_party:libonnxruntime"],
 )
@@ -19,6 +16,7 @@ cc_test(
     srcs = ["model_test.cc"],
     data = [
         "//testdata:test_images",
+        "//ml/detection/models:cdetr",
     ],
     deps = [
         ":model",
@@ -34,6 +32,7 @@ cc_test(
     srcs = ["model_benchmark.cc"],
     data = [
         "//testdata:test_images",
+        "//ml/detection/models:cdetr",
     ],
     deps = [
         ":model",

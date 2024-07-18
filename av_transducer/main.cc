@@ -25,6 +25,11 @@ void SignalHandler(int signal) {
   SIGNAL_STATUS_COND_V.notify_one();
 }
 
+// Absolute path to the model file when building docker image
+ABSL_FLAG(
+    std::string, cdetr_model_path,
+    "/meeting_bot/meeting_bot.runfiles/_main/ml/detection/models/model.onnx",
+    "Specify path to the CDETR model.");
 ABSL_FLAG(std::string, output_file_path, "", "Full path of video to save.");
 
 mediapipe::CalculatorGraphConfig BuildGraph() {
@@ -63,6 +68,10 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   // Processing
 
   auto &visual_subgraph = graph.AddNode("VisualGraph");
+  graph.SideIn("CDETR_MODEL_PATH")
+          .SetName("cdetr_model_path")
+          .Cast<std::string>() >>
+      visual_subgraph.SideIn("CDETR_MODEL_PATH");
   graph.SideIn("OUT_VIDEO_HEADER")
           .SetName("out_video_header")
           .Cast<aikit::media::VideoStreamParameters>() >>
@@ -73,7 +82,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   // End of processing
 
   // Send to Evaluator
-  auto& evaluator_client_node = graph.AddNode("EvaluatorClientCalculator");
+  auto &evaluator_client_node = graph.AddNode("EvaluatorClientCalculator");
   detections_stream >> evaluator_client_node.In("DETECTIONS");
 
   // Write audio
@@ -115,6 +124,8 @@ absl::Status RunMPPGraph() {
   input_side_packets["out_video_header"] =
       mediapipe::MakePacket<aikit::media::VideoStreamParameters>(
           video_stream_parameters);
+  input_side_packets["cdetr_model_path"] =
+      mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_cdetr_model_path));
 
   ABSL_LOG(INFO) << "Initialize the calculator graph.";
   mediapipe::CalculatorGraph graph;

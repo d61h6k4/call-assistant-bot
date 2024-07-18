@@ -6968,6 +6968,95 @@
 			"version": "0.7-9"
 		},
 		{
+			"arch": "amd64",
+			"dependencies": [
+				{
+					"key": "liblzma5_5.4.1-0.2_amd64",
+					"name": "liblzma5",
+					"version": "5.4.1-0.2"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_amd64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_amd64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_amd64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libarchive13_3.6.2-1_amd64",
+					"name": "libarchive13",
+					"version": "3.6.2-1"
+				},
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_amd64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
+				},
+				{
+					"key": "libzstd1_1.5.4-p-dfsg2-5_amd64",
+					"name": "libzstd1",
+					"version": "1.5.4+dfsg2-5"
+				},
+				{
+					"key": "libxml2_2.9.14-p-dfsg-1.3_deb12u1_amd64",
+					"name": "libxml2",
+					"version": "2.9.14+dfsg-1.3~deb12u1"
+				},
+				{
+					"key": "libicu72_72.1-3_amd64",
+					"name": "libicu72",
+					"version": "72.1-3"
+				},
+				{
+					"key": "libstdc-p--p-6_12.2.0-14_amd64",
+					"name": "libstdc++6",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libnettle8_3.8.1-2_amd64",
+					"name": "libnettle8",
+					"version": "3.8.1-2"
+				},
+				{
+					"key": "liblz4-1_1.9.4-1_amd64",
+					"name": "liblz4-1",
+					"version": "1.9.4-1"
+				},
+				{
+					"key": "libbz2-1.0_1.0.8-5-p-b1_amd64",
+					"name": "libbz2-1.0",
+					"version": "1.0.8-5+b1"
+				},
+				{
+					"key": "libacl1_2.3.1-3_amd64",
+					"name": "libacl1",
+					"version": "2.3.1-3"
+				}
+			],
+			"key": "pixz_1.0.7-2_amd64",
+			"name": "pixz",
+			"sha256": "8b91523ca082ba77dd01c679b41d13d69611efc65fd15487f3570bbf58e492dc",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/pixz/pixz_1.0.7-2_amd64.deb",
+			"version": "1.0.7-2"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "libarchive13_3.6.2-1_amd64",
+			"name": "libarchive13",
+			"sha256": "82cc6d094f9b7c872e5bc5c4613151a7a8c20ac1a3d7d6c128dca64da618857b",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/liba/libarchive/libarchive13_3.6.2-1_amd64.deb",
+			"version": "3.6.2-1"
+		},
+		{
 			"arch": "arm64",
 			"dependencies": [
 				{
@@ -13881,6 +13970,95 @@
 			"sha256": "ffcdc4e1f6ec3dd194a7537051ba945c2f8a24c16af3e82b7a38a3a9d09fa767",
 			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/liba/libast/libast2_0.7-9_arm64.deb",
 			"version": "0.7-9"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [
+				{
+					"key": "liblzma5_5.4.1-0.2_arm64",
+					"name": "liblzma5",
+					"version": "5.4.1-0.2"
+				},
+				{
+					"key": "libc6_2.36-9-p-deb12u4_arm64",
+					"name": "libc6",
+					"version": "2.36-9+deb12u4"
+				},
+				{
+					"key": "libgcc-s1_12.2.0-14_arm64",
+					"name": "libgcc-s1",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "gcc-12-base_12.2.0-14_arm64",
+					"name": "gcc-12-base",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libarchive13_3.6.2-1_arm64",
+					"name": "libarchive13",
+					"version": "3.6.2-1"
+				},
+				{
+					"key": "zlib1g_1-1.2.13.dfsg-1_arm64",
+					"name": "zlib1g",
+					"version": "1:1.2.13.dfsg-1"
+				},
+				{
+					"key": "libzstd1_1.5.4-p-dfsg2-5_arm64",
+					"name": "libzstd1",
+					"version": "1.5.4+dfsg2-5"
+				},
+				{
+					"key": "libxml2_2.9.14-p-dfsg-1.3_deb12u1_arm64",
+					"name": "libxml2",
+					"version": "2.9.14+dfsg-1.3~deb12u1"
+				},
+				{
+					"key": "libicu72_72.1-3_arm64",
+					"name": "libicu72",
+					"version": "72.1-3"
+				},
+				{
+					"key": "libstdc-p--p-6_12.2.0-14_arm64",
+					"name": "libstdc++6",
+					"version": "12.2.0-14"
+				},
+				{
+					"key": "libnettle8_3.8.1-2_arm64",
+					"name": "libnettle8",
+					"version": "3.8.1-2"
+				},
+				{
+					"key": "liblz4-1_1.9.4-1_arm64",
+					"name": "liblz4-1",
+					"version": "1.9.4-1"
+				},
+				{
+					"key": "libbz2-1.0_1.0.8-5-p-b1_arm64",
+					"name": "libbz2-1.0",
+					"version": "1.0.8-5+b1"
+				},
+				{
+					"key": "libacl1_2.3.1-3_arm64",
+					"name": "libacl1",
+					"version": "2.3.1-3"
+				}
+			],
+			"key": "pixz_1.0.7-2_arm64",
+			"name": "pixz",
+			"sha256": "cfa1746f57bbe15522606337b68d5797f192f43d59b5e719de078679e2c15423",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/p/pixz/pixz_1.0.7-2_arm64.deb",
+			"version": "1.0.7-2"
+		},
+		{
+			"arch": "arm64",
+			"dependencies": [],
+			"key": "libarchive13_3.6.2-1_arm64",
+			"name": "libarchive13",
+			"sha256": "0aa6eae9fd7617ba10289fcef9c52506630786d7eebfe6fbef3ee720bb822f8a",
+			"url": "https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/pool/main/liba/libarchive/libarchive13_3.6.2-1_arm64.deb",
+			"version": "3.6.2-1"
 		}
 	],
 	"version": 1

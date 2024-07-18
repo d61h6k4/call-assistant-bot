@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <onnxruntime_cxx_api.h>
+#include <string>
 #include <vector>
 
 namespace aikit::ml {
@@ -20,7 +21,7 @@ struct Detection {
 
 class CDetr {
 public:
-  CDetr();
+  explicit CDetr(const std::string& path_to_model);
 
   std::vector<Detection> operator()(const uint8_t *image);
 

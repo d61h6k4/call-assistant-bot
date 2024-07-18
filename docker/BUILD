@@ -192,10 +192,7 @@ oci_image(
 )
 
 # Build: bazel run //docker:tarball
-# Run: docker run --rm -e GOOGLE_LOGIN=d61h6k4a1k1tt3st@gmail.com \
-#                      -e GOOGLE_PASSWORD=*** \
-#                      --volume `pwd`/output:/root \
-#                      aikit/meetingbot:latest \
+# Run: docker run --rm aikit/meetingbot:latest \
 #                      --gmeet_link=https://meet.google.com/rof-kvpv-yue
 oci_tarball(
     name = "tarball",

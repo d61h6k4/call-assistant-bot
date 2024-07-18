@@ -46,8 +46,11 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
                 "message": "Processing detections",
                 "event_timestamp": request.event_timestamp,
                 "particiapnts_num": sum(
-                    1 for detection in request.detections if detection.label_id == 1
+                    1
+                    for detection in request.detections
+                    if detection.label_id == 1 and detection.score >= 0.7
                 ),
+                "detections": request.detections,
             }
         )
         return evaluator_pb2.DetectionsReply()

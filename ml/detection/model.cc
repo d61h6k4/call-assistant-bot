@@ -4,7 +4,7 @@
 #include <thread>
 
 namespace aikit::ml {
-CDetr::CDetr() {
+CDetr::CDetr(const std::string& path_to_model) {
   env_ = Ort::Env(logging_level_, log_id_.c_str());
 
   run_options_ = Ort::RunOptions();
@@ -30,7 +30,7 @@ CDetr::CDetr() {
   // }
 
   session_ =
-      Ort::Session(env_, "ml/detection/models/model.onnx", session_options_);
+      Ort::Session(env_, path_to_model.c_str(), session_options_);
 
   auto memory_info =
       Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
