@@ -41,6 +41,7 @@ py_binary(
     deps = [
         ":articulator_py_pb2_grpc",
         ":gmeet",
+        "//meeting_bot/common:logging",
         "@com_github_grpc_grpc//src/python/grpcio/grpc:grpcio",
         "@pip//grpcio_health_checking",
         "@pip//nodriver",

@@ -6,6 +6,8 @@ import time
 import grpc
 
 import picologging as logging
+import logging.config
+from meeting_bot.common.logging import logger_config
 
 from pathlib import Path
 from grpc_health.v1 import health_pb2, health_pb2_grpc
@@ -119,5 +121,5 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    logging.basicConfig(level=logging.INFO)
+    logging.config.dictConfig(logger_config(args.working_dir, "perceiver"))
     asyncio.run(serve(args))

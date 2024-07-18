@@ -5,7 +5,12 @@ import sched
 import time
 import grpc
 
+from pathlib import Path
+
 import picologging as logging
+import logging.config
+from meeting_bot.common.logging import logger_config
+
 from meeting_bot.evaluator import evaluator_pb2, evaluator_pb2_grpc  # noqa
 from grpc_health.v1 import health_pb2, health_pb2_grpc
 
@@ -120,12 +125,17 @@ def parse_args():
         ),
         default="unix:///tmp/meeting_bot.sock",
     )
-
+    parser.add_argument(
+        "--working_dir",
+        type=Path,
+        required=True,
+        help="Specify path to the folder to store artifacts",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
 
-    logging.basicConfig(level=logging.INFO)
+    logging.config.dictConfig(logger_config(args.working_dir, "evaluator"))
     asyncio.run(serve(args))

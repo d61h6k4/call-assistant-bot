@@ -8,6 +8,9 @@ import grpc
 import nodriver
 
 import picologging as logging
+import logging.config
+from meeting_bot.common.logging import logger_config
+
 
 from meeting_bot.articulator import articulator_pb2, articulator_pb2_grpc  # noqa
 from grpc_health.v1 import health_pb2, health_pb2_grpc
@@ -188,5 +191,5 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    logging.basicConfig(level=logging.INFO)
+    logging.config.dictConfig(logger_config(args.working_dir, "articulator"))
     asyncio.run(serve(args))
