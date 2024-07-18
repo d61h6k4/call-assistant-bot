@@ -8,10 +8,11 @@
     "format": "QOperator",
     "is_static": false,
     "mode": "IntegerOps",
-    "nodes_to_exclude": [],
+    "nodes_to_exclude": [
+      "Conv_quant"
+    ],
     "nodes_to_quantize": [],
     "operators_to_quantize": [
-      "Conv",
       "MatMul",
       "Attention",
       "LSTM",
