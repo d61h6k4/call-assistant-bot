@@ -174,6 +174,7 @@ cc_test(
     srcs = ["cdetr_calculator_test.cc"],
     data = [
         "//testdata:test_images",
+        "//ml/detection/models:cdetr",
     ],
     deps = [
         ":cdetr_calculator",

@@ -6,6 +6,7 @@
 #include "av_transducer/utils/video.h"
 #include "mediapipe/framework/api2/builder.h"
 #include "mediapipe/framework/calculator_graph.h"
+#include <string>
 
 ABSL_FLAG(std::string, input_file_path, "", "Full path of video to read.");
 
@@ -38,6 +39,10 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .SetName("out_video_header")
           .Cast<aikit::media::VideoStreamParameters>() >>
       visual_subgraph.SideIn("OUT_VIDEO_HEADER");
+  graph.SideIn("CDETR_MODEL_PATH")
+          .SetName("cdetr_model_path")
+          .Cast<std::string>() >>
+      visual_subgraph.SideIn("CDETR_MODEL_PATH");
   yuv_video_stream >> visual_subgraph.In("IN_VIDEO");
   auto detections_stream = visual_subgraph.Out("DETECTIONS");
 
@@ -59,6 +64,8 @@ absl::Status RunMPPGraph() {
   input_side_packets["out_video_header"] =
       mediapipe::MakePacket<aikit::media::VideoStreamParameters>(
           video_stream_parameters);
+  input_side_packets["cdetr_model_path"] =
+      mediapipe::MakePacket<std::string>("ml/detection/models/model.onnx");
 
   ABSL_LOG(INFO) << "Initialize the calculator graph.";
   mediapipe::CalculatorGraph graph;

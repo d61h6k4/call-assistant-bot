@@ -1,9 +1,9 @@
 
-#include <string_view>
-#include "mediapipe/framework/api2/builder.h"
-#include "mediapipe/framework/subgraph.h"
 #include "mediapipe/calculators/core/packet_thinner_calculator.pb.h"
+#include "mediapipe/framework/api2/builder.h"
 #include "mediapipe/framework/formats/yuv_image.h"
+#include "mediapipe/framework/subgraph.h"
+#include <string_view>
 
 #include "av_transducer/utils/audio.h"
 #include "av_transducer/utils/video.h"
@@ -55,6 +55,10 @@ public:
 
     // Apply CDETR
     auto &cdetr_node = graph.AddNode("CDETRCalculator");
+    graph.SideIn("CDETR_MODEL_PATH")
+            .SetName("cdetr_model_path")
+            .Cast<std::string>() >>
+        cdetr_node.SideIn("CDETR_MODEL_PATH");
     images_stream >> cdetr_node.In("IMAGE");
     cdetr_node.Out("DETECTIONS") >> graph.Out(kOutDetections);
 

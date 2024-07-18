@@ -9,7 +9,7 @@
 #include "ml/detection/model.h"
 
 static void BM_CDetr(benchmark::State &state) {
-  auto model = aikit::ml::CDetr{};
+  auto model = aikit::ml::CDetr("ml/detection/models/model.onnx");
 
   cv::Mat input_mat;
   cv::cvtColor(cv::imread("testdata/meeting_frame.png"), input_mat,

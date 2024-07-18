@@ -42,6 +42,7 @@ py_binary(
         "//meeting_bot/articulator",
         "//meeting_bot/evaluator",
         "//meeting_bot/perceiver",
+        "//ml/detection/models:cdetr",
     ],
     python_version = "PY3",
     srcs_version = "PY3",

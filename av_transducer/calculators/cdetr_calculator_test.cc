@@ -22,11 +22,14 @@ protected:
   CDetrCalculatorTest()
       : runner_(R"pb(
                       calculator: "CDETRCalculator"
+                      input_side_packet: "CDETR_MODEL_PATH:cdetr_model_path"
                       input_stream: "IMAGE:image"
                       output_stream: "DETECTIONS:detections"
                     )pb") {}
 
   void SetInput() {
+    runner_.MutableSidePackets()->Tag("CDETR_MODEL_PATH") =
+        mediapipe::MakePacket<std::string>("ml/detection/models/model.onnx");
 
     cv::Mat input_mat;
     cv::cvtColor(cv::imread("testdata/meeting_frame.png"), input_mat,
