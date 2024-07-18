@@ -93,10 +93,11 @@ def sync_models(args: argparse.Namespace):
                 verbose=True,
                 logger=_LOGGER,
             )
-            upload_blob(Path(archive_path).absolute(), "detection")
+            archive_path = Path(archive_path)
+            upload_blob(archive_path.absolute(), f"detection/{archive_path.name}")
 
         if release:
-            upload_blob(Path("ml/detection/models/model.onnx"), "detection")
+            upload_blob(Path("ml/detection/models/model.onnx"), "detection/model.onnx")
 
     def download_detection():
         download_blob("detection/model.onnx", "ml/detection/models/model.onnx")
