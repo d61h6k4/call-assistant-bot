@@ -46,6 +46,7 @@ py_binary(
     deps = [
         ":av_transducer_operator",
         ":perceiver_py_pb2_grpc",
+        "//meeting_bot/common:logging",
         "@com_github_grpc_grpc//src/python/grpcio/grpc:grpcio",
         "@pip//grpcio_health_checking",
         "@pip//picologging",

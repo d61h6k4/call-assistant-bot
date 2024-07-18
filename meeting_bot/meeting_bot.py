@@ -18,6 +18,7 @@ import time
 
 from grpc.aio import UsageError
 import picologging as logging
+import logging.config
 
 from datetime import datetime
 from pathlib import Path
@@ -85,7 +86,7 @@ class Evaluator(BotPart):
         )
 
     @staticmethod
-    async def create(meeting_bot_address: str):
+    async def create(meeting_bot_address: str, working_dir: str):
         evaluator_address = "unix:///tmp/evaluator.sock"
 
         r = runfiles.Create()
@@ -99,6 +100,8 @@ class Evaluator(BotPart):
                     evaluator_address,
                     "--meeting_bot_address",
                     meeting_bot_address,
+                    "--working_dir",
+                    working_dir,
                 ]
             ),
             env=env,
@@ -260,7 +263,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             raise RuntimeError("Failed to run articulator.") from e
 
         perceiver = await Perceiver.create(working_dir=working_dir.name)
-        evaluator = await Evaluator.create(address)
+        evaluator = await Evaluator.create(address, working_dir=working_dir.name)
         return cls(
             server=server,
             parts=[evaluator, articulator, perceiver],
