@@ -25,8 +25,11 @@ void SignalHandler(int signal) {
   SIGNAL_STATUS_COND_V.notify_one();
 }
 
-ABSL_FLAG(std::string, cdetr_model_path, "ml/detection/models/model.onnx",
-          "Specify path to the CDETR model.");
+// Absolute path to the model file when building docker image
+ABSL_FLAG(
+    std::string, cdetr_model_path,
+    "/meeting_bot/meeting_bot.runfiles/_main/ml/detection/models/model.onnx",
+    "Specify path to the CDETR model.");
 ABSL_FLAG(std::string, output_file_path, "", "Full path of video to save.");
 
 mediapipe::CalculatorGraphConfig BuildGraph() {
