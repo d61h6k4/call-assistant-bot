@@ -55,12 +55,15 @@ jobs:
           bazel test --test_output=all //av_transducer/calculators:all
           bazel test --test_output=all //ml/detection:all
   deploy:
-    name: "Testing"
+    name: "Deploying"
     runs-on: ubuntu-22.04
     # Add "id-token" with the intended permissions.
     permissions:
       contents: "read"
       id-token: "write"
+
+    needs:
+      - test
 
     steps:
       - name: "Checkout"
