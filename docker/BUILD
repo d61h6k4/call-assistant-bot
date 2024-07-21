@@ -2,7 +2,7 @@ load("@aspect_bazel_lib//lib:tar.bzl", "tar")
 load("@container_structure_test//:defs.bzl", "container_structure_test")
 load("@rules_distroless//apt:defs.bzl", "dpkg_status")
 load("@rules_distroless//distroless:defs.bzl", "cacerts", "group", "home", "passwd")
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball", "oci_push")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 passwd(
@@ -208,5 +208,10 @@ container_structure_test(
         "@platforms//cpu:arm64": ["test_linux_arm64.yaml"],
         "@platforms//cpu:x86_64": ["test_linux_amd64.yaml"],
     }),
+    image = ":image",
+)
+
+oci_push(
+    name = "push",
     image = ":image",
 )

@@ -233,3 +233,5 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python
 model/
 *.onnx
+# Ignore generated credentials from google-github-actions/auth
+gha-creds-*.json
