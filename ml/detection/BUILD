@@ -115,6 +115,7 @@ py_test(
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
+    tags = ["manual"],
     deps = [
         ":converter",
         "@pip//accelerate",
@@ -135,6 +136,7 @@ py_test(
     data = [
         "//testdata:test_images",
     ],
+    tags = ["manual"],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],

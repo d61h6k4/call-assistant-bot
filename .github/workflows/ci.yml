@@ -65,6 +65,6 @@ jobs:
           bazel test --test_output=all //av_transducer/calculators:all
           bazel test --test_output=all //ml/detection:all
 
-      - name: "Build and push container"
-        run: |
-          bazel run //docker:push -- -r ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }} -t ${{ github.sha }}
+      # - name: "Build and push container"
+      #   run: |
+      #     bazel run //docker:push -- -r ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }} -t ${{ github.sha }}
