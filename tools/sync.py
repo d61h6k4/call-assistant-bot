@@ -137,7 +137,7 @@ def sync_testdata(args: argparse.Namespace):
         raise NotImplemented("Uploading test data hasn't been implemented yet.")
 
     def download_detection():
-        for filename in ["testvideo.mp4", "meeting_frame.mp4"]:
+        for filename in ["testvideo.mp4", "meeting_frame.png"]:
             src = "2024/07/19/testdata/" + filename
             dst = "testdata/" + filename
 
