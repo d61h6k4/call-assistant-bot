@@ -9,6 +9,8 @@ py_binary(
     visibility = ["//visibility:public"],
     data = [
         "//ml/detection/models:cdetr",
+        "//testdata:test_videos",
+        "//testdata:test_images",
     ],
     deps = [
         "@pip//google_auth",
