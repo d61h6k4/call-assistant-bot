@@ -17,9 +17,10 @@ std::vector<float> GenerateAudioData(size_t nb_samples) {
 
   /* init signal generator */
   auto t = 0.0;
-  auto tincr = 2.0 * std::numbers::pi * 110.0 / 16000.0;
+  auto pi = 3.14159265358979323846;
+  auto tincr = 2.0 * pi * 110.0 / 16000.0;
   /* increment frequency by 110 Hz per second */
-  auto tincr2 = 2.0 * std::numbers::pi * 110.0 / 16000.0 / 16000.0;
+  auto tincr2 = 2.0 * pi * 110.0 / 16000.0 / 16000.0;
 
   for (auto j = 0; j < nb_samples; ++j) {
     audio_data[j] = std::sin(t);
