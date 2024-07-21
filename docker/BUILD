@@ -214,4 +214,6 @@ container_structure_test(
 oci_push(
     name = "push",
     image = ":image",
+    remote_tags = ["latest"],
+    repository = "europe-west1-b-docker.pkg.dev/ai-call-bot-424111/meeting-bot/meeting-bot",
 )
