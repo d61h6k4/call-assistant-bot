@@ -1,7 +1,7 @@
 name: Deploy
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches:
       - main
 
@@ -11,13 +11,15 @@ env:
   PROJECT_ID: ${{ vars.PROJECT_ID }}
 
 jobs:
-  deploy-meeting-bot:
-    name: "Build and deploy the meeting bot"
+  prepare-env:
+    name: "Prepare env to build and deploy"
     runs-on: ubuntu-22.04
+
     # Add "id-token" with the intended permissions.
     permissions:
       contents: "read"
       id-token: "write"
+
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -48,7 +50,17 @@ jobs:
           restore-keys: |
             bazel-
 
-      - name: "Build and push container"
+      - name: "Pre-install dependencies"
         run: |
           sudo apt install -y yasm automake libtool m4
+          bazel run //tools:sync -- --action download models --all
+
+      - name: "Run tests"
+        run: |
+          bazel test --test_output=all //av_transducer/utils:all
+          bazel test --test_output=all //av_transducer/calculators:all
+          bazel test --test_output=all //ml/detection:all
+
+      - name: "Build and push container"
+        run: |
           bazel run //docker:push -- -r ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }} -t ${{ github.sha }}

@@ -211,6 +211,6 @@ wheel==0.40.0
 xmljson==0.2.0
 xxhash==3.4.1
 yarl==1.9.4
-deprecated
-mss
+mss==9.0.1
+Deprecated==1.2.14
 python_json_logger
