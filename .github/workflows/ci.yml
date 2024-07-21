@@ -55,6 +55,9 @@ jobs:
           sudo apt install -y yasm automake libtool m4
           touch ml/detection/models/model.onnx
           bazel run //tools:sync -- --action download models --all
+          touch testdata/testvideo.mp4
+          touch testdata/meeting_frame.png
+          bazel run //tools:sync -- --action download testdata
 
       - name: "Run tests"
         run: |

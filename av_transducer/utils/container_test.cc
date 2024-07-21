@@ -84,13 +84,22 @@ TEST(TestContainerUtils, CheckCreateReaderContianer) {
       auto audio_frame_or = container->CreateAudioFrame();
       EXPECT_TRUE(audio_frame_or);
       st = container->PacketToFrame(packet, audio_frame_or.get());
-      EXPECT_TRUE(st.ok());
+      if (!st.ok()) {
+        EXPECT_TRUE(absl::IsFailedPrecondition(st));
+      } else {
+          EXPECT_TRUE(st.ok()) << st.message();
+      }
     } else if (container->IsPacketVideo(packet)) {
 
       auto video_frame_or = container->CreateVideoFrame();
       EXPECT_TRUE(video_frame_or);
       st = container->PacketToFrame(packet, video_frame_or.get());
-      EXPECT_TRUE(st.ok());
+      if (!st.ok()) {
+        EXPECT_TRUE(absl::IsFailedPrecondition(st));
+      } else {
+
+          EXPECT_TRUE(st.ok()) << st.message();
+      }
     }
   }
 

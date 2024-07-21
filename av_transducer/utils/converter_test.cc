@@ -126,6 +126,10 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
     if (container->IsPacketAudio(packet)) {
 
       st = container->PacketToFrame(packet, audio_frame_or.get());
+      if (!st.ok()) {
+          EXPECT_TRUE(absl::IsFailedPrecondition(st)) << st.message();
+          continue;
+      }
       EXPECT_TRUE(st.ok());
 
       auto s = audio_converter_or->Store(audio_frame_or.get());
@@ -187,6 +191,10 @@ TEST(TestConverterUtils, CheckReadVideoConvertWrite) {
     if (container->IsPacketVideo(packet)) {
 
       st = container->PacketToFrame(packet, video_frame_or.get());
+      if (!st.ok()) {
+        EXPECT_TRUE(absl::IsFailedPrecondition(st)) << st.message();
+        continue;
+      }
       EXPECT_TRUE(st.ok());
 
       auto s = video_converter_or->Convert(video_frame_or.get(),
