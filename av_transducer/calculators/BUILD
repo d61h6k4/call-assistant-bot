@@ -156,9 +156,9 @@ cc_library(
     name = "evaluator_client_calculator",
     srcs = ["evaluator_client_calculator.cc"],
     deps = [
-        "@com_github_grpc_grpc//:grpc++",
         "//meeting_bot/evaluator:evaluator_proto_grpc",
         "//ml/detection:model",
+        "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/log:absl_log",
         "@mediapipe//mediapipe/framework:calculator_framework",
         "@mediapipe//mediapipe/framework/api2:node",
@@ -173,8 +173,8 @@ cc_test(
     name = "cdetr_calculator_test",
     srcs = ["cdetr_calculator_test.cc"],
     data = [
-        "//testdata:test_images",
         "//ml/detection/models:cdetr",
+        "//testdata:test_images",
     ],
     deps = [
         ":cdetr_calculator",

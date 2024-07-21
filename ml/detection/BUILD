@@ -15,8 +15,8 @@ cc_test(
     name = "model_test",
     srcs = ["model_test.cc"],
     data = [
-        "//testdata:test_images",
         "//ml/detection/models:cdetr",
+        "//testdata:test_images",
     ],
     deps = [
         ":model",
@@ -31,8 +31,8 @@ cc_test(
     name = "model_benchmark",
     srcs = ["model_benchmark.cc"],
     data = [
-        "//testdata:test_images",
         "//ml/detection/models:cdetr",
+        "//testdata:test_images",
     ],
     deps = [
         ":model",
@@ -114,8 +114,8 @@ py_test(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
-    visibility = ["//visibility:public"],
     tags = ["manual"],
+    visibility = ["//visibility:public"],
     deps = [
         ":converter",
         "@pip//accelerate",
@@ -136,9 +136,9 @@ py_test(
     data = [
         "//testdata:test_images",
     ],
-    tags = ["manual"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         ":ml_server",
