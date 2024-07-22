@@ -9,7 +9,6 @@ from google.cloud import storage
 from google.api_core.exceptions import PreconditionFailed
 from pathlib import Path
 
-_BUCKET_NAME = "aikit-meeting-bot-ml-artifacts"
 _LOGGER = logging.getLogger()
 
 
@@ -28,7 +27,7 @@ class Action(StrEnum):
     DOWNLOAD = auto()
 
 
-def download_blob(source_blob_name, destination_file_name):
+def download_blob(source_blob_name, destination_file_name, bucket_name):
     """Downloads a blob from the bucket."""
     # The ID of your GCS bucket
     # bucket_name = "your-bucket-name"
@@ -41,7 +40,7 @@ def download_blob(source_blob_name, destination_file_name):
 
     storage_client = storage.Client()
 
-    bucket = storage_client.bucket(_BUCKET_NAME)
+    bucket = storage_client.bucket(bucket_name)
 
     # Construct a client side representation of a blob.
     # Note `Bucket.blob` differs from `Bucket.get_blob` as it doesn't retrieve
@@ -52,7 +51,7 @@ def download_blob(source_blob_name, destination_file_name):
 
     _LOGGER.info(
         "Downloaded storage object {} from bucket {} to local file {}.".format(
-            source_blob_name, _BUCKET_NAME, destination_file_name
+            source_blob_name, bucket_name, destination_file_name
         )
     )
 
@@ -60,10 +59,11 @@ def download_blob(source_blob_name, destination_file_name):
 def upload_blob(
     source_file_name: Path,
     destination_blob_name: str,
+    bucket_name,
 ):
     """Uploads a file to the bucket."""
     storage_client = storage.Client()
-    bucket = storage_client.bucket(_BUCKET_NAME)
+    bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
 
     # Optional: set a generation-match precondition to avoid potential race conditions
@@ -94,13 +94,25 @@ def sync_models(args: argparse.Namespace):
                 logger=_LOGGER,
             )
             archive_path = Path(archive_path)
-            upload_blob(archive_path.absolute(), f"detection/{archive_path.name}")
+            upload_blob(
+                archive_path.absolute(),
+                f"detection/{archive_path.name}",
+                "aikit-meeting-bot-ml-artifacts",
+            )
 
         if release:
-            upload_blob(Path("ml/detection/models/model.onnx"), "detection/model.onnx")
+            upload_blob(
+                Path("ml/detection/models/model.onnx"),
+                "detection/model.onnx",
+                "aikit-meeting-bot-ml-artifacts",
+            )
 
     def download_detection():
-        download_blob("detection/model.onnx", "ml/detection/models/model.onnx")
+        download_blob(
+            "detection/model.onnx",
+            "ml/detection/models/model.onnx",
+            "aikit-meeting-bot-ml-artifacts",
+        )
 
     if not any((args.all, args.detection)):
         _LOGGER.warning(
@@ -118,6 +130,25 @@ def sync_models(args: argparse.Namespace):
             download_detection()
         else:
             raise RuntimeError(f"Unsupported action {args.action}")
+
+
+def sync_testdata(args: argparse.Namespace):
+    def upload_detection():
+        raise NotImplemented("Uploading test data hasn't been implemented yet.")
+
+    def download_detection():
+        for filename in ["testvideo.mp4", "meeting_frame.png"]:
+            src = "2024/07/19/testdata/" + filename
+            dst = "testdata/" + filename
+
+            download_blob(src, dst, "meeting-bot-artifacts")
+
+    if args.action == Action.UPLOAD:
+        upload_detection()
+    elif args.action == Action.DOWNLOAD:
+        download_detection()
+    else:
+        raise RuntimeError(f"Unsupported action {args.action}")
 
 
 def parse_args():
@@ -150,6 +181,9 @@ def parse_args():
         action="store_true",
         help="Specify whether to mark uploaded version as a release.",
     )
+
+    parser_testdata = subparsers.add_parser("testdata", help="Sync test data files.")
+    parser_testdata.set_defaults(func=sync_testdata)
 
     return parser.parse_args()
 

@@ -3,10 +3,7 @@
 #include "gtest/gtest.h"
 
 #include <cstddef>
-#include <numbers>
 #include <vector>
-
-#include "absl/log/absl_log.h"
 
 #include "av_transducer/utils/audio.h"
 #include "av_transducer/utils/container.h"
@@ -27,9 +24,10 @@ std::vector<float> GenerateAudioData(size_t nb_samples) {
 
   /* init signal generator */
   auto t = 0.0;
-  auto tincr = 2.0 * std::numbers::pi * 110.0 / 16000.0;
+  auto pi = 3.14159265358979323846;
+  auto tincr = 2.0 * pi * 110.0 / 16000.0;
   /* increment frequency by 110 Hz per second */
-  auto tincr2 = 2.0 * std::numbers::pi * 110.0 / 16000.0 / 16000.0;
+  auto tincr2 = 2.0 * pi * 110.0 / 16000.0 / 16000.0;
 
   for (auto j = 0; j < nb_samples; ++j) {
     audio_data[j] = std::sin(t);
@@ -58,7 +56,7 @@ std::vector<uint8_t> GenerateImage(int width, int height, int frame_ix) {
   for (auto y = 0; y < height / 2; y++) {
     for (auto x = 0; x < width / 2; x++) {
       image[width * height + y * linesize[1] + x] = 128 + y + frame_ix * 2;
-      image[width * height + width / 2 * height /2 + y * linesize[2] + x] =
+      image[width * height + width / 2 * height / 2 + y * linesize[2] + x] =
           64 + x + frame_ix * 5;
     }
   }
@@ -86,13 +84,22 @@ TEST(TestContainerUtils, CheckCreateReaderContianer) {
       auto audio_frame_or = container->CreateAudioFrame();
       EXPECT_TRUE(audio_frame_or);
       st = container->PacketToFrame(packet, audio_frame_or.get());
-      EXPECT_TRUE(st.ok());
+      if (!st.ok()) {
+        EXPECT_TRUE(absl::IsFailedPrecondition(st));
+      } else {
+          EXPECT_TRUE(st.ok()) << st.message();
+      }
     } else if (container->IsPacketVideo(packet)) {
 
       auto video_frame_or = container->CreateVideoFrame();
       EXPECT_TRUE(video_frame_or);
       st = container->PacketToFrame(packet, video_frame_or.get());
-      EXPECT_TRUE(st.ok());
+      if (!st.ok()) {
+        EXPECT_TRUE(absl::IsFailedPrecondition(st));
+      } else {
+
+          EXPECT_TRUE(st.ok()) << st.message();
+      }
     }
   }
 

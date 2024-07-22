@@ -1,9 +1,7 @@
 filegroup(
     name = "cdetr",
-    srcs = [
-        "config.json",
-        "model.onnx",
-        "preprocessor_config.json",
-    ],
+    srcs = glob([
+        "*.onnx",
+    ]),
     visibility = ["//visibility:public"],
 )

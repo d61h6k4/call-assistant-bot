@@ -2,7 +2,7 @@ load("@aspect_bazel_lib//lib:tar.bzl", "tar")
 load("@container_structure_test//:defs.bzl", "container_structure_test")
 load("@rules_distroless//apt:defs.bzl", "dpkg_status")
 load("@rules_distroless//distroless:defs.bzl", "cacerts", "group", "home", "passwd")
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball", "oci_push")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_push", "oci_tarball")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 passwd(
@@ -214,4 +214,6 @@ container_structure_test(
 oci_push(
     name = "push",
     image = ":image",
+    remote_tags = ["latest"],
+    repository = "europe-west1-b-docker.pkg.dev/ai-call-bot-424111/meeting-bot/meeting-bot",
 )

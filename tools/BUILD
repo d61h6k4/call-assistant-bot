@@ -4,12 +4,14 @@ load("@pip//:requirements.bzl", "requirement")
 py_binary(
     name = "sync",
     srcs = ["sync.py"],
+    data = [
+        "//ml/detection/models:cdetr",
+        "//testdata:test_images",
+        "//testdata:test_videos",
+    ],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
-    data = [
-        "//ml/detection/models:cdetr",
-    ],
     deps = [
         "@pip//google_auth",
         "@pip//google_cloud_storage",

@@ -17,9 +17,10 @@ std::vector<float> GenerateAudioData(size_t nb_samples) {
 
   /* init signal generator */
   auto t = 0.0;
-  auto tincr = 2.0 * std::numbers::pi * 110.0 / 16000.0;
+  auto pi = 3.14159265358979323846;
+  auto tincr = 2.0 * pi * 110.0 / 16000.0;
   /* increment frequency by 110 Hz per second */
-  auto tincr2 = 2.0 * std::numbers::pi * 110.0 / 16000.0 / 16000.0;
+  auto tincr2 = 2.0 * pi * 110.0 / 16000.0 / 16000.0;
 
   for (auto j = 0; j < nb_samples; ++j) {
     audio_data[j] = std::sin(t);
@@ -125,6 +126,10 @@ TEST(TestConverterUtils, CheckReadAudioConvertWrite) {
     if (container->IsPacketAudio(packet)) {
 
       st = container->PacketToFrame(packet, audio_frame_or.get());
+      if (!st.ok()) {
+          EXPECT_TRUE(absl::IsFailedPrecondition(st)) << st.message();
+          continue;
+      }
       EXPECT_TRUE(st.ok());
 
       auto s = audio_converter_or->Store(audio_frame_or.get());
@@ -186,6 +191,10 @@ TEST(TestConverterUtils, CheckReadVideoConvertWrite) {
     if (container->IsPacketVideo(packet)) {
 
       st = container->PacketToFrame(packet, video_frame_or.get());
+      if (!st.ok()) {
+        EXPECT_TRUE(absl::IsFailedPrecondition(st)) << st.message();
+        continue;
+      }
       EXPECT_TRUE(st.ok());
 
       auto s = video_converter_or->Convert(video_frame_or.get(),

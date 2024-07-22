@@ -423,14 +423,14 @@ ContainerStreamContext::PacketToFrame(AVCodecContext *codec_context,
   int response = avcodec_send_packet(codec_context, packet);
   if (response < 0) {
     return absl::AbortedError(absl::StrFormat(
-        "Error while sending a packet to the decoder: %d", response));
+        "Error while sending a packet to the decoder: %s", av_err2string(response)));
   }
   // Return decoded output data (into a frame) from a decoder
   // https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c
   response = avcodec_receive_frame(codec_context, frame);
   if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
     return absl::FailedPreconditionError(
-        absl::StrFormat("Error while decoding the output data: %d", response));
+        absl::StrFormat("Error while decoding the output data: %s", av_err2string(response)));
   }
   return absl::OkStatus();
 }
