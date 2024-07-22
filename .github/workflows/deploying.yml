@@ -1,7 +1,7 @@
-name: CI
+name: Deploying
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches:
       - main
 env:
@@ -9,71 +9,6 @@ env:
   APP: meeting-bot
   PROJECT_ID: ${{ vars.PROJECT_ID }}
 jobs:
-  test:
-    name: "Testing"
-    runs-on: ubuntu-22.04
-    # Add "id-token" with the intended permissions.
-    permissions:
-      contents: "read"
-      id-token: "write"
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-        with:
-          lfs: "false"
-
-      - name: "Google auth"
-        id: "auth"
-        uses: "google-github-actions/auth@v2"
-        with:
-          workload_identity_provider: "${{ secrets.WIF_PROVIDER }}"
-          service_account: "${{ secrets.WIF_SERVICE_ACCOUNT }}"
-      - name: "Set up Cloud SDK"
-        uses: "google-github-actions/setup-gcloud@v2"
-        with:
-          project_id: "${{ env.PROJECT_ID }}"
-
-      - name: "Docker auth"
-        run: |-
-          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
-
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: false
-
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
-
-      - name: Mount bazel cache # Optional
-        uses: actions/cache@v4
-        with:
-          path: "~/.cache/bazel"
-          key: bazel-${{ hashFiles('.bazelrc', '.bazelversion', 'MODULE.bazel', 'MODULE.bazel.lock') }}
-          restore-keys: |
-            bazel-
-      - name: "Pre-install dependencies"
-        run: |
-          sudo apt install -y yasm automake libtool m4
-          touch ml/detection/models/model.onnx
-          bazel run //tools:sync -- --action download models --all
-          touch testdata/testvideo.mp4
-          touch testdata/meeting_frame.png
-          bazel run //tools:sync -- --action download testdata
-      - name: "Run tests"
-        run: |
-          bazel test --test_output=all //av_transducer/utils:all
-          bazel test --test_output=all //av_transducer/calculators:all
-          bazel test --test_output=all //ml/detection:all
-
   deploy:
     name: "Deploying"
     runs-on: ubuntu-22.04
