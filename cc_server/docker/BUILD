@@ -20,6 +20,9 @@ oci_image(
     tars = [
         ":cc_server_tar",
     ],
+    exposed_ports = [
+        "8080/tcp",
+    ],
 )
 
 # Build: bazel run //cc_server/docker:tarball
