@@ -16,7 +16,7 @@ pkg_tar(
 oci_image(
     name = "image",
     base = "@distroless_python3",
-    entrypoint = ["/cc_server/cc_server"],
+    cmd = ["/cc_server/cc_server"],
     tars = [
         ":cc_server_tar",
     ],
