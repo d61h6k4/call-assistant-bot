@@ -215,3 +215,6 @@ mss==9.0.1
 Deprecated==1.2.14
 python_json_logger==2.0.7
 wrapt==1.16.0
+PyJWT==2.8.0
+fastui==0.6.0
+google-cloud-run==0.10.7
