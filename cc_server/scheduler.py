@@ -20,7 +20,7 @@ class JobForm(BaseModel):
 def execute_cloud_run_job(meeting_url: str, logger):
     client = run_v2.JobsClient()
     request = run_v2.RunJobRequest(
-        name="meeting-bot",
+        name="projects/ai-call-bot-424111/locations/europe-west1/jobs/meeting-bot",
         overrides=run_v2.RunJobRequest.Overrides(
             container_overrides=[
                 run_v2.RunJobRequest.Overrides.ContainerOverride(
@@ -84,7 +84,7 @@ def get_router(logger):
             }
         )
 
-        background_tasks.add_task(execute_cloud_run_job, form.meeting_url, logger)
+        background_tasks.add_task(execute_cloud_run_job, str(form.meeting_url), logger)
 
         return [
             c.Toast(
