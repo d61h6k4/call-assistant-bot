@@ -1,6 +1,23 @@
-
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@pip//:requirements.bzl", "requirement")
+
+py_library(
+    name = "root",
+    srcs = ["root.py"],
+    deps = [
+        "@pip//fastapi",
+        "@pip//fastui",
+    ],
+)
+
+py_library(
+    name = "scheduler",
+    srcs = ["scheduler.py"],
+    deps = [
+        "@pip//fastapi",
+        "@pip//fastui",
+    ],
+)
 
 py_library(
     name = "landing_page",
@@ -8,7 +25,26 @@ py_library(
     deps = [
         "@pip//fastapi",
         "@pip//fastui",
-    ]
+    ],
+)
+
+py_library(
+    name = "auth",
+    srcs = ["auth.py"],
+    deps = [
+        "@pip//fastapi",
+        "@pip//fastui",
+        "@pip//pyjwt",
+    ],
+)
+
+py_library(
+    name = "logging",
+    srcs = ["logging.py"],
+    deps = [
+        "@pip//picologging",
+        "@pip//python_json_logger",
+    ],
 )
 
 py_binary(
@@ -18,10 +54,14 @@ py_binary(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        ":auth",
         ":landing_page",
+        ":logging",
+        ":root",
+        ":scheduler",
         "@pip//fastapi",
-        "@pip//pydantic",
         "@pip//fastui",
         "@pip//picologging",
+        "@pip//pydantic",
     ],
 )

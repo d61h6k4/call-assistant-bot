@@ -10,10 +10,12 @@ attrs==23.2.0
 blinker==1.8.2
 cachetools==5.4.0
 certifi==2024.7.4
+cffi==1.16.0
 charset-normalizer==3.3.2
 click==8.1.7
 coloredlogs==15.0.1
 contourpy==1.2.1
+cryptography==43.0.0
 cycler==0.12.1
 datasets==2.20.0
 deepdiff==6.7.1
@@ -67,6 +69,7 @@ mss==9.0.1
 multidict==6.0.5
 multiprocess==0.70.16
 networkx==3.3
+nodeenv==1.9.1
 nodriver==0.34
 numpy==1.26.4
 onnx==1.16.1
@@ -89,10 +92,13 @@ pyarrow-hotfix==0.6
 pyasn1==0.6.0
 pyasn1_modules==0.4.0
 pycocotools==2.0.8
+pycparser==2.22
 pydantic==2.8.2
 pydantic_core==2.20.1
 Pygments==2.18.0
+PyJWT==2.8.0
 pyparsing==3.1.2
+pyright==1.1.372
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-json-logger==2.0.7
@@ -103,6 +109,7 @@ regex==2024.5.15
 requests==2.32.3
 rich==13.7.1
 rsa==4.9
+ruff==0.5.4
 safetensors==0.4.3
 scikit-image==0.24.0
 scikit-learn==1.5.1
