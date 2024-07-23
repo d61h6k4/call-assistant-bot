@@ -9,6 +9,7 @@ py_library(
         "@pip//fastui",
     ],
 )
+
 py_library(
     name = "landing_page",
     srcs = ["landing_page.py"],
@@ -27,7 +28,6 @@ py_library(
         "@pip//pyjwt",
     ],
 )
-
 
 py_library(
     name = "scheduler",
@@ -67,7 +67,6 @@ py_binary(
         "@pip//pydantic",
     ],
 )
-
 
 py_test(
     name = "scheduler_test",

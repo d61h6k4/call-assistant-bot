@@ -33,7 +33,10 @@ def execute_cloud_run_job(meeting_url: str, logger):
     logger.info(
         {"message": "Waiting for operation to complete", "operation": operation}
     )
-    response = operation.result()
+    try:
+        response = operation.result()
+    except Exception as e:
+        response = repr(e)
     logger.info({"message": "Result of the the operation", "response": response})
 
 
