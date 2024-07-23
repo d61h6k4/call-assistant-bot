@@ -52,7 +52,8 @@ if __name__ == "__main__":
     setup_logging()
     uvicorn.run(
         create_app(auth_token),
-        port=8080,
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 8080)),
         log_level="debug",
         log_config=logging_config(),
     )
