@@ -63,4 +63,4 @@ jobs:
       - name: "Build and push container"
         run: |
           bazel run //docker:push -- -r ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/meeting-bot/meeting-bot -t ${{ github.sha }}
-          bazel run //cc_server/docker:push -- -r ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/cc_server/cc_server -t ${{ github.sha }}
+          bazel run //cc_server/docker:push -- -r ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/cc-server/cc-server -t ${{ github.sha }}
