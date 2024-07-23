@@ -16,20 +16,17 @@ jobs:
     permissions:
       contents: "read"
       id-token: "write"
-
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
         with:
           lfs: "false"
-
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
         with:
           # this might remove tools that are actually needed,
           # if set to "true" but frees about 6 GB
           tool-cache: false
-
           # all of these default to true, but feel free to set to
           # "false" if necessary for your workflow
           android: true
@@ -38,7 +35,6 @@ jobs:
           large-packages: true
           docker-images: true
           swap-storage: true
-
       - name: "Google auth"
         id: "auth"
         uses: "google-github-actions/auth@v2"
@@ -52,7 +48,6 @@ jobs:
       - name: "Docker auth"
         run: |-
           gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
-
       - name: Mount bazel cache # Optional
         uses: actions/cache@v4
         with:
@@ -60,13 +55,12 @@ jobs:
           key: bazel-${{ hashFiles('.bazelrc', '.bazelversion', 'MODULE.bazel', 'MODULE.bazel.lock') }}
           restore-keys: |
             bazel-
-
       - name: "Pre-install dependencies"
         run: |
           sudo apt install -y yasm automake libtool m4
           touch ml/detection/models/model.onnx
           bazel run //tools:sync -- --action download models --all
-
       - name: "Build and push container"
         run: |
-          bazel run //docker:push -- -r ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }} -t ${{ github.sha }}
+          bazel run //docker:push -- -r ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/meeting-bot/meeting-bot -t ${{ github.sha }}
+          bazel run //cc_server/docker:push -- -r ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/cc_server/cc_server -t ${{ github.sha }}
