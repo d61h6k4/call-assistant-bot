@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.events import GoToEvent, PageEvent
@@ -10,10 +10,31 @@ from fastui.forms import fastui_form
 from cc_server.auth import User
 
 from pydantic import BaseModel, HttpUrl, Field
+from google.cloud import run_v2
 
 
 class JobForm(BaseModel):
     meeting_url: HttpUrl = Field(title="Google Meet url")
+
+
+def execute_cloud_run_job(meeting_url: str, logger):
+    client = run_v2.JobsClient()
+    request = run_v2.RunJobRequest(
+        name="meeting-bot",
+        overrides=run_v2.RunJobRequest.Overrides(
+            container_overrides=[
+                run_v2.RunJobRequest.Overrides.ContainerOverride(
+                    args=["--gmeet_link", meeting_url]
+                )
+            ]
+        ),
+    )
+    operation = client.run_job(request=request)
+    logger.info(
+        {"message": "Waiting for operation to complete", "operation": operation}
+    )
+    response = operation.result()
+    logger.info({"message": "Result of the the operation", "response": response})
 
 
 def get_router(logger):
@@ -44,6 +65,7 @@ def get_router(logger):
     async def execute_job(
         user: Annotated[User | None, Depends(User.from_request_opt)],
         form: Annotated[JobForm, fastui_form(JobForm)],
+        background_tasks: BackgroundTasks,
     ):
         if user is None:
             logger.critical(
@@ -61,6 +83,8 @@ def get_router(logger):
                 "meeting_url": form.meeting_url,
             }
         )
+
+        background_tasks.add_task(execute_cloud_run_job, form.meeting_url, logger)
 
         return [
             c.Toast(

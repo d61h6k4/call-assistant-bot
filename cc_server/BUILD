@@ -9,16 +9,6 @@ py_library(
         "@pip//fastui",
     ],
 )
-
-py_library(
-    name = "scheduler",
-    srcs = ["scheduler.py"],
-    deps = [
-        "@pip//fastapi",
-        "@pip//fastui",
-    ],
-)
-
 py_library(
     name = "landing_page",
     srcs = ["landing_page.py"],
@@ -35,6 +25,18 @@ py_library(
         "@pip//fastapi",
         "@pip//fastui",
         "@pip//pyjwt",
+    ],
+)
+
+
+py_library(
+    name = "scheduler",
+    srcs = ["scheduler.py"],
+    deps = [
+        ":auth",
+        "@pip//fastapi",
+        "@pip//fastui",
+        "@pip//google_cloud_run",
     ],
 )
 
@@ -64,4 +66,12 @@ py_binary(
         "@pip//picologging",
         "@pip//pydantic",
     ],
+)
+
+
+py_test(
+    name = "scheduler_test",
+    srcs = ["scheduler_test.py"],
+    tags = ["manual"],
+    deps = [":scheduler"],
 )
