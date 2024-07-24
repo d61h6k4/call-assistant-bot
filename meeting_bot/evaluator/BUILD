@@ -14,7 +14,7 @@ proto_library(
 
 py_proto_library(
     name = "evaluator_py_pb2",
-    visibility = ["//meeting_bot:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [":evaluator_proto"],
 )
 

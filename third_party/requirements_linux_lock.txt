@@ -218,3 +218,4 @@ wrapt==1.16.0
 PyJWT==2.8.0
 fastui==0.6.0
 google-cloud-run==0.10.7
+river==0.21.2

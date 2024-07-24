@@ -21,4 +21,11 @@ def logger_config(workdir: Path, logger_name: str):
             },
         },
         "root": {"level": "INFO", "handlers": ["console", "file"]},
+        "loggers": {
+            "ml.leave_call": {
+                "handlers": ["file"],
+                "level": "INFO",
+                "propagate": False,
+            },
+        },
     }

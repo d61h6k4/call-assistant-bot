@@ -1,8 +1,5 @@
-
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_push", "oci_tarball")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-
-
 
 pkg_tar(
     name = "cc_server_tar",
@@ -17,11 +14,11 @@ oci_image(
     name = "image",
     base = "@distroless_python3",
     cmd = ["/cc_server/cc_server"],
-    tars = [
-        ":cc_server_tar",
-    ],
     exposed_ports = [
         "8080/tcp",
+    ],
+    tars = [
+        ":cc_server_tar",
     ],
 )
 
@@ -34,7 +31,6 @@ oci_tarball(
         "aikit/cc_server:latest",
     ],
 )
-
 
 oci_push(
     name = "push",
