@@ -365,6 +365,7 @@ def main():
         remove_unused_columns=False,
         eval_do_concat_batches=False,
         push_to_hub=False,
+        dataloader_drop_last=True,
     )
 
     trainer = Trainer(
