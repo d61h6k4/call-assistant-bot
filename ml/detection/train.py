@@ -295,7 +295,7 @@ def main():
 
     model_name = "microsoft/conditional-detr-resnet-50"
     image_processor = ConditionalDetrImageProcessor.from_pretrained(
-        model_name, do_resize=True, size={"shortest_edge": 360, "longest_edge": 480}
+        model_name, do_resize=True, size={"shortest_edge": 360, "longest_edge": 640}
     )
 
     train_augment_and_transform = A.Compose(
