@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/bazel,c++
 # Edit at https://www.toptal.com/developers/gitignore?templates=bazel,c++
 
+# IDE
+.vscode/
+
 ### Bazel ###
 # gitignore template for Bazel build system
 # website: https://bazel.build/
@@ -237,3 +240,7 @@ model/
 *.mp4
 # Ignore generated credentials from google-github-actions/auth
 gha-creds-*.json
+
+
+#asr ignore
+ml/asr/models/vosk*

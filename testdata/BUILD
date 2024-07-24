@@ -13,3 +13,11 @@ filegroup(
     ]),
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "test_audio",
+    srcs = glob([
+        "*.wav",
+    ]),
+    visibility = ["//visibility:public"],
+)
