@@ -31,7 +31,7 @@ class CDetrOnnxTest(unittest.TestCase):
 
             processor = AutoImageProcessor.from_pretrained(
                 self.model_name,
-                size={"shortest_edge": 504, "longest_edge": 896},
+                size={"shortest_edge": 360, "longest_edge": 480},
             )
             inputs = processor(images=self.image, return_tensors="pt")
 
