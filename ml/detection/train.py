@@ -29,6 +29,7 @@ LABEL_TO_CATEGORY = {
     "shared screen": 2,
     "black screen": 3,
     "welcome page": 4,
+    "alone": 5,
 }
 
 
