@@ -61,7 +61,7 @@ def image_processor():
     steps = []
 
     steps.append(ChannelsLastToChannelsFirst())
-    steps.append(Resize((504, 896), layout="CHW"))
+    steps.append(Resize((360, 480), layout="CHW"))
     steps.append(ImageBytesToFloat(rescale_factor=0.00392156862745098))
     mean_std = list(zip([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
     steps.append(Normalize(mean_std, layout="CHW"))
@@ -157,9 +157,7 @@ def convert(model_name: str, output_model: Path, quantization: str):
                 "EmbedLayerNormalization",
             ]
 
-        quantizer.quantize(
-            save_dir=output_model, quantization_config=dqconfig
-        )
+        quantizer.quantize(save_dir=output_model, quantization_config=dqconfig)
 
 
 def main():
