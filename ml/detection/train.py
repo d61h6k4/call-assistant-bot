@@ -296,7 +296,7 @@ def main():
 
     model_name = "microsoft/conditional-detr-resnet-50"
     image_processor = ConditionalDetrImageProcessor.from_pretrained(
-        model_name, do_resize=True, size={"shortest_edge": 360, "longest_edge": 640}
+        model_name, do_resize=True, size={"shortest_edge": 504, "longest_edge": 896}
     )
 
     train_augment_and_transform = A.Compose(
@@ -351,7 +351,7 @@ def main():
         output_dir="detr_finetuned_cppe5",
         num_train_epochs=30,
         fp16=False,
-        per_device_train_batch_size=32,
+        per_device_train_batch_size=16,
         dataloader_num_workers=4,
         learning_rate=5e-5,
         lr_scheduler_type="cosine",

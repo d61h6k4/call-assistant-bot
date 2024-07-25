@@ -61,7 +61,7 @@ def image_processor():
     steps = []
 
     steps.append(ChannelsLastToChannelsFirst())
-    steps.append(Resize((360, 640), layout="CHW"))
+    steps.append(Resize((504, 896), layout="CHW"))
     steps.append(ImageBytesToFloat(rescale_factor=0.00392156862745098))
     mean_std = list(zip([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
     steps.append(Normalize(mean_std, layout="CHW"))
