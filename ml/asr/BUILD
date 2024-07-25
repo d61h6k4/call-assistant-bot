@@ -5,7 +5,6 @@ cc_library(
     ],
     hdrs = ["model.h"],
     visibility = ["//visibility:public"],
-    alwayslink = 0,
     deps = [
         "@vosk_api//:vosk",
         "@nlohmann_json//:json",
@@ -13,8 +12,8 @@ cc_library(
 )
 
 cc_test(
-    name = "test",
-    srcs = ["test.cc"],
+    name = "model_test",
+    srcs = ["model_test.cc"],
     data = [
         "//ml/asr/models:vosk_models",
         "//testdata:test_audio",
@@ -35,7 +34,6 @@ cc_binary(
         "//testdata:test_audio",
     ],
     deps = [
-        "@vosk_api//:vosk",
-        "@nlohmann_json//:json",
+        ":model",
     ],
 )

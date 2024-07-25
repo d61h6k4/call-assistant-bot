@@ -1,6 +1,6 @@
---- /dev/null	2024-07-14 18:17:27
-+++ BUILD	2024-07-14 18:16:25
-@@ -0,0 +1,509 @@
+--- /dev/null	2024-07-23 20:00:07.378760106 +0300
++++ BUILD	2024-07-24 22:51:11.820640600 +0300
+@@ -0,0 +1,546 @@
 +
 +cc_library(
 +    name = "base",
@@ -10,7 +10,8 @@
 +        exclude = [
 +            "src/base/kaldi-error-test.cc",
 +            "src/base/kaldi-math-test.cc",
-+            "src/base/time-test.cc",
++            "src/base/timer-test.cc",
++             "src/base/*-test.cc"
 +        ]
 +    ),
 +    hdrs = glob([
@@ -85,6 +86,14 @@
 +            "src/util/parse-options-test.cc",
 +            "src/util/simple-options-test.cc",
 +            "src/util/text-utils-test.cc",
++            "src/util/*-test.cc",
++            "src/util/*_test.cc",
++            "src/util/hash-list-test.cc",
++            "src/util/edit-distance-test.cc",
++            "src/util/kaldi-io-test.cc",
++            "src/util/kaldi-table-test.cc",
++            "src/util/kaldi-thread-test.cc",
++            "src/util/stl-utils-test.cc",
 +        ]
 +    ),
 +    hdrs = glob([
@@ -105,6 +114,11 @@
 +        "src/fstext/*.cc"
 +    ],
 +        exclude = [
++            "src/fstext/*-test.cc",
++            "src/fstext/*_test.cc",
++            "src/fstext/prune-special-test.cc",
++            "src/fstext/push-special-test.cc",
++            "src/fstext/factor-test.cc",
 +            "src/fstext/context-fst-test.cc",
 +            "src/fstext/deterministic-fst-test.cc",
 +            "src/fstext/determinize-lattice-test.cc",
@@ -139,10 +153,14 @@
 +        "src/tree/*.cc"
 +        ],
 +        exclude = [
++            "src/tree/*-test.cc",
++            "src/tree/*_test.cc",
 +            "src/tree/build-tree-test.cc",
 +            "src/tree/build-tree-utils-test.cc",
 +            "src/tree/cluster-utils-test.cc",
 +            "stc/tree/event-map-test.cc",
++            "src/tree/event-map-test.cc",
++            "src/tree/context-dep-test.cc",
 +        ]
 +    ),
 +    hdrs = glob([
@@ -234,6 +252,11 @@
 +            "src/gmm/mle-am-diag-gmm-test.cc",
 +            "src/gmm/mle-diag-gmm-test.cc",
 +            "src/gmm/mle-full-gmm-test.cc",
++            "src/transform/fmllr-raw-test.cc",
++            "src/transform/fmpe-test.cc",
++            "src/transform/regtree-fmllr-diag-gmm-test.cc",
++            "src/transform/*-test.cc",
++            "src/gmm/*-test.cc",
 +        ],
 +    ),
 +    hdrs = glob([
@@ -257,6 +280,10 @@
 +            "src/feat/*.cc"
 +        ],
 +        exclude = [
++            "src/feat/*-test.cc",
++            "src/feat/*_test.cc",
++            "src/feat/signal-test.cc",
++            "src/feat/feature-sdc-test.cc",
 +            "src/feat/feature-fbank-test.cc",
 +            "src/feat/feature-functions-test.cc",
 +            "src/feat/feature-mfcc-test.cc",
@@ -299,6 +326,8 @@
 +            "src/cudamatrix/cu-sparse-matrix-test.cc",
 +            "src/cudamatrix/cu-tp-matrix-test.cc",
 +            "src/cudamatrix/cu-vector-speed-test.cc",
++            "src/cudamatrix/*-test.cc",
++            "src/cudamatrix/*_test.cc",
 +        ],
 +    ),
 +    hdrs = glob([
@@ -322,6 +351,8 @@
 +            "src/nnet2/*.cc"
 +        ],
 +        exclude = [
++            "src/nnet2/*-test.cc",
++            "src/nnet2/*_test.cc",
 +            "src/nnet2/am-nnet-test.cc",
 +            "src/nnet2/nnet-component-test.cc",
 +            "src/nnet2/nnet-compute-test.cc",
@@ -376,6 +407,8 @@
 +            "src/nnet3/*.cc"
 +        ],
 +        exclude = [
++            "src/nnet3/*-test.cc",
++            "src/nnet3/*_test.cc",
 +            "src/nnet3/attention-test.cc",
 +            "src/nnet3/convolution-test.cc",
 +            "src/nnet3/natural-gradient-online-test.cc",
@@ -484,6 +517,10 @@
 +    name = "rnnlm",
 +    srcs = glob([
 +        "src/rnnlm/*.cc"
++    ],
++    exclude = [
++        "src/rnnlm/*-test.cc",
++        "src/rnnlm/*_test.cc",
 +    ]),
 +    hdrs = glob([
 +        "src/rnnlm/*.h",
