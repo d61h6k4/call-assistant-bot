@@ -1,6 +1,6 @@
 --- /dev/null	2024-07-23 20:00:07.378760106 +0300
-+++ BUILD	2024-07-24 22:51:11.820640600 +0300
-@@ -0,0 +1,546 @@
++++ BUILD	2024-07-25 07:00:56.870335700 +0300
+@@ -0,0 +1,547 @@
 +
 +cc_library(
 +    name = "base",
@@ -448,6 +448,7 @@
 +            "src/ivector/*.cc"
 +        ],
 +        exclude = [
++            "src/ivector/*-test.cc",
 +            "src/ivector/ivector-extractor-test.cc",
 +            "src/ivector/logistic-regression-test.cc",
 +        ],

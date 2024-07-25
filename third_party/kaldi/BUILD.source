@@ -445,6 +445,7 @@ cc_library(
             "src/ivector/*.cc"
         ],
         exclude = [
+            "src/ivector/*-test.cc",
             "src/ivector/ivector-extractor-test.cc",
             "src/ivector/logistic-regression-test.cc",
         ],

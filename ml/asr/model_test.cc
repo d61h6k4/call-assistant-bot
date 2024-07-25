@@ -11,9 +11,13 @@
 #include "absl/log/absl_log.h"
 
 
+auto model = aikit::ml::ASRModel("ml/asr/models/vosk-model-ru-0.22", "ml/asr/models/vosk-model-spk-0.4");
+
 TEST(TestMLASRModel, SanityCheck) {
     int16_t BUFFER_SIZE = 32000, nread;
     auto model = aikit::ml::ASRModel("ml/asr/models/vosk-model-ru-0.22", "ml/asr/models/vosk-model-spk-0.4");
+    std::string text;
+    std::int32_t size_emb;
 
     std::ifstream wavin("testdata/meeting_audio.wav", std::ios::binary);
     wavin.seekg(44);
@@ -26,8 +30,11 @@ TEST(TestMLASRModel, SanityCheck) {
         }
         auto result = model(audio_buffer);
         if (result.is_final) {
-            ABSL_LOG(INFO) << result.text << "\n";
-            EXPECT_EQ(result.spk_embedding.size(), 128);
+            text = result.text;
+            size_emb = result.spk_embedding.size();
+            break;
         }
     }
+    ABSL_LOG(INFO) << text << "\n";
+    EXPECT_EQ(size_emb, 128);
 }
