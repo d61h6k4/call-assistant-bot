@@ -11,12 +11,14 @@ proto_library(
 py_proto_library(
     name = "meeting_bot_py_pb2",
     deps = [":meeting_bot_proto"],
+    visibility = ["//meeting_bot:__subpackages__"],
 )
 
 py_grpc_library(
     name = "meeting_bot_py_pb2_grpc",
     srcs = [":meeting_bot_proto"],
     deps = [":meeting_bot_py_pb2"],
+    visibility = ["//meeting_bot:__subpackages__"],
 )
 
 py_library(

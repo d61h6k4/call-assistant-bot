@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import Any
 
 from river import stats
+from river import utils
 from river.base import Regressor, Transformer
 from river.compose import FuncTransformer, Pipeline, TransformerUnion
 
@@ -59,8 +60,10 @@ class Heuristic(Regressor):
 
         # When it's been more than 1 minutes and we had participants or speakers
         # but now, no participants, speakers or shared screen
+        # and noone has talked for 3 minutes
         if (
             x["more_than_1_min"] == 1
+            and x["speakers_active_3min"] == 0
             and sum(
                 x[k] for k in ["participants_max", "speakers_max", "shared_screens_max"]
             )
@@ -83,9 +86,9 @@ def parse(input: dict[str, Any]) -> dict[str, numbers.Number]:
         if d.score >= 0.7:
             match d.label_id:
                 case 0:
-                    x["participants"] += 1
-                case 1:
                     x["speakers"] += 1
+                case 1:
+                    x["participants"] += 1
                 case 2:
                     x["shared_screens"] += 1
 
@@ -99,6 +102,7 @@ class SecondOrderFeatures(Transformer):
 
         self.max = stats.Max()
         self.prev = stats.Shift(1, fill_value=0)
+        self.active_3min = stats.RollingMax(window_size=180)
 
     def learn_one(self, x): ...
 
@@ -107,11 +111,13 @@ class SecondOrderFeatures(Transformer):
 
         self.max.update(v)
         self.prev.update(v)
+        self.active_3min.update(v)
 
         return {
             self.key: v,
             f"{self.key}_max": self.max.get(),
             f"{self.key}_prev_diff": v - self.prev.get(),
+            f"{self.key}_active_3min": self.active_3min.get(),
         }
 
 
