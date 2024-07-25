@@ -23,6 +23,15 @@ from torchmetrics.utilities.imports import (
     _TORCHVISION_GREATER_EQUAL_0_8,
 )
 
+LABEL_TO_CATEGORY = {
+    "speaker": 0,
+    "participant": 1,
+    "shared screen": 2,
+    "black screen": 3,
+    "welcome page": 4,
+    "alone": 5,
+}
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -50,7 +59,7 @@ def show_example(example):
     annotations = example["objects"]
     draw = ImageDraw.Draw(image)
 
-    label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
+    label2id = LABEL_TO_CATEGORY
     id2label = {v: k for k, v in label2id.items()}
     for i in range(len(annotations["id"])):
         box = annotations["bbox"][i]
@@ -74,7 +83,6 @@ def gen_dataset(exported_json):
         width = image.size[0]
         height = image.size[1]
 
-        label_to_category = {"speaker": 0, "participant": 1, "shared screen": 2}
         objects = {"id": [], "bbox": [], "category": [], "area": []}
         # TODO(d61h6k4) Choose ground truth or last updated
         annotation = task["annotations"][0]
@@ -90,7 +98,7 @@ def gen_dataset(exported_json):
             )
             objects["area"].append(result["value"]["width"] * result["value"]["height"])
             objects["category"].append(
-                label_to_category[result["value"]["rectanglelabels"][0]]
+                LABEL_TO_CATEGORY[result["value"]["rectanglelabels"][0]]
             )
         example = {
             "image_id": image_id,
@@ -322,7 +330,7 @@ def main():
     train_ds = ds["train"].with_transform(train_transform_batch)
     val_ds = ds["test"].with_transform(validation_transform_batch)
 
-    label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
+    label2id = LABEL_TO_CATEGORY
     id2label = {v: k for k, v in label2id.items()}
 
     eval_compute_metrics_fn = partial(
@@ -358,6 +366,7 @@ def main():
         remove_unused_columns=False,
         eval_do_concat_batches=False,
         push_to_hub=False,
+        dataloader_drop_last=True,
     )
 
     trainer = Trainer(

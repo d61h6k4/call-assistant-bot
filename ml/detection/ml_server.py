@@ -19,6 +19,16 @@ LB_SERVER = "http://0.0.0.0:8080"
 ACCESS_TOKEN = None
 
 
+LABEL_TO_CATEGORY = {
+    "speaker": 0,
+    "participant": 1,
+    "shared screen": 2,
+    "black screen": 3,
+    "welcome page": 4,
+    "alone": 5,
+}
+
+
 class Model:
     def __init__(self):
         self.onnx_model = OrtPyFunction.from_model("ml/detection/models/model.onnx")
@@ -26,7 +36,7 @@ class Model:
     def __call__(self, image_name: str, image: Image.Image):
         onnx_output = self.onnx_model(np.array(image))
 
-        label2id = {"speaker": 0, "participant": 1, "shared screen": 2}
+        label2id = LABEL_TO_CATEGORY
         id2label = {v: k for k, v in label2id.items()}
         width = image.size[0]
         height = image.size[1]
