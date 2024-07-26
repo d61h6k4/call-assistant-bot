@@ -56,7 +56,7 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
             }
         )
         if should_leave_the_call > 0.95:
-            await self.send_shutdown_signal()
+            _ = asyncio.create_task(self.send_shutdown_signal())
 
         return evaluator_pb2.DetectionsReply()
 

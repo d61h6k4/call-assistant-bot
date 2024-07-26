@@ -286,9 +286,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             {"message": "Shutting down the meeting bot", "reason": request.reason}
         )
 
-        # gRPC requires always reply to the request, so here
-        loop = asyncio.get_running_loop()
-        loop.call_soon(self.shutdown())
+        asyncio.create_task(self.shutdown())
 
         return meeting_bot_pb2.ShutdownReply()
 
