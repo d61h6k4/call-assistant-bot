@@ -65,13 +65,13 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
     async def send_shutdown_signal(self):
         stub = meeting_bot_pb2_grpc.MeetingBotStub(self.meeting_bot_client)
         try:
-            await stub.Shutdown(
-                meeting_bot_pb2.ShutdownRequest(
-                    reason="Leave the call model predicted the end of the meeting."
-                ),
-                timeout=1,
-            )
-        except grpc.RpcError as e:
+            async with asyncio.timeout(1):
+                await stub.Shutdown(
+                    meeting_bot_pb2.ShutdownRequest(
+                        reason="Leave the call model predicted the end of the meeting."
+                    )
+                )
+        except TimeoutError as e:
             self.logger.error(
                 {"message": "Shutdown signal ended with rpc error", "err": repr(e)}
             )
