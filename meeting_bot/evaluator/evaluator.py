@@ -56,14 +56,19 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
             }
         )
         if should_leave_the_call > 0.95:
-            stub = meeting_bot_pb2_grpc.MeetingBotStub(self.meeting_bot_client)
-            await stub.Shutdown(
-                meeting_bot_pb2.ShutdownRequest(
-                    reason="Leave the call model predicted the end of the meeting."
-                )
-            )
+            # We do not want to block ourself by waiting here when we themself shutdown
+            loop = asyncio.get_running_loop()
+            _ = asyncio.run_coroutine_threadsafe(self.send_shutdown_signal(), loop)
 
         return evaluator_pb2.DetectionsReply()
+
+    async def send_shutdown_signal(self):
+        stub = meeting_bot_pb2_grpc.MeetingBotStub(self.meeting_bot_client)
+        await stub.Shutdown(
+            meeting_bot_pb2.ShutdownRequest(
+                reason="Leave the call model predicted the end of the meeting."
+            )
+        )
 
     async def Shutdown(
         self, request: evaluator_pb2.ShutdownRequest, context
