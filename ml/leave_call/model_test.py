@@ -38,7 +38,7 @@ class TestModel(unittest.TestCase):
                         }
                     )
 
-        self.model = get_model()
+        self.model = get_model(logging)
 
     def test_sanity(self):
         for ix in range(len(self.detections)):

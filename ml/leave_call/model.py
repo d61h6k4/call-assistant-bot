@@ -1,6 +1,5 @@
 import numbers
 import functools
-import picologging as logging
 
 from datetime import timedelta
 from typing import Any
@@ -12,16 +11,13 @@ from river.compose import FuncTransformer, Pipeline, TransformerUnion
 
 
 def logit(func):
-    logger = logging.getLogger("ml.leave_call")
-
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        y = func(*args, **kwargs)
-        logger.info(
+    def wrapper(self, *args, **kwargs):
+        y = func(self, *args, **kwargs)
+        self.logger.info(
             {
                 "message": "Logging result of the prediction",
-                "predictor": args[0].__class__.__name__,
-                "x": args[1],
+                "x": args,
                 "y": y,
             }
         )
@@ -33,8 +29,9 @@ def logit(func):
 class Heuristic(Regressor):
     """Rules to define end of the call."""
 
-    def __init__(self):
+    def __init__(self, logger):
         super().__init__()
+        self.logger = logger
 
     def learn_one(self, x: dict[str, numbers.Number], y: numbers.Number):
         return self
@@ -130,7 +127,7 @@ def event_timestamp_features(x: dict[str, numbers.Number]) -> dict[str, numbers.
     }
 
 
-def get_model():
+def get_model(logger):
     return Pipeline(
         FuncTransformer(parse),
         TransformerUnion(
@@ -139,5 +136,5 @@ def get_model():
             SecondOrderFeatures("shared_screens"),
             FuncTransformer(event_timestamp_features),
         ),
-        Heuristic(),
+        Heuristic(logger),
     )

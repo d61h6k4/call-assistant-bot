@@ -29,7 +29,7 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
         self.meeting_bot_client = grpc.aio.insecure_channel(meeting_bot_address)
         self.server = server
         self.logger = logger
-        self.leave_call_model = get_leave_call_model()
+        self.leave_call_model = get_leave_call_model(self.logger)
 
         self.health_status = health_pb2.HealthCheckResponse.SERVING
 
