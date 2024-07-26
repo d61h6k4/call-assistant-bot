@@ -266,7 +266,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         evaluator = await Evaluator.create(address, working_dir=working_dir.name)
         return cls(
             server=server,
-            parts=[evaluator, articulator, perceiver],
+            parts=[articulator, perceiver, evaluator],
             logger=logger,
             meeting_name=gmeet_link,
             working_dir=working_dir,
@@ -285,7 +285,9 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         self.logger.info(
             {"message": "Shutting down the meeting bot", "reason": request.reason}
         )
-        await self.shutdown()
+
+        asyncio.create_task(self.shutdown())
+
         return meeting_bot_pb2.ShutdownReply()
 
     async def shutdown(self):

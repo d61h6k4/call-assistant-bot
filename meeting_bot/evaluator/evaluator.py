@@ -10,7 +10,9 @@ from pathlib import Path
 import picologging as logging
 import logging.config
 from meeting_bot.common.logging import logger_config
+from ml.leave_call.model import get_model as get_leave_call_model
 
+from meeting_bot import meeting_bot_pb2, meeting_bot_pb2_grpc  # noqa
 from meeting_bot.evaluator import evaluator_pb2, evaluator_pb2_grpc  # noqa
 from grpc_health.v1 import health_pb2, health_pb2_grpc
 
@@ -24,9 +26,10 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
     ):
         self.scheduler = sched.scheduler(time.time, asyncio.sleep)
 
-        self.meeting_bot_address = meeting_bot_address
+        self.meeting_bot_client = grpc.aio.insecure_channel(meeting_bot_address)
         self.server = server
         self.logger = logger
+        self.leave_call_model = get_leave_call_model(self.logger)
 
         self.health_status = health_pb2.HealthCheckResponse.SERVING
 
@@ -46,19 +49,24 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
     async def Detections(
         self, request: evaluator_pb2.DetectionsRequest, context
     ) -> evaluator_pb2.DetectionsReply:
-        self.logger.info(
+        should_leave_the_call = self.leave_call_model.predict_one(
             {
-                "message": "Processing detections",
                 "event_timestamp": request.event_timestamp,
-                "particiapnts_num": sum(
-                    1
-                    for detection in request.detections
-                    if detection.label_id == 1 and detection.score >= 0.7
-                ),
                 "detections": request.detections,
             }
         )
+        if should_leave_the_call > 0.95:
+            _ = asyncio.create_task(self.send_shutdown_signal())
+
         return evaluator_pb2.DetectionsReply()
+
+    async def send_shutdown_signal(self):
+        stub = meeting_bot_pb2_grpc.MeetingBotStub(self.meeting_bot_client)
+        await stub.Shutdown(
+            meeting_bot_pb2.ShutdownRequest(
+                reason="Leave the call model predicted the end of the meeting."
+            )
+        )
 
     async def Shutdown(
         self, request: evaluator_pb2.ShutdownRequest, context

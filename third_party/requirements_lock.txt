@@ -111,6 +111,7 @@ PyYAML==6.0.1
 regex==2024.5.15
 requests==2.32.3
 rich==13.7.1
+river==0.21.2
 rsa==4.9
 ruff==0.5.4
 safetensors==0.4.3

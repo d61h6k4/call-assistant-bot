@@ -138,8 +138,9 @@ absl::Status RunMPPGraph() {
   SIGNAL_STATUS_COND_V.wait(lock, [&] {
     return (SIGNAL_STATUS == SIGINT || SIGNAL_STATUS == SIGTERM);
   });
-
+  ABSL_LOG(INFO) << "Start closing all packet sources of the calculator graph.";
   MP_RETURN_IF_ERROR(graph.CloseAllPacketSources());
+  ABSL_LOG(INFO) << "Waiting until done...";
   MP_RETURN_IF_ERROR(graph.WaitUntilDone());
   return absl::OkStatus();
 }

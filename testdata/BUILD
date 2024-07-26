@@ -13,3 +13,11 @@ filegroup(
     ]),
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "evaluator_logs",
+    srcs = glob([
+        "evaluator.jsonl",
+    ]),
+    visibility = ["//visibility:public"],
+)

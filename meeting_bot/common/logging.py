@@ -4,6 +4,7 @@ from pathlib import Path
 def logger_config(workdir: Path, logger_name: str):
     return {
         "version": 1,
+        "disable_existing_loggers": False,
         "formatters": {
             "structured": {"class": "pythonjsonlogger.jsonlogger.JsonFormatter"}
         },
@@ -20,5 +21,12 @@ def logger_config(workdir: Path, logger_name: str):
                 "level": "INFO",
             },
         },
-        "root": {"level": "INFO", "handlers": ["console", "file"]},
+        "loggers": {
+            "": {"level": "INFO", "handlers": ["console", "file"], "propagate": False},
+            "ml.leave_call": {
+                "handlers": ["file"],
+                "level": "INFO",
+                "propagate": False,
+            },
+        },
     }
