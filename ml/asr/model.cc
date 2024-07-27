@@ -34,13 +34,14 @@ void ASRModel::initialize() {
 
 ASRResult ASRModel::operator()(const std::vector<float>& audio_buffer) {
     ASRResult result;
+    result.is_final = false;
     int final = vosk_recognizer_accept_waveform_f(recognizer_, audio_buffer.data(), audio_buffer.size());
-    
+
     if (final) {
         const char* result_str = vosk_recognizer_result(recognizer_);
         try {
             auto json_result = nlohmann::json::parse(result_str);
-            
+
             if (json_result.contains("text") && json_result.contains("spk")) {
                 result.is_final = true;
                 result.text = json_result["text"].get<std::string>();
@@ -51,7 +52,7 @@ ASRResult ASRModel::operator()(const std::vector<float>& audio_buffer) {
             std::cerr << log_id_ << ": Ошибка парсинга JSON: " << e.what() << std::endl;
         }
     }
-    
+
     return result;
 }
 

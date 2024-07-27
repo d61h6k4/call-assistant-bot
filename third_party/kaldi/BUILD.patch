@@ -1,6 +1,6 @@
---- /dev/null	2024-07-23 20:00:07.378760106 +0300
-+++ BUILD	2024-07-25 07:00:56.870335700 +0300
-@@ -0,0 +1,547 @@
+--- /dev/null	2024-07-26 21:16:57
++++ BUILD	2024-07-26 21:16:53
+@@ -0,0 +1,551 @@
 +
 +cc_library(
 +    name = "base",
@@ -180,7 +180,11 @@
 +cc_library(
 +    name = "hmmlat",
 +    srcs = glob([
-+        "src/hmm/*.cc",
++        "src/hmm/hmm-topology.cc",
++        "src/hmm/hmm-utils.cc",
++        "src/hmm/posterior.cc",
++        "src/hmm/transition-model.cc",
++        "src/hmm/tree-accu.cc",
 +        "src/lat/*.cc",
 +        ],
 +        exclude = [

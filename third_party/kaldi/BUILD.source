@@ -177,14 +177,14 @@ cc_library(
 cc_library(
     name = "hmmlat",
     srcs = glob([
-        "src/hmm/*.cc",
+        "src/hmm/hmm-topology.cc",
+        "src/hmm/hmm-utils.cc",
+        "src/hmm/posterior.cc",
+        "src/hmm/transition-model.cc",
+        "src/hmm/tree-accu.cc",
         "src/lat/*.cc",
         ],
         exclude = [
-            "src/hmm/hmm-test-utils.cc",
-            "src/hmm/hmm-utils-test.cc",
-            "src/hmm/hmm-topology-test.cc",
-            "src/hmm/transition-model-test.cc",
             "src/lat/determinize-lattice-pruned-test.cc",
             "src/lat/kaldi-lattice-test.cc",
             "src/lat/minimize-lattice-test.cc",

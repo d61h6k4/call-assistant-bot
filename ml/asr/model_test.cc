@@ -11,8 +11,6 @@
 #include "absl/log/absl_log.h"
 
 
-auto model = aikit::ml::ASRModel("ml/asr/models/vosk-model-ru-0.22", "ml/asr/models/vosk-model-spk-0.4");
-
 TEST(TestMLASRModel, SanityCheck) {
     int16_t BUFFER_SIZE = 32000, nread;
     auto model = aikit::ml::ASRModel("ml/asr/models/vosk-model-ru-0.22", "ml/asr/models/vosk-model-spk-0.4");
@@ -37,4 +35,5 @@ TEST(TestMLASRModel, SanityCheck) {
     }
     ABSL_LOG(INFO) << text << "\n";
     EXPECT_EQ(size_emb, 128);
+
 }

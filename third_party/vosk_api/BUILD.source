@@ -26,6 +26,7 @@ cc_library(
         "@kaldi//:online2",
         "@kaldi//:rnnlm",
     ],
+    linkstatic = 1,
     strip_include_prefix = "src",
     visibility = ["//visibility:public"],
 )

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+
 namespace aikit::ml {
 
 struct ASRResult {
@@ -27,7 +28,7 @@ public:
 
 private:
   std::string log_id_ = "asr_model";
-  
+
   std::string model_path_;
   std::string spk_model_path_;
   VoskModel *model_;
