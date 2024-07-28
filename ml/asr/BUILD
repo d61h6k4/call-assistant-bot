@@ -7,7 +7,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@vosk_api//:vosk",
-        "@nlohmann_json//:json",
+        "@com_google_absl//absl/status:statusor",
     ],
 )
 
@@ -26,14 +26,15 @@ cc_test(
     ],
 )
 
-cc_binary(
-    name = "example",
-    srcs = ["example.cc"],
+cc_test(
+    name = "model_benchmark",
+    srcs = ["model_benchmark.cc"],
     data = [
         "//ml/asr/models:vosk_models",
         "//testdata:test_audio",
     ],
     deps = [
         ":model",
+        "@google_benchmark//:benchmark_main",
     ],
 )

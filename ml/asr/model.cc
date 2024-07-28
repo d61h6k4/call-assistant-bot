@@ -1,59 +1,76 @@
-#include "ml/asr/model.h"
 #include <iostream>
 #include <stdexcept>
 
+#include "ml/asr/model.h"
+#include "json.h"
+
 namespace aikit::ml {
 
-ASRModel::ASRModel(const std::string& model_path, const std::string& spk_model_path)
-    : model_path_(model_path), spk_model_path_(spk_model_path), model_(nullptr), spk_model_(nullptr), recognizer_(nullptr) {
+ASRModel::ASRModel(const std::string& model_path, const std::string& spk_model_path, size_t sample_rate)
+    : model_path_(model_path), spk_model_path_(spk_model_path), sample_rate_(sample_rate),
+      model_(nullptr, vosk_model_free), spk_model_(nullptr, vosk_spk_model_free), recognizer_(nullptr, vosk_recognizer_free) {
     initialize();
 }
 
-ASRModel::~ASRModel() {
-    if (recognizer_) vosk_recognizer_free(recognizer_);
-    if (spk_model_) vosk_spk_model_free(spk_model_);
-    if (model_) vosk_model_free(model_) ;
+ASRModel::~ASRModel() = default;
+
+ASRModel::ASRModel(ASRModel&& other) noexcept
+    : model_path_(std::move(other.model_path_)),
+      spk_model_path_(std::move(other.spk_model_path_)),
+      sample_rate_(other.sample_rate_),
+      model_(std::move(other.model_)),
+      spk_model_(std::move(other.spk_model_)),
+      recognizer_(std::move(other.recognizer_)) {}
+
+ASRModel& ASRModel::operator=(ASRModel&& other) noexcept {
+    if (this != &other) {
+        model_path_ = std::move(other.model_path_);
+        spk_model_path_ = std::move(other.spk_model_path_);
+        sample_rate_ = other.sample_rate_;
+        model_ = std::move(other.model_);
+        spk_model_ = std::move(other.spk_model_);
+        recognizer_ = std::move(other.recognizer_);
+    }
+    return *this;
 }
 
 void ASRModel::initialize() {
-    model_ = vosk_model_new(model_path_.c_str());
+    model_.reset(vosk_model_new(model_path_.c_str()));
     if (!model_) {
-        throw std::runtime_error("Не удалось создать модель");
+        throw std::runtime_error("Failed to create model");
     }
 
-    spk_model_ = vosk_spk_model_new(spk_model_path_.c_str());
+    spk_model_.reset(vosk_spk_model_new(spk_model_path_.c_str()));
     if (!spk_model_) {
-        throw std::runtime_error("Не удалось создать модель диктора");
+        throw std::runtime_error("Failed to create speaker model");
     }
 
-    recognizer_ = vosk_recognizer_new_spk(model_, sample_rate, spk_model_);
+    recognizer_.reset(vosk_recognizer_new_spk(model_.get(), sample_rate_, spk_model_.get()));
     if (!recognizer_) {
-        throw std::runtime_error("Не удалось создать распознаватель");
+        throw std::runtime_error("Failed to create recognizer");
     }
 }
 
-ASRResult ASRModel::operator()(const std::vector<float>& audio_buffer) {
-    ASRResult result;
-    result.is_final = false;
-    int final = vosk_recognizer_accept_waveform_f(recognizer_, audio_buffer.data(), audio_buffer.size());
+absl::StatusOr<ASRResult> ASRModel::operator()(const std::vector<float>& audio_buffer) {
+    int final_status = vosk_recognizer_accept_waveform_f(recognizer_.get(), audio_buffer.data(), audio_buffer.size());
 
-    if (final) {
-        const char* result_str = vosk_recognizer_result(recognizer_);
+    if (final_status != 0) {
+        std::string result_str = vosk_recognizer_result(recognizer_.get());
+        ASRResult result;
         try {
-            auto json_result = nlohmann::json::parse(result_str);
-
-            if (json_result.contains("text") && json_result.contains("spk")) {
-                result.is_final = true;
-                result.text = json_result["text"].get<std::string>();
-                result.spk_embedding = json_result["spk"].get<std::vector<float>>();
+            auto json_result = json::JSON::Load(result_str);
+            if (json_result.hasKey("text") && json_result.hasKey("spk")) {
+                result.text = json_result["text"].ToString();
+                for (auto& item : json_result["spk"].ArrayRange()) {
+                    result.spk_embedding.push_back(item.ToFloat());
+                }
                 return result;
             }
-        } catch (const nlohmann::json::parse_error& e) {
-            std::cerr << log_id_ << ": Ошибка парсинга JSON: " << e.what() << std::endl;
+        } catch (const std::exception& e) {
+            return absl::InternalError("Error parsing JSON");
         }
     }
-
-    return result;
+    return absl::UnavailableError("Result not ready");
 }
 
 }  // namespace aikit::ml

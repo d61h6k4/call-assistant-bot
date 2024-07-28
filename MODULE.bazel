@@ -432,5 +432,3 @@ git_override(
     # Replace the commit hash (above) with the latest (https://github.com/hedronvision/bazel-compile-commands-extractor/commits/main).
     # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
 )
-
-bazel_dep(name = "nlohmann_json", version = "3.11.3")

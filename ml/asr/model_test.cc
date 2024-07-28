@@ -9,31 +9,30 @@
 #include "ml/asr/model.h"
 
 #include "absl/log/absl_log.h"
+#include <chrono>
 
 
 TEST(TestMLASRModel, SanityCheck) {
-    int16_t BUFFER_SIZE = 32000, nread;
     auto model = aikit::ml::ASRModel("ml/asr/models/vosk-model-ru-0.22", "ml/asr/models/vosk-model-spk-0.4");
     std::string text;
     std::int32_t size_emb;
 
-    std::ifstream wavin("testdata/meeting_audio.wav", std::ios::binary);
-    wavin.seekg(44);
-    std::vector<float> audio_buffer(BUFFER_SIZE);
-    while (wavin) {
-        wavin.read(reinterpret_cast<char*>(audio_buffer.data()), BUFFER_SIZE * sizeof(float));
-        nread = wavin.gcount() / sizeof(float);
-        for(int i = 0; i < nread; i++) {
-            audio_buffer[i] *= 32767.0f;
-        }
-        auto result = model(audio_buffer);
-        if (result.is_final) {
-            text = result.text;
-            size_emb = result.spk_embedding.size();
-            break;
-        }
+    std::ifstream wavin("testdata/meeting_audio.wav", std::ios::binary | std::ios::ate);
+    std::streamsize size = 16000 * 10;
+    wavin.seekg(44, std::ios::beg);
+    std::vector<float> audio_buffer(size);
+    wavin.read(reinterpret_cast<char*>(audio_buffer.data()), size * sizeof(float));
+    for (int i = 0; i < audio_buffer.size(); i++) {
+        audio_buffer[i] *= 32767.0f;
     }
+    auto start_time = std::chrono::high_resolution_clock::now();
+    auto result = model(audio_buffer);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    EXPECT_TRUE(result.ok());
+    ABSL_LOG(INFO) << "Время выполнения модели: " << duration.count() / 1000.0 << " секунд";
+    text = result.value().text;
+    size_emb = result.value().spk_embedding.size();
     ABSL_LOG(INFO) << text << "\n";
     EXPECT_EQ(size_emb, 128);
-
 }
