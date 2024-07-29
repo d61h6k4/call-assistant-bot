@@ -9,21 +9,12 @@ py_binary(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        "@pip//numpy",
-        "@pip//onnx",
-        "@pip//onnxruntime",
-        "@pip//onnxruntime_extensions",
-        "@pip//onnxruntime_genai",
     ],
 )
 
 py_binary(
     name = "preprocessing_converter",
     srcs = ["preprocessing_converter.py"],
-    data = [
-        "//models/florence2/data:test_image",
-        "//models/florence2/data:vision_encoder",
-    ],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],

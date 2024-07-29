@@ -23,7 +23,7 @@ TEST(Florence2ProcessorTest, SanityCheck) {
       aikit::Processor(*model->config_.get(), *model->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.jpg");
+  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
   EXPECT_EQ(images->num_images_, 1);
 
   auto input_tensors =

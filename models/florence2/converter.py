@@ -1,73 +1,93 @@
+import argparse
+import json
 
-import os
-from onnx import helper, numpy_helper, TensorProto, external_data_helper, save_model
-from onnxruntime.quantization.matmul_4bits_quantizer import MatMul4BitsQuantizer
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, GenerationConfig
-import numpy as np
-import torch
+from pathlib import Path
 
 
-from onnxruntime_genai.models.builder import Model
+def create_gen_config(config):
+    return {
+        "model": {
+            "type": config["model_type"],
+            "pad_token_id": config["pad_token_id"],
+            "eos_token_id": config["eos_token_id"],
+            "bos_token_id": config["bos_token_id"],
+            "decoder_start_token_id": config["text_config"]["decoder_start_token_id"],
+            "vocab_size": config["vocab_size"],
+            "context_length": config["projection_dim"],
+            "encoder_decoder_init": {"filename": "encoder_model.onnx"},
+            "embedding": {
+                "filename": "embed_tokens.onnx",
+                "inputs": {"input_ids": "input_ids"},
+                # "outputs": {"embeddings": "inputs_embeds"},
+            },
+            "vision": {
+                "filename": "vision_encoder_with_preprocessing.onnx",
+                "inputs": {"pixel_values": "image"},
+                "outputs": {
+                    "visual_features": "image_features",
+                },
+            },
+            "decoder": {
+                "filename": "decoder_model_merged.onnx",
+                "hidden_size": config["text_config"]["d_model"],
+                "num_hidden_layers": config["text_config"]["num_hidden_layers"],
+                "num_key_value_heads": config["text_config"]["decoder_attention_heads"],
+                "head_size": 64,
+                "inputs": {
+                    "attention_mask": "encoder_attention_mask",
+                    "past_key_names": "past_key_values.%d.decoder.key",
+                    "past_value_names": "past_key_values.%d.decoder.value",
+                    "cross_past_key_names": "past_key_values.%d.encoder.key",
+                    "cross_past_value_names": "past_key_values.%d.encoder.value",
+                },
+                "outputs": {
+                    "logits": "logits",
+                    "present_key_names": "present.%d.decoder.key",
+                    "present_value_names": "present.%d.decoder.value",
+                    "cross_present_key_names": "present.%d.encoder.key",
+                    "cross_present_value_names": "present.%d.encoder.value",
+                },
+            },
+        },
+        "search": {
+            "do_sample": True,
+            "early_stopping": True,
+            "diversity_penalty": 0.0,
+            "min_length": 0,
+            "max_length": 50,
+            "num_beams": 3,
+            "top_k": 1,
+            "top_p": 1.0,
+            "temperature": 1.0,
+            "repetition_penalty": 1.0,
+            "past_present_share_buffer": False,
+            "num_return_sequences": 1,
+        },
+    }
 
 
-# Trick to load florence wo flash_attn
-from unittest.mock import patch
-from transformers.dynamic_module_utils import get_imports
+def parse_args():
+    parser = argparse.ArgumentParser()
 
-def fixed_get_imports(filename: str | os.PathLike) -> list[str]:
-    if not str(filename).endswith("modeling_florence2.py"):
-        return get_imports(filename)
-    imports = get_imports(filename)
-    imports.remove("flash_attn")
-    return imports
+    parser.add_argument(
+        "--config_json",
+        type=Path,
+        help="Specify path to the model's config.json file",
+        required=True,
+    )
+    parser.add_argument(
+        "--genai_config_json",
+        type=Path,
+        help="Specify path to store generated genai_config.json",
+        required=True,
+    )
+    return parser.parse_args()
 
 
-class Falcon2Model(Model):
-    def __init__(self, config, io_dtype, onnx_dtype, ep, cache_dir, extra_options):
-        # Context length defined as a max_position_embeddings
-        # Used mostly for ROPE
-        config.max_position_embeddings = config.text_config.max_position_embeddings
-        # No idea why it's needed
-        config.intermediate_size = -1
-        config.hidden_size = config.text_config.d_model
-        config.num_attention_heads = 12
-        config.num_hidden_layers = -1
-        config.hidden_act = -1
-        super().__init__(config, io_dtype, onnx_dtype, ep, cache_dir, extra_options)
-
-@patch("transformers.dynamic_module_utils.get_imports", fixed_get_imports)
-def convert():
-    model_name = "microsoft/Florence-2-base-ft"
-    output_dir = "models/florence2/data"
-    precision = "fp32"
-    execution_provider = "cpu"
-    cache_dir = "cache_dir"
-
-    # Create cache and output directories
-    os.makedirs(output_dir, exist_ok=True)
-    os.makedirs(cache_dir, exist_ok=True)
-
-    # Load model config
-    extra_kwargs = {"cache_dir": cache_dir}
-    hf_name = model_name
-    config = AutoConfig.from_pretrained(hf_name, use_auth_token=True, trust_remote_code=True, **extra_kwargs)
-    # Set input/output precision of ONNX model
-    io_dtype = TensorProto.FLOAT if precision in {"int8", "fp32"} or (precision == "int4" and execution_provider == "cpu") else TensorProto.FLOAT16
-
-    onnx_model = Falcon2Model(config, io_dtype, precision, execution_provider, cache_dir, {})
-
-    extra_kwargs = {} if os.path.exists(onnx_model.model_name_or_path) else {"num_hidden_layers": onnx_model.num_layers} if "num_hidden_layers" in onnx_model.extra_options else {"cache_dir": onnx_model.cache_dir}
-    print(extra_kwargs)
-
-    model = AutoModelForCausalLM.from_pretrained(onnx_model.model_name_or_path, use_auth_token=True, trust_remote_code=True, **extra_kwargs)
-    for module in model.modules():
-        print(module.__class__.__name__)
-
-    # Make ONNX model
-    # onnx_model.make_model("")
-    # Save ONNX model
-    # onnx_model.save_model(output_dir)
+def main(args):
+    config = json.loads(args.config_json.read_text())
+    args.genai_config_json.write_text(json.dumps(create_gen_config(config), indent=2))
 
 
 if __name__ == "__main__":
-    convert()
+    main(parse_args())

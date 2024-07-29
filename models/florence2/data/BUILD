@@ -26,7 +26,7 @@ filegroup(
 filegroup(
     name = "vision_encoder",
     srcs = [
-        "vision_encoder_with_postprocessing.onnx",
+        "vision_encoder_with_preprocessing.onnx",
     ],
     visibility = ["//visibility:public"],
 )
@@ -57,6 +57,6 @@ filegroup(
 
 filegroup(
     name = "test_image",
-    srcs = ["car.jpg"],
+    srcs = ["car.png"],
     visibility = ["//visibility:public"],
 )

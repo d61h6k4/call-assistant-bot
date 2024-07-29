@@ -41,7 +41,7 @@ TEST_F(Florence2Test, SanityCheckEmbedding) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.jpg");
+  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
   EXPECT_EQ(images->num_images_, 1);
 
   auto input_tensors =
@@ -65,7 +65,7 @@ TEST_F(Florence2Test, SanityCheckVision) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.jpg");
+  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
   EXPECT_EQ(images->num_images_, 1);
 
   auto input_tensors =
@@ -89,7 +89,7 @@ TEST_F(Florence2Test, SanityCheckEncoder) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.jpg");
+  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
   EXPECT_EQ(images->num_images_, 1);
 
   auto input_tensors =
@@ -123,7 +123,7 @@ TEST_F(Florence2Test, SanityCheckPipeline) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.jpg");
+  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
   EXPECT_EQ(images->num_images_, 1);
 
   auto input_tensors =
@@ -151,7 +151,7 @@ TEST_F(Florence2Test, SanityCheckGenerate) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.jpg");
+  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
   EXPECT_EQ(images->num_images_, 1);
 
   auto input_tensors =

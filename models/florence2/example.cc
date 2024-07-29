@@ -36,12 +36,10 @@ void CXX_API() {
 
   auto tokenizer_stream = tokenizer->CreateStream();
 
-  std::string image_path = "models/florence2/data/car.jpg";
+  std::string image_path = "models/florence2/data/car.png";
   auto images = Generators::LoadImageImpl(image_path.c_str());
 
-  std::string prompt;
-  std::cout << "Prompt: " << std::endl;
-  std::getline(std::cin, prompt);
+  std::string prompt = "What is the text in the image, with regions?";
 
   std::cout << "Processing image and prompt..." << std::endl;
   auto input_tensors =
