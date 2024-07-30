@@ -31,7 +31,7 @@ static void BM_ASR_Inference(benchmark::State& state) {
         SetupBenchmark(state);
     }
     for (auto _ : state) {    
-        benchmark::DoNotOptimize((*g_model)(g_audio_buffer));
+        benchmark::DoNotOptimize(g_model->operator()(g_audio_buffer));
     }
 }
 

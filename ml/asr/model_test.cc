@@ -30,7 +30,7 @@ TEST(TestMLASRModel, SanityCheck) {
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     EXPECT_TRUE(result.ok());
-    ABSL_LOG(INFO) << "Время выполнения модели: " << duration.count() / 1000.0 << " секунд";
+    ABSL_LOG(INFO) << "Time duration: " << duration.count() / 1000.0 << " seconds";
     text = result.value().text;
     size_emb = result.value().spk_embedding.size();
     ABSL_LOG(INFO) << text << "\n";

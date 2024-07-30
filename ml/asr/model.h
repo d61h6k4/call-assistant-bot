@@ -26,11 +26,6 @@ public:
   ASRModel& operator=(const ASRModel&) = delete;
 
   absl::StatusOr<ASRResult> operator()(const std::vector<float>& audio_buffer);
-
-public:
-  static constexpr size_t sample_rate = 16000;
-  static constexpr size_t channels = 1;
-
 private:
   const std::string log_id_ = "asr_model";
 
