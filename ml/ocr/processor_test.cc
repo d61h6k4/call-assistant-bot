@@ -19,7 +19,7 @@ TEST(Florence2ProcessorTest, SanityCheck) {
   auto &log_stream = Generators::Log("Florence2ModelTest::SanityCheck");
 
   auto config =
-      std::make_unique<Generators::Config>(fs::path("ml/ocr/data"));
+      std::make_unique<Generators::Config>(fs::path("ml/ocr/models"));
   auto model = std::make_shared<aikit::Florence2>(std::move(config),
                                                   Generators::GetOrtEnv());
   auto tokenizer = model->CreateTokenizer();

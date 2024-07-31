@@ -29,7 +29,7 @@ protected:
     Generators::SetLogBool("hit_eos", true);
 
     auto config = std::move(
-        std::make_unique<Generators::Config>(fs::path("ml/ocr/data")));
+        std::make_unique<Generators::Config>(fs::path("ml/ocr/models")));
     model_ = std::make_shared<aikit::Florence2>(std::move(config),
                                                 Generators::GetOrtEnv());
   }

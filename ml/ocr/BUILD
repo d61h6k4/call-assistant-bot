@@ -49,12 +49,9 @@ cc_library(
     srcs = ["model.cc"],
     hdrs = ["model.h"],
     data = [
-        "//ml/ocr/data:decoder",
-        "//ml/ocr/data:encoder",
-        "//ml/ocr/data:genai_config",
-        "//ml/ocr/data:tokenizer",
-        "//ml/ocr/data:tokenizer_config",
-        "//ml/ocr/data:vision_encoder",
+        "//ml/ocr/models:florence2",
+        "//ml/ocr/models:genai_config",
+        "//ml/ocr/models:tokenizer_config",
     ],
     deps = [
         ":encoder_kvcache",

@@ -6,6 +6,7 @@ py_binary(
     srcs = ["sync.py"],
     data = [
         "//ml/detection/models:cdetr",
+        "//ml/ocr/models:florence2",
         "//testdata:test_images",
         "//testdata:test_videos",
     ],
