@@ -62,7 +62,7 @@ jobs:
         run: |
           sudo apt install -y yasm automake libtool m4
           bazel run //tools:sync -- --current_directory `pwd` --action download models --all
-          bazel run //tools:sync -- --current_directory `pwd`--action download testdata
+          bazel run //tools:sync -- --current_directory `pwd` --action download testdata
       - name: "Run tests"
         run: |
           bazel test --test_output=all //av_transducer/utils:all
