@@ -70,4 +70,4 @@ jobs:
         run: |
           bazel test --test_output=all //av_transducer/utils:all
           bazel test --test_output=all //av_transducer/calculators:all
-          bazel test --test_output=all //ml/detection:all
+          bazel test -c opt --test_output=all //ml/detection:all
