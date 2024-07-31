@@ -25,3 +25,5 @@ accelerate
 albumentations
 grpcio-health-checking
 nodriver
+pycocotools
+setuptools

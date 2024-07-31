@@ -318,7 +318,7 @@ bazel_dep(name = "zlib", version = "1.3.1")
 bazel_dep(name = "libpng", version = "1.6.40")
 bazel_dep(name = "libjpeg_turbo", version = "2.1.91")
 
-ONNX_VERSION = "1.18.0"
+ONNX_VERSION = "1.18.1"
 
 bazel_dep(name = "onnxruntime_osx_arm64", version = ONNX_VERSION, repo_name = "onnxruntime_osx_arm64")
 archive_override(
@@ -437,8 +437,6 @@ bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
 git_override(
     module_name = "hedron_compile_commands",
-    commit = "204aa593e002cbd177d30f11f54cff3559110bb9",
-    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
-    # Replace the commit hash (above) with the latest (https://github.com/hedronvision/bazel-compile-commands-extractor/commits/main).
-    # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
+    remote = "https://github.com/eugeneo/bazel-compile-commands-extractor.git",
+    commit = "844279a911d0a0adca480b299799f03f65290cce",
 )

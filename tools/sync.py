@@ -1,17 +1,19 @@
 import argparse
 import tarfile
 import os
-from datetime import datetime
 import shutil
 import picologging as logging
+
+from datetime import datetime
 from enum import StrEnum, auto
 from tempfile import TemporaryDirectory
+from pathlib import Path
 
 from google.cloud import storage
 from google.api_core.exceptions import PreconditionFailed
-from pathlib import Path
 
 _LOGGER = logging.getLogger()
+ARTIFACTS_BUCKET_NAME = "aikit-meeting-bot-ml-artifacts"
 
 
 _DESCRIPTION = """
@@ -91,7 +93,7 @@ def sync_models(args: argparse.Namespace):
             archive_path = shutil.make_archive(
                 str(archive_path_name),
                 "xztar",
-                "ml/detection/models",
+                str(args.current_directory / "ml/detection/models"),
                 verbose=True,
                 logger=_LOGGER,
             )
@@ -99,14 +101,14 @@ def sync_models(args: argparse.Namespace):
             upload_blob(
                 archive_path.absolute(),
                 f"detection/{archive_path.name}",
-                "aikit-meeting-bot-ml-artifacts",
+                ARTIFACTS_BUCKET_NAME,
             )
 
         if release:
             upload_blob(
-                Path("ml/detection/models/model.onnx"),
+                args.current_directory / "ml/detection/models/model.onnx",
                 "detection/model.onnx",
-                "aikit-meeting-bot-ml-artifacts",
+                ARTIFACTS_BUCKET_NAME,
             )
 
     def upload_asr(model: str, release: bool):
@@ -115,7 +117,7 @@ def sync_models(args: argparse.Namespace):
             archive_path = shutil.make_archive(
                 str(archive_path_name),
                 "xztar",
-                f"ml/asr/models/{model}",
+                str(args.current_directory / "ml/asr/models" / model),
                 verbose=True,
                 logger=_LOGGER,
             )
@@ -123,38 +125,86 @@ def sync_models(args: argparse.Namespace):
             upload_blob(
                 archive_path.absolute(),
                 f"asr/dev/{archive_path.name}",
-                "aikit-meeting-bot-ml-artifacts",
+                ARTIFACTS_BUCKET_NAME,
             )
 
             if release:
                 upload_blob(
                     archive_path.absolute(),
-                    f"asr/release/{model}.tar.gz",
-                    "aikit-meeting-bot-ml-artifacts",
+                    f"asr/release/{model}.tar.xz",
+                    ARTIFACTS_BUCKET_NAME,
                 )
+
+    def upload_ocr(release: bool):
+        # no training, so nothing to release
+        del release
+
+        with TemporaryDirectory() as tmp_dir:
+            working_dir = Path(tmp_dir)
+            models_dir = working_dir / "models"
+            # ml/ocr/models contains only symlinks to the files
+            # and make_archive doesn't resolve symlinks, so we copy files here.
+            models_dir.mkdir()
+            for model_part_path in (args.current_directory / "ml/ocr/models").glob(
+                "*.onnx"
+            ):
+                shutil.copy2(
+                    model_part_path,
+                    models_dir / model_part_path.name,
+                    follow_symlinks=True,
+                )
+
+            archive_path_name = working_dir / "v1"
+            archive_path = shutil.make_archive(
+                str(archive_path_name),
+                "tar",
+                str(models_dir),
+                verbose=True,
+                logger=_LOGGER,
+            )
+            archive_path = Path(archive_path)
+            upload_blob(
+                archive_path.absolute(),
+                f"ocr/{archive_path.name}",
+                ARTIFACTS_BUCKET_NAME,
+            )
 
     def download_detection():
         download_blob(
             "detection/model.onnx",
-            "ml/detection/models/model.onnx",
-            "aikit-meeting-bot-ml-artifacts",
+            args.current_directory / "ml/detection/models/model.onnx",
+            ARTIFACTS_BUCKET_NAME,
         )
 
     def download_asr(archive_name: str):
         download_blob(
             f"asr/release/{archive_name}",
             archive_name,
-            "aikit-meeting-bot-ml-artifacts",
+            ARTIFACTS_BUCKET_NAME,
         )
 
         with tarfile.open(archive_name, "r:xz") as tar:
-            tar.extractall(path=f"ml/asr/models/{archive_name[:-7]}")
+            tar.extractall(
+                path=str(args.current_directory / "ml/asr/models" / archive_name[:-7])
+            )
 
         os.remove(archive_name)
 
         _LOGGER.info(f"Archive {archive_name} unpacked to ml/asr/models and removed.")
 
-    if not any((args.all, args.detection, args.asr)):
+    def download_ocr():
+        with TemporaryDirectory() as tmpdir:
+            archive_dst = tmpdir + "/v1.tar"
+            download_blob(
+                f"ocr/v1.tar",
+                archive_dst,
+                ARTIFACTS_BUCKET_NAME,
+            )
+            shutil.unpack_archive(archive_dst, args.current_directory / "ml/ocr/models")
+
+        _LOGGER.info(f"Archive {archive_dst} unpacked to ml/ocr/models.")
+
+    if not any((args.all, args.detection, args.asr, args.ocr)):
         _LOGGER.warning(
             {
                 "message": f"Nothing to do, please specify which model specifically you want to {args.action}",
@@ -163,63 +213,69 @@ def sync_models(args: argparse.Namespace):
         )
         return
 
+    if args.all:
+        args.detection = True
+        args.asr = True
+        args.ocr = True
+
     if args.action == Action.UPLOAD:
         if args.detection:
             upload_detection(args.release)
-        elif args.asr:
+
+        if args.asr:
             upload_asr("vosk-model-ru-0.22", args.release)
             upload_asr("vosk-model-spk-0.4", args.release)
-        elif args.all:
-            upload_detection(args.release)
-            upload_asr("vosk-model-ru-0.22", args.release)
-            upload_asr("vosk-model-spk-0.4", args.release)
-        else:
-            raise RuntimeError("Unsupported model")
+
+        if args.ocr:
+            upload_ocr(args.release)
+
     elif args.action == Action.DOWNLOAD:
         if args.detection:
             download_detection()
-        elif args.asr:
+
+        if args.asr:
             download_asr("vosk-model-ru-0.22.tar.gz")
             download_asr("vosk-model-spk-0.4.tar.gz")
-        elif args.all:
-            download_detection()
-            download_asr("vosk-model-ru-0.22.tar.gz")
-            download_asr("vosk-model-spk-0.4.tar.gz")
-        else:
-            raise RuntimeError("Unsupported model")
+
+        if args.ocr:
+            download_ocr()
+
     else:
         raise RuntimeError(f"Unsupported action {args.action}")
 
 
 def sync_testdata(args: argparse.Namespace):
-    def upload_detection():
+    def upload_testdata():
         raise NotImplementedError("Uploading test data hasn't been implemented yet.")
 
-    def download_detection():
-        for filename in ["testvideo.mp4", "meeting_frame.png"]:
+    def download_testdata():
+        for filename in [
+            "testvideo.mp4",
+            "meeting_frame.png",
+            "meeting_audio.wav",
+            "participant.png",
+        ]:
             src = "2024/07/19/testdata/" + filename
-            dst = "testdata/" + filename
+            dst = args.current_directory / "testdata" / filename
 
-            download_blob(src, dst, "meeting-bot-artifacts")
-
-    def download_asr():
-        for filename in ["meeting_audio.wav"]:
-            src = "2024/07/19/testdata/" + filename
-            dst = "testdata/" + filename
-
-            download_blob(src, dst, "meeting-bot-artifacts")
+            download_blob(src, str(dst), "meeting-bot-artifacts")
 
     if args.action == Action.UPLOAD:
-        upload_detection()
+        upload_testdata()
     elif args.action == Action.DOWNLOAD:
-        download_detection()
-        download_asr()
+        download_testdata()
     else:
         raise RuntimeError(f"Unsupported action {args.action}")
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description=_DESCRIPTION)
+    parser.add_argument(
+        "--current_directory",
+        type=Path,
+        help="Specify current directory, used to find path to testdata.",
+        required=True,
+    )
     parser.add_argument(
         "--action",
         choices=[Action.UPLOAD, Action.DOWNLOAD],
@@ -241,12 +297,15 @@ def parse_args():
     parser_models.add_argument(
         "--detection",
         action="store_true",
-        help="Specify to apply action only to detection mdoel",
+        help="Specify to apply action only to detection model",
     )
     parser_models.add_argument(
         "--asr",
         action="store_true",
         help="Specify to apply action only to asr model",
+    )
+    parser_models.add_argument(
+        "--ocr", action="store_true", help="Specify to apply action only to ocr model"
     )
     parser_models.add_argument(
         "--release",

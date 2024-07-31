@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "models/florence2/model.h"
+#include "ml/ocr/model.h"
 
 namespace aikit {
 
@@ -32,7 +32,7 @@ Florence2::Florence2(std::unique_ptr<Generators::Config> config,
       vision_session_options);
 
   encoder_session_ = OrtSession::Create(
-      ort_env, (config_->config_path / fs::path("encoder_model.onnx")).c_str(),
+      ort_env, (config_->config_path / fs::path(config_->model.encoder_decoder_init.filename)).c_str(),
       session_options_.get());
 
   decoder_session_ = OrtSession::Create(

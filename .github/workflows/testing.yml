@@ -61,13 +61,12 @@ jobs:
       - name: "Pre-install dependencies"
         run: |
           sudo apt install -y yasm automake libtool m4
-          touch ml/detection/models/model.onnx
-          bazel run //tools:sync -- --action download models --all
-          touch testdata/testvideo.mp4
-          touch testdata/meeting_frame.png
-          bazel run //tools:sync -- --action download testdata
+          bazel run //tools:sync -- --current_directory `pwd` --action download models --all
+          bazel run //tools:sync -- --current_directory `pwd` --action download testdata
       - name: "Run tests"
         run: |
           bazel test --test_output=all //av_transducer/utils:all
           bazel test --test_output=all //av_transducer/calculators:all
-          bazel test --test_output=all //ml/detection:all
+          # bazel test -c opt --test_output=all //ml/asr:all
+          bazel test -c opt --test_output=all //ml/detection:all
+          bazel test -c opt --test_output=all //ml/ocr:all

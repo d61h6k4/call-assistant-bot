@@ -18,6 +18,7 @@ config_setting(
 DEFINES = [
     "USE_DML=OFF",
     "USE_CUDA=OFF",
+    "USE_CXX17=ON",
 ]
 
 
@@ -88,7 +89,7 @@ cc_library(
         "src/models/utils.cpp",
         "src/models/whisper.cpp",
     ],
-    local_defines = DEFINES,
+    defines = DEFINES,
     deps = [
         "@onnxruntime_extensions//:shared",
     ] + select({

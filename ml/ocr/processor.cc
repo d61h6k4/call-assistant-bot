@@ -1,5 +1,6 @@
 
-#include "models/florence2/processor.h"
+#include "ml/ocr/processor.h"
+#include <cstddef>
 #include <cstdint>
 
 namespace aikit {
@@ -21,16 +22,14 @@ std::unique_ptr<OrtValue> ProcessPrompt(const Generators::Tokenizer &tokenizer,
   return input_ids_value;
 }
 
-std::unique_ptr<OrtValue>
-ProcessPixelValues(const Generators::Images *pixel_values,
-                   Ort::Allocator &allocator) {
+std::unique_ptr<OrtValue> ProcessPixelValues(int64_t height, int64_t width,
+                                             const uint8_t *pixel_values,
+                                             Ort::Allocator &allocator) {
 
-  const std::vector<int64_t> shape{
-      static_cast<int64_t>(pixel_values->images_.get()->size())};
+  const std::vector<int64_t> shape{height, width, 3};
   auto pixel_values_value = OrtValue::CreateTensor<uint8_t>(allocator, shape);
-  std::copy(pixel_values->images_.get()->begin(),
-            pixel_values->images_.get()->end(),
-            pixel_values_value->GetTensorMutableData<uint8_t>());
+  std::copy_n(pixel_values, 3 * height * width,
+              pixel_values_value->GetTensorMutableData<uint8_t>());
 
   return pixel_values_value;
 }
@@ -49,8 +48,7 @@ Processor::Processor(Generators::Config &config,
 
 std::unique_ptr<Generators::NamedTensors>
 Processor::Process(const Generators::Tokenizer &tokenizer,
-                   const std::string &prompt,
-                   const Generators::Images *images) {
+                   const std::string &prompt, const uint8_t *images) {
   Ort::Allocator &allocator{Ort::Allocator::GetWithDefaultOptions()};
   auto named_tensors = std::make_unique<Generators::NamedTensors>();
 
@@ -61,7 +59,7 @@ Processor::Process(const Generators::Tokenizer &tokenizer,
   named_tensors->emplace(
       std::string(Generators::Config::Defaults::PixelValuesName),
       std::make_shared<Generators::Tensor>(
-          ProcessPixelValues(images, allocator)));
+          ProcessPixelValues(height, width, images, allocator)));
 
   return named_tensors;
 }

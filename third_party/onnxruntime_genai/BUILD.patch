@@ -1,6 +1,6 @@
---- /dev/null	2024-07-01 15:56:46
-+++ BUILD	2024-07-01 15:56:38
-@@ -0,0 +1,110 @@
+--- /dev/null	2024-07-31 10:51:34
++++ BUILD	2024-07-31 10:51:31
+@@ -0,0 +1,111 @@
 +
 +config_setting(
 +    name = "osx_arm64",
@@ -21,6 +21,7 @@
 +DEFINES = [
 +    "USE_DML=OFF",
 +    "USE_CUDA=OFF",
++    "USE_CXX17=ON",
 +]
 +
 +
@@ -91,7 +92,7 @@
 +        "src/models/utils.cpp",
 +        "src/models/whisper.cpp",
 +    ],
-+    local_defines = DEFINES,
++    defines = DEFINES,
 +    deps = [
 +        "@onnxruntime_extensions//:shared",
 +    ] + select({
