@@ -4,12 +4,6 @@ load("@pip//:requirements.bzl", "requirement")
 py_binary(
     name = "sync",
     srcs = ["sync.py"],
-    data = [
-        "//ml/detection/models:cdetr",
-        "//ml/ocr/models:florence2",
-        "//testdata:test_images",
-        "//testdata:test_videos",
-    ],
     python_version = "PY3",
     srcs_version = "PY3",
     visibility = ["//visibility:public"],

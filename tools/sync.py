@@ -93,7 +93,7 @@ def sync_models(args: argparse.Namespace):
             archive_path = shutil.make_archive(
                 str(archive_path_name),
                 "xztar",
-                "ml/detection/models",
+                str(args.current_directory / "ml/detection/models"),
                 verbose=True,
                 logger=_LOGGER,
             )
@@ -106,7 +106,7 @@ def sync_models(args: argparse.Namespace):
 
         if release:
             upload_blob(
-                Path("ml/detection/models/model.onnx"),
+                args.current_directory / "ml/detection/models/model.onnx",
                 "detection/model.onnx",
                 ARTIFACTS_BUCKET_NAME,
             )
@@ -117,7 +117,7 @@ def sync_models(args: argparse.Namespace):
             archive_path = shutil.make_archive(
                 str(archive_path_name),
                 "xztar",
-                f"ml/asr/models/{model}",
+                str(args.current_directory / "ml/asr/models" / model),
                 verbose=True,
                 logger=_LOGGER,
             )
@@ -145,7 +145,9 @@ def sync_models(args: argparse.Namespace):
             # ml/ocr/models contains only symlinks to the files
             # and make_archive doesn't resolve symlinks, so we copy files here.
             models_dir.mkdir()
-            for model_part_path in Path("ml/ocr/models").glob("*.onnx"):
+            for model_part_path in (args.current_directory / "ml/ocr/models").glob(
+                "*.onnx"
+            ):
                 shutil.copy2(
                     model_part_path,
                     models_dir / model_part_path.name,
@@ -170,7 +172,7 @@ def sync_models(args: argparse.Namespace):
     def download_detection():
         download_blob(
             "detection/model.onnx",
-            "ml/detection/models/model.onnx",
+            args.current_directory / "ml/detection/models/model.onnx",
             ARTIFACTS_BUCKET_NAME,
         )
 
@@ -182,7 +184,7 @@ def sync_models(args: argparse.Namespace):
         )
 
         with tarfile.open(archive_name, "r:xz") as tar:
-            tar.extractall(path=f"ml/asr/models/{archive_name[:-7]}")
+            tar.extractall(path=str(args.current_directory / "ml/asr/models" / archive_name[:-7])
 
         os.remove(archive_name)
 
@@ -196,7 +198,7 @@ def sync_models(args: argparse.Namespace):
                 archive_dst,
                 ARTIFACTS_BUCKET_NAME,
             )
-            shutil.unpack_archive(archive_dst, "ml/ocr/models")
+            shutil.unpack_archive(archive_dst, args.current_directory / "ml/ocr/models")
 
         _LOGGER.info(f"Archive {archive_dst} unpacked to ml/ocr/models.")
 
@@ -252,9 +254,9 @@ def sync_testdata(args: argparse.Namespace):
             "participant.png",
         ]:
             src = "2024/07/19/testdata/" + filename
-            dst = "testdata/" + filename
+            dst = args.current_directory / "testdata" / filename
 
-            download_blob(src, dst, "meeting-bot-artifacts")
+            download_blob(src, str(dst), "meeting-bot-artifacts")
 
     if args.action == Action.UPLOAD:
         upload_testdata()
@@ -266,6 +268,12 @@ def sync_testdata(args: argparse.Namespace):
 
 def parse_args():
     parser = argparse.ArgumentParser(description=_DESCRIPTION)
+    parser.add_argument(
+        "--current_directory",
+        type=Path,
+        help="Specify current directory, used to find path to testdata.",
+        required=True,
+    )
     parser.add_argument(
         "--action",
         choices=[Action.UPLOAD, Action.DOWNLOAD],
