@@ -190,7 +190,7 @@ def sync_models(args: argparse.Namespace):
 
     def download_ocr():
         with TemporaryDirectory() as tmpdir:
-            archive_dst = tmpdir / "v1.tar"
+            archive_dst = tmpdir + "/v1.tar"
             download_blob(
                 f"ocr/v1.tar",
                 archive_dst,
