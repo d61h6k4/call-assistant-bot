@@ -5,3 +5,27 @@ filegroup(
     ]),
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "test_images",
+    srcs = glob([
+        "*.png",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "evaluator_logs",
+    srcs = glob([
+        "evaluator.jsonl",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "test_audio",
+    srcs = glob([
+        "*.wav",
+    ]),
+    visibility = ["//visibility:public"],
+)

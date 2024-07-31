@@ -6,9 +6,26 @@ package aikit.evaluator;
 
 service Evaluator {
     rpc Shutdown (ShutdownRequest) returns (ShutdownReply) {}
+    rpc Detections (DetectionsRequest) returns (DetectionsReply) {}
 }
 
 message ShutdownRequest {
     string reason = 1;
 }
 message ShutdownReply {}
+
+message Detection {
+    float xmin = 1;
+    float ymin = 2;
+    float width = 3;
+    float height = 4;
+    int32 label_id = 5;
+    float score = 6;
+}
+
+message DetectionsRequest {
+    int64 event_timestamp = 1;
+    repeated Detection detections = 2;
+}
+
+message DetectionsReply {}

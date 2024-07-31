@@ -2,7 +2,7 @@ load("@aspect_bazel_lib//lib:tar.bzl", "tar")
 load("@container_structure_test//:defs.bzl", "container_structure_test")
 load("@rules_distroless//apt:defs.bzl", "dpkg_status")
 load("@rules_distroless//distroless:defs.bzl", "cacerts", "group", "home", "passwd")
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_push", "oci_tarball")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 passwd(
@@ -178,6 +178,7 @@ oci_image(
         "PULSE_SERVER": "/var/run/pulse/native",
         "DBUS_STARTER_BUS_TYPE": "session",
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket",
+        "TEMP": "/home/nonroot",
     },
     tars = [
         ":sh",
@@ -191,10 +192,7 @@ oci_image(
 )
 
 # Build: bazel run //docker:tarball
-# Run: docker run --rm -e GOOGLE_LOGIN=d61h6k4a1k1tt3st@gmail.com \
-#                      -e GOOGLE_PASSWORD=*** \
-#                      --volume `pwd`/output:/root \
-#                      aikit/meetingbot:latest \
+# Run: docker run --rm aikit/meetingbot:latest \
 #                      --gmeet_link=https://meet.google.com/rof-kvpv-yue
 oci_tarball(
     name = "tarball",
@@ -211,4 +209,11 @@ container_structure_test(
         "@platforms//cpu:x86_64": ["test_linux_amd64.yaml"],
     }),
     image = ":image",
+)
+
+oci_push(
+    name = "push",
+    image = ":image",
+    remote_tags = ["latest"],
+    repository = "europe-west1-b-docker.pkg.dev/ai-call-bot-424111/meeting-bot/meeting-bot",
 )

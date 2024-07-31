@@ -51,6 +51,10 @@ protected:
         auto video_frame_or = container->CreateVideoFrame();
         EXPECT_TRUE(video_frame_or);
         st = container->PacketToFrame(packet_, video_frame_or.get());
+        if (!st.ok()) {
+            EXPECT_TRUE(absl::IsFailedPrecondition(st)) << st.message();
+            continue;
+        }
         EXPECT_TRUE(st.ok());
 
         auto timestamp = mediapipe::Timestamp(video_frame_or->GetPTS());

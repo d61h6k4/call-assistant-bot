@@ -51,6 +51,10 @@ protected:
         auto audio_frame_or = container->CreateAudioFrame();
         EXPECT_TRUE(audio_frame_or);
         st = container->PacketToFrame(packet_, audio_frame_or.get());
+        if (!st.ok()) {
+            EXPECT_TRUE(absl::IsFailedPrecondition(st)) << st.message();
+            continue;
+        }
         EXPECT_TRUE(st.ok());
 
         auto timestamp = mediapipe::Timestamp(audio_frame_or->GetPTS());

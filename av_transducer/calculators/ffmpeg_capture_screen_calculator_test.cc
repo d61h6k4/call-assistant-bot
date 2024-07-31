@@ -28,7 +28,7 @@ TEST(FFMPEGCaptureScreenCalculatorTest, HeaderCheck) {
   EXPECT_EQ(video_header.width, 3840);
 }
 
-TEST(FFMpegCaptureAudioCalculatorTest, AudioCheck) {
+TEST(FFMpegCaptureScreenCalculatorTest, VideoCheck) {
   auto calculator_node =
       mediapipe::ParseTextProtoOrDie<mediapipe::CalculatorGraphConfig::Node>(
           R"pb(
@@ -42,9 +42,9 @@ TEST(FFMpegCaptureAudioCalculatorTest, AudioCheck) {
 
   auto &outputs = runner.Outputs();
   EXPECT_EQ(outputs.NumEntries(), 1);
-  const auto &audio =
+  const auto &video=
       outputs.Tag("VIDEO").packets[0].Get<aikit::media::VideoFrame>();
-  EXPECT_GE(audio.GetPTS(), 0);
+  EXPECT_GE(video.GetPTS(), 0);
 }
 } // namespace
 } // namespace aikit

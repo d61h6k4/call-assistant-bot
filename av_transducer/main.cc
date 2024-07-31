@@ -25,6 +25,11 @@ void SignalHandler(int signal) {
   SIGNAL_STATUS_COND_V.notify_one();
 }
 
+// Absolute path to the model file when building docker image
+ABSL_FLAG(
+    std::string, cdetr_model_path,
+    "/meeting_bot/meeting_bot.runfiles/_main/ml/detection/models/model.onnx",
+    "Specify path to the CDETR model.");
 ABSL_FLAG(std::string, output_file_path, "", "Full path of video to save.");
 
 mediapipe::CalculatorGraphConfig BuildGraph() {
@@ -59,6 +64,26 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
       audio_converter_node.SideIn("OUT_AUDIO_HEADER");
   audio_stream >> audio_converter_node.In("IN_AUDIO");
   auto float_48kHz_audio_stream = audio_converter_node.Out("OUT_AUDIO");
+
+  // Processing
+
+  auto &visual_subgraph = graph.AddNode("VisualGraph");
+  graph.SideIn("CDETR_MODEL_PATH")
+          .SetName("cdetr_model_path")
+          .Cast<std::string>() >>
+      visual_subgraph.SideIn("CDETR_MODEL_PATH");
+  graph.SideIn("OUT_VIDEO_HEADER")
+          .SetName("out_video_header")
+          .Cast<aikit::media::VideoStreamParameters>() >>
+      visual_subgraph.SideIn("OUT_VIDEO_HEADER");
+  yuv_video_stream >> visual_subgraph.In("IN_VIDEO");
+  auto detections_stream = visual_subgraph.Out("DETECTIONS");
+
+  // End of processing
+
+  // Send to Evaluator
+  auto &evaluator_client_node = graph.AddNode("EvaluatorClientCalculator");
+  detections_stream >> evaluator_client_node.In("DETECTIONS");
 
   // Write audio
   auto &sink_video_node = graph.AddNode("FFMPEGSinkVideoCalculator");
@@ -99,6 +124,8 @@ absl::Status RunMPPGraph() {
   input_side_packets["out_video_header"] =
       mediapipe::MakePacket<aikit::media::VideoStreamParameters>(
           video_stream_parameters);
+  input_side_packets["cdetr_model_path"] =
+      mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_cdetr_model_path));
 
   ABSL_LOG(INFO) << "Initialize the calculator graph.";
   mediapipe::CalculatorGraph graph;
@@ -111,8 +138,9 @@ absl::Status RunMPPGraph() {
   SIGNAL_STATUS_COND_V.wait(lock, [&] {
     return (SIGNAL_STATUS == SIGINT || SIGNAL_STATUS == SIGTERM);
   });
-
+  ABSL_LOG(INFO) << "Start closing all packet sources of the calculator graph.";
   MP_RETURN_IF_ERROR(graph.CloseAllPacketSources());
+  ABSL_LOG(INFO) << "Waiting until done...";
   MP_RETURN_IF_ERROR(graph.WaitUntilDone());
   return absl::OkStatus();
 }

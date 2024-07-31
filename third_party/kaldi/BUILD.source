@@ -1,0 +1,547 @@
+
+cc_library(
+    name = "base",
+    srcs = glob([
+        "src/base/*.cc"
+    ],
+        exclude = [
+            "src/base/kaldi-error-test.cc",
+            "src/base/kaldi-math-test.cc",
+            "src/base/timer-test.cc",
+             "src/base/*-test.cc"
+        ]
+    ),
+    hdrs = glob([
+        "src/base/*.h",
+    ]),
+    deps = [
+        "@openfst//:base",
+    ],
+    local_defines = [
+        "KALDI_VERSION=\\\"2024.6.3\\\""
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+
+cc_library(
+    name = "tools_clapack",
+    hdrs = [
+        "tools/CLAPACK/cblas.h",
+        "tools/CLAPACK/clapack.h",
+        "tools/CLAPACK/f2c.h",
+    ],
+    strip_include_prefix = "tools/CLAPACK",
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "matrix",
+    srcs = glob([
+        "src/matrix/*.cc"
+    ],
+        exclude = [
+            "src/matrix/sparse-matrix-test.cc",
+            "src/matrix/numpy-array-test.cc",
+            "src/matrix/matrix-lib-speed-test.cc",
+            "src/matrix/matrix-lib-test.cc",
+        ]
+    ),
+    hdrs = glob([
+        "src/matrix/*.h",
+    ]),
+    deps = [
+        ":tools_clapack",
+        ":base",
+        "@openblas",
+    ],
+    # https://github.com/kaldi-asr/kaldi/blob/67548a31c45f93d8b25ee553c5969d6a6d5d9408/CMakeLists.txt#L100
+    local_defines = [
+        "HAVE_OPENBLAS",
+        "HAVE_CLAPACK",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "itf",
+    hdrs = glob(["src/itf/*.h"]),
+    strip_include_prefix = "src",
+    alwayslink = 1,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "util",
+    srcs = glob([
+        "src/util/*.cc"
+    ],
+        exclude = [
+            "src/util/const-integer-set-test.cc",
+            "src/util/parse-options-test.cc",
+            "src/util/simple-options-test.cc",
+            "src/util/text-utils-test.cc",
+            "src/util/*-test.cc",
+            "src/util/*_test.cc",
+            "src/util/hash-list-test.cc",
+            "src/util/edit-distance-test.cc",
+            "src/util/kaldi-io-test.cc",
+            "src/util/kaldi-table-test.cc",
+            "src/util/kaldi-thread-test.cc",
+            "src/util/stl-utils-test.cc",
+        ]
+    ),
+    hdrs = glob([
+        "src/util/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":matrix",
+        ":itf",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "fstext",
+    srcs = glob([
+        "src/fstext/*.cc"
+    ],
+        exclude = [
+            "src/fstext/*-test.cc",
+            "src/fstext/*_test.cc",
+            "src/fstext/prune-special-test.cc",
+            "src/fstext/push-special-test.cc",
+            "src/fstext/factor-test.cc",
+            "src/fstext/context-fst-test.cc",
+            "src/fstext/deterministic-fst-test.cc",
+            "src/fstext/determinize-lattice-test.cc",
+            "src/fstext/determinize-star-test.cc",
+            "src/fstext/epsilon-property-test.cc",
+            "src/fstext/fstext-utils-test.cc",
+            "src/fstext/lattice-utils-test.cc",
+            "src/fstext/lattice-weight-test.cc",
+            "src/fstext/pre-determinize-test.cc",
+            "stc/fstext/prune-special-test.cc",
+            "src/fstext/remove-eps-local-test.cc",
+            "src/fstext/table-matcher-test.cc",
+            "src/fstext/trivial-factor-weight-test.cc",
+        ]
+    ),
+    hdrs = glob([
+        "src/fstext/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":util",
+        "@openfst//:lib_lite",
+        "@openfst//:fstscript_base",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "tree",
+    srcs = glob([
+        "src/tree/*.cc"
+        ],
+        exclude = [
+            "src/tree/*-test.cc",
+            "src/tree/*_test.cc",
+            "src/tree/build-tree-test.cc",
+            "src/tree/build-tree-utils-test.cc",
+            "src/tree/cluster-utils-test.cc",
+            "stc/tree/event-map-test.cc",
+            "src/tree/event-map-test.cc",
+            "src/tree/context-dep-test.cc",
+        ]
+    ),
+    hdrs = glob([
+        "src/tree/*.h",
+        ],
+    ),
+    deps = [
+        ":base",
+        ":util",
+        "@openfst//:lib_lite",
+
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "hmmlat",
+    srcs = glob([
+        "src/hmm/hmm-topology.cc",
+        "src/hmm/hmm-utils.cc",
+        "src/hmm/posterior.cc",
+        "src/hmm/transition-model.cc",
+        "src/hmm/tree-accu.cc",
+        "src/lat/*.cc",
+        ],
+        exclude = [
+            "src/lat/determinize-lattice-pruned-test.cc",
+            "src/lat/kaldi-lattice-test.cc",
+            "src/lat/minimize-lattice-test.cc",
+            "src/lat/word-align-lattice-lexicon-test.cc",
+            "src/lat/push-lattice-test.cc",
+        ]
+    ),
+    hdrs = glob([
+        "src/hmm/*.h",
+        "src/lat/*.h",
+        ],
+        exclude = [
+            "src/hmm/hmm-test-utils.h",
+        ]
+    ),
+    deps = [
+        ":base",
+        ":util",
+        ":tree",
+        ":fstext",
+        "@openfst//:lib_lite",
+        "@openfst//:fst-decl",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "decoder",
+    srcs = glob([
+        "src/decoder/*.cc"
+    ]),
+    hdrs = glob([
+        "src/decoder/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":util",
+        ":hmmlat",
+        "@openfst//:lib_lite",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "gmmtransform",
+    srcs = glob([
+            "src/transform/*.cc",
+            "src/gmm/*.cc",
+        ],
+        exclude = [
+            "src/transform/fmllr-diag-gmm-test.cc",
+            "src/transform/lda-estimate-test.cc",
+            "src/transform/regression-tree-test.cc",
+            "src/transform/regtree-fmllr-diag-gemm-test.cc",
+            "src/transform/regtree-mllr-diag-gmm-test.cc",
+            "src/gmm/am-diag-gmm-test.cc",
+            "src/gmm/diag-gmm-test.cc",
+            "src/gmm/ebw-diag-gmm-test.cc",
+            "src/gmm/full-gmm-test.cc",
+            "src/gmm/mle-am-diag-gmm-test.cc",
+            "src/gmm/mle-diag-gmm-test.cc",
+            "src/gmm/mle-full-gmm-test.cc",
+            "src/transform/fmllr-raw-test.cc",
+            "src/transform/fmpe-test.cc",
+            "src/transform/regtree-fmllr-diag-gmm-test.cc",
+            "src/transform/*-test.cc",
+            "src/gmm/*-test.cc",
+        ],
+    ),
+    hdrs = glob([
+        "src/transform/*.h",
+        "src/gmm/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":matrix",
+        ":util",
+        ":tree",
+        ":hmmlat",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "feat",
+    srcs = glob([
+            "src/feat/*.cc"
+        ],
+        exclude = [
+            "src/feat/*-test.cc",
+            "src/feat/*_test.cc",
+            "src/feat/signal-test.cc",
+            "src/feat/feature-sdc-test.cc",
+            "src/feat/feature-fbank-test.cc",
+            "src/feat/feature-functions-test.cc",
+            "src/feat/feature-mfcc-test.cc",
+            "src/feat/feature-plp-test.cc",
+            "src/feat/online-feature-test.cc",
+            "src/feat/pitch-functions-test.cc",
+            "src/feat/resample-test.cc",
+            "src/feat/wave-reader-test.cc",
+        ],
+    ),
+    hdrs = glob([
+        "src/feat/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":matrix",
+        ":util",
+        ":gmmtransform",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cudamatrix",
+    srcs = glob([
+            "src/cudamatrix/*.cc"
+        ],
+        exclude = [
+            "src/cudamatrix/cu-array-test.cc",
+            "src/cudamatrix/cu-block-matrix-test.cc",
+            "src/cudamatrix/cu-compressed-matrix-test.cc",
+            "src/cudamatrix/cu-device-test.cc",
+            "src/cudamatrix/cu-math-test.cc",
+            "src/cudamatrix/cu-matrix-speed-test.cc",
+            "src/cudamatrix/cu-matrix-test.cc",
+            "src/cudamatrix/cu-packed-matrix-test.cc",
+            "src/cudamatrix/cu-rand-speed-test.cc",
+            "src/cudamatrix/cu-sp-matrix-speed-test.cc",
+            "src/cudamatrix/cu-sparse-matrix-test.cc",
+            "src/cudamatrix/cu-tp-matrix-test.cc",
+            "src/cudamatrix/cu-vector-speed-test.cc",
+            "src/cudamatrix/*-test.cc",
+            "src/cudamatrix/*_test.cc",
+        ],
+    ),
+    hdrs = glob([
+        "src/cudamatrix/*.h",
+    ]),
+    local_defines = [
+        "HAVE_CUDA=0",
+    ],
+    deps = [
+        ":base",
+        ":matrix",
+        ":util",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nnet2",
+    srcs = glob([
+            "src/nnet2/*.cc"
+        ],
+        exclude = [
+            "src/nnet2/*-test.cc",
+            "src/nnet2/*_test.cc",
+            "src/nnet2/am-nnet-test.cc",
+            "src/nnet2/nnet-component-test.cc",
+            "src/nnet2/nnet-compute-test.cc",
+            "src/nnet2/nnet-example-funcitons-test.cc",
+            "src/nnet2/nnet-precondition-online-test.cc",
+            "src/nnet2/nnet-precondition-test.cc",
+            "src/nnet2/online-nnet2-decodable-test.cc",
+        ],
+    ),
+    hdrs = glob([
+        "src/nnet2/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":util",
+        ":hmmlat",
+        ":gmmtransform",
+        ":cudamatrix",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "chain",
+    srcs = glob([
+            "src/chain/*.cc"
+        ],
+        exclude = [
+            "src/chain/chain-supervision-test.cc",
+            "src/chain/language-model-test.cc",
+        ],
+    ),
+    hdrs = glob([
+        "src/chain/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":matrix",
+        ":util",
+        ":fstext",
+        ":hmmlat",
+        ":cudamatrix",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nnet3",
+    srcs = glob([
+            "src/nnet3/*.cc"
+        ],
+        exclude = [
+            "src/nnet3/*-test.cc",
+            "src/nnet3/*_test.cc",
+            "src/nnet3/attention-test.cc",
+            "src/nnet3/convolution-test.cc",
+            "src/nnet3/natural-gradient-online-test.cc",
+            "src/nnet3/nnet-common-test.cc",
+            "src/nnet3/nnet-compile-test.cc",
+            "src/nnet3/nnet-compile-utils-test.cc",
+            "src/nnet3/nnet-component-test.cc",
+            "src/nnet3/nnet-compute-test.cc",
+            "src/nnet3/nnet-derivative-test.cc",
+            "src/nnet3/nnet-descriptor-test.cc",
+            "src/nnet3/nnet-example-test.cc",
+            "src/nnet3/nnet-graph-test.cc",
+            "src/nnet3/nnet-nnet-test.cc",
+            "src/nnet3/nnet-optimize-test.cc",
+            "src/nnet3/nnet-parse-test.cc",
+        ],
+    ),
+    hdrs = glob([
+        "src/nnet3/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":util",
+        ":hmmlat",
+        ":decoder",
+        ":gmmtransform",
+        ":cudamatrix",
+        ":chain",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "ivector",
+    srcs = glob([
+            "src/ivector/*.cc"
+        ],
+        exclude = [
+            "src/ivector/*-test.cc",
+            "src/ivector/ivector-extractor-test.cc",
+            "src/ivector/logistic-regression-test.cc",
+        ],
+    ),
+    hdrs = glob([
+        "src/ivector/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":util",
+        ":gmmtransform",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "online2",
+    srcs = glob([
+        "src/online2/*.cc"
+    ]),
+    hdrs = glob([
+        "src/online2/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":matrix",
+        ":itf",
+        ":util",
+        ":decoder",
+        ":feat",
+        ":nnet2",
+        ":nnet3",
+        ":ivector",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "lm",
+    srcs = glob([
+            "src/lm/*.cc"
+        ],
+        exclude = [
+            "src/lm/arpa-file-parser-test.cc",
+            "src/lm/arpa-lm-compiler-test.cc",
+            "src/lm/kenlm-test.cc",
+        ],
+    ),
+    hdrs = glob([
+        "src/lm/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":matrix",
+        ":util",
+        ":cudamatrix",
+        ":nnet3",
+        "@openfst//:lib_lite",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "rnnlm",
+    srcs = glob([
+        "src/rnnlm/*.cc"
+    ],
+    exclude = [
+        "src/rnnlm/*-test.cc",
+        "src/rnnlm/*_test.cc",
+    ]),
+    hdrs = glob([
+        "src/rnnlm/*.h",
+    ]),
+    deps = [
+        ":base",
+        ":matrix",
+        ":util",
+        ":cudamatrix",
+        ":nnet3",
+        ":lm",
+        "@openfst//:lib_lite",
+    ],
+    strip_include_prefix = "src",
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "kaldi_math_test",
+    srcs = [
+        "src/base/kaldi-math-test.cc",
+    ],
+    deps = [
+        ":base"
+    ],
+)

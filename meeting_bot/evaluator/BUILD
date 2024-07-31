@@ -1,7 +1,10 @@
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@grpc//bazel:python_rules.bzl", "py_grpc_library", "py_proto_library")
+load("@com_github_grpc_grpc//bazel:python_rules.bzl", "py_grpc_library", "py_proto_library")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@pip//:requirements.bzl", "requirement")
+load("@com_github_grpc_grpc//bazel:grpc_build_system.bzl", "grpc_proto_library")
+
+package(default_visibility = ["//visibility:public"])
 
 proto_library(
     name = "evaluator_proto",
@@ -11,7 +14,7 @@ proto_library(
 
 py_proto_library(
     name = "evaluator_py_pb2",
-    visibility = ["//meeting_bot:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [":evaluator_proto"],
 )
 
@@ -22,6 +25,11 @@ py_grpc_library(
     deps = [":evaluator_py_pb2"],
 )
 
+grpc_proto_library(
+    name = "evaluator_proto_grpc",
+    srcs = ["evaluator.proto"],
+)
+
 py_binary(
     name = "evaluator",
     srcs = ["evaluator.py"],
@@ -30,7 +38,11 @@ py_binary(
     visibility = ["//meeting_bot:__subpackages__"],
     deps = [
         ":evaluator_py_pb2_grpc",
-        "@grpc//src/python/grpcio/grpc:grpcio",
+        "//meeting_bot:meeting_bot_py_pb2",
+        "//meeting_bot:meeting_bot_py_pb2_grpc",
+        "//meeting_bot/common:logging",
+        "//ml/leave_call:model",
+        "@com_github_grpc_grpc//src/python/grpcio/grpc:grpcio",
         "@pip//grpcio_health_checking",
         "@pip//picologging",
     ],

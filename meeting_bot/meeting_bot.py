@@ -16,7 +16,9 @@ import grpc
 import sched
 import time
 
+from grpc.aio import UsageError
 import picologging as logging
+import logging.config
 
 from datetime import datetime
 from pathlib import Path
@@ -84,7 +86,7 @@ class Evaluator(BotPart):
         )
 
     @staticmethod
-    async def create(meeting_bot_address: str):
+    async def create(meeting_bot_address: str, working_dir: str):
         evaluator_address = "unix:///tmp/evaluator.sock"
 
         r = runfiles.Create()
@@ -98,6 +100,8 @@ class Evaluator(BotPart):
                     evaluator_address,
                     "--meeting_bot_address",
                     meeting_bot_address,
+                    "--working_dir",
+                    working_dir,
                 ]
             ),
             env=env,
@@ -155,6 +159,11 @@ class Articulator(BotPart):
             ),
             env=env,
         )
+        if proc.returncode is not None:
+            raise RuntimeError(
+                f"Failed to start articulator grpc. Return code: {proc.returncode}"
+            )
+
         client = grpc.aio.insecure_channel(articulator_address)
         return Articulator(process=proc, client=client)
 
@@ -234,6 +243,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         loop.add_signal_handler(
             signal.SIGTERM, lambda: self.exit_gracefullt(signal.SIGTERM)
         )
+        self.shutdown_task = None
 
     @classmethod
     async def create(
@@ -245,14 +255,18 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
     ) -> "MeetingBotServicer":
         working_dir = tempfile.TemporaryDirectory()
 
-        articulator = await Articulator.create(
-            gmeet_link=gmeet_link, working_dir=working_dir.name
-        )
+        try:
+            articulator = await Articulator.create(
+                gmeet_link=gmeet_link, working_dir=working_dir.name
+            )
+        except RuntimeError as e:
+            raise RuntimeError("Failed to run articulator.") from e
+
         perceiver = await Perceiver.create(working_dir=working_dir.name)
-        evaluator = await Evaluator.create(address)
+        evaluator = await Evaluator.create(address, working_dir=working_dir.name)
         return cls(
             server=server,
-            parts=[evaluator, articulator, perceiver],
+            parts=[articulator, perceiver, evaluator],
             logger=logger,
             meeting_name=gmeet_link,
             working_dir=working_dir,
@@ -260,7 +274,10 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
 
     def exit_gracefullt(self, signum):
         self.logger.info({"message": "Got system signal", "signal": signum})
-        asyncio.create_task(self.shutdown())
+        self.shutdown_task = asyncio.create_task(self.shutdown())
+        self.shutdown_task.add_done_callback(
+            lambda f: self.logger.info("Shutdown task is done.")
+        )
 
     async def Shutdown(
         self, request: meeting_bot_pb2.ShutdownRequest, context
@@ -268,7 +285,9 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         self.logger.info(
             {"message": "Shutting down the meeting bot", "reason": request.reason}
         )
-        await self.shutdown()
+
+        asyncio.create_task(self.shutdown())
+
         return meeting_bot_pb2.ShutdownReply()
 
     async def shutdown(self):
@@ -278,7 +297,7 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
             )
             try:
                 await bot_part.shutdown()
-            except grpc.RpcError as e:
+            except UsageError as e:
                 self.logger.error(
                     {
                         "message": f"Failed to off {bot_part.__class__.__name__}",
@@ -287,14 +306,13 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
                 )
             try:
                 await bot_part.close()
-            except grpc.RpcError as e:
+            except UsageError as e:
                 self.logger.error(
                     {
                         "message": f"Failed to close client of {bot_part.__class__.__name__}",
                         "error": repr(e),
                     }
                 )
-        self.logger.info({"message": "All parts are off. Starting clean up."})
         self.working_dir_cleanup()
         # gRPC requires always reply to the request, so here
         # we schedule calling server stop for 1 second
@@ -307,15 +325,15 @@ class MeetingBotServicer(meeting_bot_pb2_grpc.MeetingBotServicer):
         with tempfile.TemporaryDirectory() as archive_dir:
             archive_name = urllib.parse.quote(self.meeting_name)
             archive_path = Path(archive_dir) / archive_name
-            self.logger.info({"message": "Archiving all artifacts"})
-            shutil.make_archive(
+            zip_archive_path = shutil.make_archive(
                 str(archive_path),
-                "zip",
+                "xztar",
                 self.working_dir.name,
                 verbose=True,
+                logger=self.logger,
             )
 
-            zip_archive_path = archive_path.with_suffix(".zip")
+            zip_archive_path = Path(zip_archive_path)
             destination_blob_name = str(
                 Path(datetime.now().strftime("%Y/%m/%d")) / zip_archive_path.name
             )
@@ -463,9 +481,17 @@ async def serve(args: argparse.Namespace):
     await prepare_env(logger)
 
     server = grpc.aio.server()
-    service = await MeetingBotServicer.create(
-        gmeet_link=args.gmeet_link, address=args.address, server=server, logger=logger
-    )
+    try:
+        service = await MeetingBotServicer.create(
+            gmeet_link=args.gmeet_link,
+            address=args.address,
+            server=server,
+            logger=logger,
+        )
+    except RuntimeError as e:
+        logger.critical({"message": "Failed to start meeting bot.", "error": repr(e)})
+        await server.stop(1.0)
+        return 1
 
     meeting_bot_pb2_grpc.add_MeetingBotServicer_to_server(
         service,
