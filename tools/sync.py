@@ -155,7 +155,7 @@ def sync_models(args: argparse.Namespace):
             archive_path_name = working_dir / "v1"
             archive_path = shutil.make_archive(
                 str(archive_path_name),
-                "xztar",
+                "tar",
                 str(models_dir),
                 verbose=True,
                 logger=_LOGGER,
@@ -190,9 +190,9 @@ def sync_models(args: argparse.Namespace):
 
     def download_ocr():
         with tempfile.TemporaryDirectory() as tmpdir:
-            archive_dst = tmpdir / "v1.tar.xz"
+            archive_dst = tmpdir / "v1.tar"
             download_blob(
-                f"ocr/v1.tar.xz",
+                f"ocr/v1.tar",
                 archive_dst,
                 ARTIFACTS_BUCKET_NAME,
             )
