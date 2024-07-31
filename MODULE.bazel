@@ -323,7 +323,7 @@ ONNX_VERSION = "1.18.0"
 bazel_dep(name = "onnxruntime_osx_arm64", version = ONNX_VERSION, repo_name = "onnxruntime_osx_arm64")
 archive_override(
     module_name = "onnxruntime_osx_arm64",
-    integrity = "sha256-xf9SDSkT4zYGcJecpP5DcX/DqgwMNnp1+7by8VwMtI0=",
+    integrity = "sha256-8zViA+m29QIxaKEtt0sQYKs5f4886PXLLCvZ5/EZWwE=",
     patches = [
         "@//third_party/onnxruntime_osx_arm64:BUILD.patch",
         "@//third_party/onnxruntime_osx_arm64:MODULE.bazel.patch",
@@ -335,7 +335,7 @@ archive_override(
 bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION)
 archive_override(
     module_name = "onnxruntime_linux_x64",
-    integrity = "sha256-+k0Rs/obK/HDsu+o+VhjS8NO3JXjUawqBAjGrVxVBPA=",
+    integrity = "sha256-oJlFEuweHevADBi/x6XxYkn269amEo/yA0RkzDgOohE=",
     patches = [
         "@//third_party/onnxruntime_linux_x64:BUILD.patch",
         "@//third_party/onnxruntime_linux_x64:MODULE.bazel.patch",
@@ -368,15 +368,14 @@ git_override(
 )
 
 bazel_dep(name = "onnxruntime_genai", version = "0.3.0")
-archive_override(
+git_override(
     module_name = "onnxruntime_genai",
-    integrity = "sha256-j1pr2zaxvCwfNEONKPbYEntoogjsUXkRC6NmORXzLa4=",
+    commit = "54177bc1d6fd8ea4ec5ae8c47df9632c810c996a",
     patches = [
         "@//third_party/onnxruntime_genai:BUILD.patch",
         "@//third_party/onnxruntime_genai:MODULE.bazel.patch",
     ],
-    strip_prefix = "onnxruntime-genai-0.3.0",
-    urls = "https://github.com/microsoft/onnxruntime-genai/archive/refs/tags/v0.3.0.tar.gz",
+    remote = "https://github.com/microsoft/onnxruntime-genai.git",
 )
 
 # Vosk-API

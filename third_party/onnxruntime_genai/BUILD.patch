@@ -1,6 +1,6 @@
---- /dev/null	2024-06-26 12:32:04
-+++ BUILD	2024-06-26 12:32:00
-@@ -0,0 +1,109 @@
+--- /dev/null	2024-07-01 15:56:46
++++ BUILD	2024-07-01 15:56:38
+@@ -0,0 +1,110 @@
 +
 +config_setting(
 +    name = "osx_arm64",
@@ -101,6 +101,7 @@
 +    }),
 +    visibility = ["//visibility:public"],
 +    strip_include_prefix = "src",
++    includes = ["."],
 +)
 +
 +cc_binary(
