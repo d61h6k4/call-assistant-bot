@@ -3,6 +3,7 @@
 #include "benchmark/benchmark.h"
 
 // clang-format off
+#include "generators.h"
 #include "filesystem.h"
 #include "logging.h"
 #include "config.h"
