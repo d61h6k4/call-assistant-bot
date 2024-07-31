@@ -189,7 +189,7 @@ def sync_models(args: argparse.Namespace):
         _LOGGER.info(f"Archive {archive_name} unpacked to ml/asr/models and removed.")
 
     def download_ocr():
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with TemporaryDirectory() as tmpdir:
             archive_dst = tmpdir / "v1.tar"
             download_blob(
                 f"ocr/v1.tar",
