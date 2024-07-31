@@ -62,6 +62,10 @@ jobs:
         run: |
           sudo apt install -y yasm automake libtool m4
           touch ml/detection/models/model.onnx
+          touch ml/ocr/models/embed_tokens.onnx
+          touch ml/ocr/models/vision_encoder_with_preprocessing.onnx
+          touch ml/ocr/models/encoder_model.onnx
+          touch ml/ocr/models/decoder_model_merged.onnx
           bazel run //tools:sync -- --action download models --all
           touch testdata/testvideo.mp4
           touch testdata/meeting_frame.png
