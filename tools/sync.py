@@ -146,7 +146,7 @@ def sync_models(args: argparse.Namespace):
             # and make_archive doesn't resolve symlinks, so we copy files here.
             models_dir.mkdir()
             for model_part_path in Path("ml/ocr/models").glob("*.onnx"):
-                shutil.copyfile(
+                shutil.copy2(
                     model_part_path,
                     models_dir / model_part_path.name,
                     follow_symlinks=True,
