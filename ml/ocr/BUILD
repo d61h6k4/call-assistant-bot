@@ -90,7 +90,7 @@ cc_test(
     name = "tokenizer_test",
     srcs = ["tokenizer_test.cc"],
     data = [
-        "//ml/ocr/data:tokenizer_config",
+        "//ml/ocr/models:tokenizer_config",
     ],
     deps = [
         "@com_google_absl//absl/log:absl_log",
