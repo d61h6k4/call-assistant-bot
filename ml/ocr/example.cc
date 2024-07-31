@@ -12,10 +12,14 @@
 #include "filesystem.h"
 #include "logging.h"
 #include "config.h"
-#include "models/florence2/model.h"
-#include "models/florence2/processor.h"
+#include "ml/ocr/model.h"
+#include "ml/ocr/processor.h"
 #include "search.h"
 // clang-format on
+
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 
 bool FileExists(const char *path) {
   return static_cast<bool>(std::ifstream(path));
@@ -25,7 +29,7 @@ void CXX_API() {
   std::cout << "Creating model..." << std::endl;
 
   auto config = std::move(
-      std::make_unique<Generators::Config>(fs::path("models/florence2/data")));
+      std::make_unique<Generators::Config>(fs::path("ml/ocr/data")));
   auto model_ = std::make_shared<aikit::Florence2>(std::move(config),
                                                    Generators::GetOrtEnv());
   std::cout << "Creating multimodal processor..." << std::endl;
@@ -36,14 +40,14 @@ void CXX_API() {
 
   auto tokenizer_stream = tokenizer->CreateStream();
 
-  std::string image_path = "models/florence2/data/car.png";
-  auto images = Generators::LoadImageImpl(image_path.c_str());
-
   std::string prompt = "What is the text in the image, with regions?";
+  cv::Mat input_mat;
+  cv::cvtColor(cv::imread("testdata/participant.png"), input_mat,
+               cv::COLOR_BGR2RGB);
 
   std::cout << "Processing image and prompt..." << std::endl;
   auto input_tensors =
-      processor.Process(*tokenizer.get(), prompt, images.get());
+      processor.Process(*tokenizer.get(), prompt, input_mat.data);
 
   std::cout << "Generating response..." << std::endl;
   auto params = std::make_shared<Generators::GeneratorParams>(*model_.get());
@@ -52,12 +56,12 @@ void CXX_API() {
   auto generator = Generators::CreateGenerator(*model_.get(), *params);
   auto token_sequences = Generators::Generate(*model_.get(), *params);
 
-  for (auto& token_sequence : token_sequences) {
-      std::cout << "Token sequence:\n";
-      for (auto token_id : token_sequence) {
-          std::cout << tokenizer_stream->Decode(token_id);
-      }
-      std::cout << "\nLast token id is: " << token_sequence[0] << std::endl;
+  for (auto &token_sequence : token_sequences) {
+    std::cout << "Token sequence:\n";
+    for (auto token_id : token_sequence) {
+      std::cout << tokenizer_stream->Decode(token_id);
+    }
+    std::cout << "\nLast token id is: " << token_sequence[0] << std::endl;
   }
 }
 

@@ -6,7 +6,7 @@
 
 TEST(Florence2TokenizerTest, TestBartTokenizer) {
   auto tokenizer = std::make_unique<ort_extensions::TokenizerImpl>();
-  auto status = tokenizer->Load("models/florence2/data");
+  auto status = tokenizer->Load("ml/ocr/data");
   EXPECT_TRUE(status.IsOk()) << status.ToString();
   EXPECT_NE(tokenizer, nullptr);
 

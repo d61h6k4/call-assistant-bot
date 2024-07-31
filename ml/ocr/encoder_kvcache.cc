@@ -1,6 +1,6 @@
 #include "models/model.h"
 
-#include "models/florence2/encoder_kvcache.h"
+#include "ml/ocr/encoder_kvcache.h"
 
 namespace Generators {
 

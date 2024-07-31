@@ -13,7 +13,7 @@
 #include "models/kv_cache.h"
 #include "models/logits.h"
 // clang-format on
-#include "models/florence2/encoder_kvcache.h"
+#include "ml/ocr/encoder_kvcache.h"
 
 namespace aikit {
 

@@ -49,13 +49,12 @@ cc_library(
     srcs = ["model.cc"],
     hdrs = ["model.h"],
     data = [
-        "//models/florence2/data:decoder",
-        "//models/florence2/data:encoder",
-        "//models/florence2/data:genai_config",
-        "//models/florence2/data:image_processor",
-        "//models/florence2/data:tokenizer",
-        "//models/florence2/data:tokenizer_config",
-        "//models/florence2/data:vision_encoder",
+        "//ml/ocr/data:decoder",
+        "//ml/ocr/data:encoder",
+        "//ml/ocr/data:genai_config",
+        "//ml/ocr/data:tokenizer",
+        "//ml/ocr/data:tokenizer_config",
+        "//ml/ocr/data:vision_encoder",
     ],
     deps = [
         ":encoder_kvcache",
@@ -66,10 +65,11 @@ cc_library(
 cc_test(
     name = "processor_test",
     srcs = ["processor_test.cc"],
-    data = ["//models/florence2/data:test_image"],
+    data = ["//testdata:test_images"],
     deps = [
         ":model",
         ":processor",
+        "//third_party:opencv",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -78,10 +78,11 @@ cc_test(
 cc_test(
     name = "model_test",
     srcs = ["model_test.cc"],
-    data = ["//models/florence2/data:test_image"],
+    data = ["//testdata:test_images"],
     deps = [
         ":model",
         ":processor",
+        "//third_party:opencv",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -92,7 +93,7 @@ cc_test(
     name = "tokenizer_test",
     srcs = ["tokenizer_test.cc"],
     data = [
-        "//models/florence2/data:tokenizer_config",
+        "//ml/ocr/data:tokenizer_config",
     ],
     deps = [
         "@com_google_absl//absl/log:absl_log",
@@ -103,29 +104,27 @@ cc_test(
 )
 
 cc_test(
-    name = "image_processor_test",
-    srcs = ["image_processor_test.cc"],
+    name = "model_benchmark",
+    srcs = ["model_benchmark.cc"],
     data = [
-        "//models/florence2/data:image_processor",
-        "//models/florence2/data:test_image",
-    ],
-    deps = [
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-        "@onnxruntime_extensions//:shared",
-    ],
-)
-
-
-cc_binary(
-    name = "example",
-    srcs = ["example.cc"],
-    data = [
-        "//models/florence2/data:test_image",
+        "//testdata:test_images",
     ],
     deps = [
         ":model",
         ":processor",
+        "//third_party:opencv",
+        "@google_benchmark//:benchmark_main",
+    ],
+)
+cc_binary(
+    name = "example",
+    srcs = ["example.cc"],
+    data = [
+        "//testdata:test_images",
+    ],
+    deps = [
+        ":model",
+        ":processor",
+        "//third_party:opencv",
     ],
 )

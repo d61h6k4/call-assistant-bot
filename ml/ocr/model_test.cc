@@ -8,10 +8,14 @@
 #include "filesystem.h"
 #include "logging.h"
 #include "config.h"
-#include "models/florence2/model.h"
-#include "models/florence2/processor.h"
+#include "ml/ocr/model.h"
+#include "ml/ocr/processor.h"
 #include "search.h"
 // clang-format on
+
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 
 class Florence2Test : public testing::Test {
 protected:
@@ -24,8 +28,8 @@ protected:
     Generators::SetLogBool("model_logits", true);
     Generators::SetLogBool("hit_eos", true);
 
-    auto config = std::move(std::make_unique<Generators::Config>(
-        fs::path("models/florence2/data")));
+    auto config = std::move(
+        std::make_unique<Generators::Config>(fs::path("ml/ocr/data")));
     model_ = std::make_shared<aikit::Florence2>(std::move(config),
                                                 Generators::GetOrtEnv());
   }
@@ -41,11 +45,12 @@ TEST_F(Florence2Test, SanityCheckEmbedding) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
-  EXPECT_EQ(images->num_images_, 1);
 
+  cv::Mat input_mat;
+  cv::cvtColor(cv::imread("testdata/participant.png"), input_mat,
+               cv::COLOR_BGR2RGB);
   auto input_tensors =
-      processor.Process(*tokenizer.get(), prompt, images.get());
+      processor.Process(*tokenizer.get(), prompt, input_mat.data);
 
   auto params = std::make_shared<Generators::GeneratorParams>(*model_.get());
   params->SetInputs(*input_tensors);
@@ -65,11 +70,12 @@ TEST_F(Florence2Test, SanityCheckVision) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
-  EXPECT_EQ(images->num_images_, 1);
 
+  cv::Mat input_mat;
+  cv::cvtColor(cv::imread("testdata/participant.png"), input_mat,
+               cv::COLOR_BGR2RGB);
   auto input_tensors =
-      processor.Process(*tokenizer.get(), prompt, images.get());
+      processor.Process(*tokenizer.get(), prompt, input_mat.data);
 
   auto params = std::make_shared<Generators::GeneratorParams>(*model_.get());
   params->SetInputs(*input_tensors);
@@ -89,11 +95,12 @@ TEST_F(Florence2Test, SanityCheckEncoder) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
-  EXPECT_EQ(images->num_images_, 1);
 
+  cv::Mat input_mat;
+  cv::cvtColor(cv::imread("testdata/participant.png"), input_mat,
+               cv::COLOR_BGR2RGB);
   auto input_tensors =
-      processor.Process(*tokenizer.get(), prompt, images.get());
+      processor.Process(*tokenizer.get(), prompt, input_mat.data);
 
   auto params = std::make_shared<Generators::GeneratorParams>(*model_.get());
   params->SetInputs(*input_tensors);
@@ -123,11 +130,12 @@ TEST_F(Florence2Test, SanityCheckPipeline) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
-  EXPECT_EQ(images->num_images_, 1);
 
+  cv::Mat input_mat;
+  cv::cvtColor(cv::imread("testdata/participant.png"), input_mat,
+               cv::COLOR_BGR2RGB);
   auto input_tensors =
-      processor.Process(*tokenizer.get(), prompt, images.get());
+      processor.Process(*tokenizer.get(), prompt, input_mat.data);
 
   auto params = std::make_shared<Generators::GeneratorParams>(*model_.get());
   params->SetInputs(*input_tensors);
@@ -151,11 +159,12 @@ TEST_F(Florence2Test, SanityCheckGenerate) {
       aikit::Processor(*model_->config_.get(), *model_->session_info_.get());
 
   std::string prompt = "What does the image describe?";
-  auto images = Generators::LoadImageImpl("models/florence2/data/car.png");
-  EXPECT_EQ(images->num_images_, 1);
 
+  cv::Mat input_mat;
+  cv::cvtColor(cv::imread("testdata/participant.png"), input_mat,
+               cv::COLOR_BGR2RGB);
   auto input_tensors =
-      processor.Process(*tokenizer.get(), prompt, images.get());
+      processor.Process(*tokenizer.get(), prompt, input_mat.data);
 
   auto params = std::make_shared<Generators::GeneratorParams>(*model_.get());
   params->SetInputs(*input_tensors);

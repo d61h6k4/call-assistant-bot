@@ -46,17 +46,3 @@ filegroup(
     ],
     visibility = ["//visibility:public"],
 )
-
-filegroup(
-    name = "image_processor",
-    srcs = [
-        "processor_config.json",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "test_image",
-    srcs = ["car.png"],
-    visibility = ["//visibility:public"],
-)

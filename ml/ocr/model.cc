@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "models/florence2/model.h"
+#include "ml/ocr/model.h"
 
 namespace aikit {
 

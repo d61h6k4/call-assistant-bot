@@ -5,6 +5,7 @@
 #include "models/model.h"
 #include "models/utils.h"
 #include "ortx_processor.h"
+#include <cstddef>
 
 namespace aikit {
 
@@ -17,7 +18,11 @@ public:
   // OrtValue memory will be released when the NamedTensors are destroyed.
   std::unique_ptr<Generators::NamedTensors>
   Process(const Generators::Tokenizer &tokenizer, const std::string &prompt,
-          const Generators::Images *images);
+          const uint8_t *images);
+
+public:
+  static constexpr int64_t width = 768;
+  static constexpr int64_t height = 768;
 
 private:
   std::string input_ids_name_;
