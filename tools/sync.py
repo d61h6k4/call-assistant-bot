@@ -140,11 +140,23 @@ def sync_models(args: argparse.Namespace):
         del release
 
         with TemporaryDirectory() as tmp_dir:
-            archive_path_name = Path(tmp_dir) / "v1"
+            working_dir = Path(tmp_dir)
+            models_dir = working_dir / "models"
+            # ml/ocr/models contains only symlinks to the files
+            # and make_archive doesn't resolve symlinks, so we copy files here.
+            models_dir.mkdir()
+            for model_part_path in Path("ml/ocr/models").glob("*.onnx"):
+                shutil.copyfile(
+                    model_part_path,
+                    models_dir / model_part_path.name,
+                    follow_symlinks=True,
+                )
+
+            archive_path_name = working_dir / "v1"
             archive_path = shutil.make_archive(
                 str(archive_path_name),
                 "xztar",
-                "ml/ocr/models",
+                str(models_dir),
                 verbose=True,
                 logger=_LOGGER,
             )
