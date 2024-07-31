@@ -1,4 +1,6 @@
 import argparse
+import tarfile
+import os
 from datetime import datetime
 import shutil
 import picologging as logging
@@ -107,6 +109,30 @@ def sync_models(args: argparse.Namespace):
                 "aikit-meeting-bot-ml-artifacts",
             )
 
+    def upload_asr(model: str, release: bool):
+        with TemporaryDirectory() as tmp_dir:
+            archive_path_name = Path(tmp_dir) / f"{model}-v{datetime.now().isoformat()}"
+            archive_path = shutil.make_archive(
+                str(archive_path_name),
+                "xztar",
+                f"ml/asr/models/{model}",
+                verbose=True,
+                logger=_LOGGER,
+            )
+            archive_path = Path(archive_path)
+            upload_blob(
+                archive_path.absolute(),
+                f"asr/dev/{archive_path.name}",
+                "aikit-meeting-bot-ml-artifacts",
+            )
+
+            if release:
+                upload_blob(
+                    archive_path.absolute(),
+                    f"asr/release/{model}.tar.gz",
+                    "aikit-meeting-bot-ml-artifacts",
+                )
+
     def download_detection():
         download_blob(
             "detection/model.onnx",
@@ -114,7 +140,21 @@ def sync_models(args: argparse.Namespace):
             "aikit-meeting-bot-ml-artifacts",
         )
 
-    if not any((args.all, args.detection)):
+    def download_asr(archive_name: str):
+        download_blob(
+            f"asr/release/{archive_name}",
+            archive_name,
+            "aikit-meeting-bot-ml-artifacts",
+        )
+
+        with tarfile.open(archive_name, "r:xz") as tar:
+            tar.extractall(path=f"ml/asr/models/{archive_name[:-7]}")
+
+        os.remove(archive_name)
+
+        _LOGGER.info(f"Archive {archive_name} unpacked to ml/asr/models and removed.")
+
+    if not any((args.all, args.detection, args.asr)):
         _LOGGER.warning(
             {
                 "message": f"Nothing to do, please specify which model specifically you want to {args.action}",
@@ -123,21 +163,47 @@ def sync_models(args: argparse.Namespace):
         )
         return
 
-    if args.detection or args.all:
-        if args.action == Action.UPLOAD:
+    if args.action == Action.UPLOAD:
+        if args.detection:
             upload_detection(args.release)
-        elif args.action == Action.DOWNLOAD:
-            download_detection()
+        elif args.asr:
+            upload_asr("vosk-model-ru-0.22", args.release)
+            upload_asr("vosk-model-spk-0.4", args.release)
+        elif args.all:
+            upload_detection(args.release)
+            upload_asr("vosk-model-ru-0.22", args.release)
+            upload_asr("vosk-model-spk-0.4", args.release)
         else:
-            raise RuntimeError(f"Unsupported action {args.action}")
+            raise RuntimeError("Unsupported model")
+    elif args.action == Action.DOWNLOAD:
+        if args.detection:
+            download_detection()
+        elif args.asr:
+            download_asr("vosk-model-ru-0.22.tar.gz")
+            download_asr("vosk-model-spk-0.4.tar.gz")
+        elif args.all:
+            download_detection()
+            download_asr("vosk-model-ru-0.22.tar.gz")
+            download_asr("vosk-model-spk-0.4.tar.gz")
+        else:
+            raise RuntimeError("Unsupported model")
+    else:
+        raise RuntimeError(f"Unsupported action {args.action}")
 
 
 def sync_testdata(args: argparse.Namespace):
     def upload_detection():
-        raise NotImplemented("Uploading test data hasn't been implemented yet.")
+        raise NotImplementedError("Uploading test data hasn't been implemented yet.")
 
     def download_detection():
         for filename in ["testvideo.mp4", "meeting_frame.png"]:
+            src = "2024/07/19/testdata/" + filename
+            dst = "testdata/" + filename
+
+            download_blob(src, dst, "meeting-bot-artifacts")
+
+    def download_asr():
+        for filename in ["meeting_audio.wav"]:
             src = "2024/07/19/testdata/" + filename
             dst = "testdata/" + filename
 
@@ -147,6 +213,7 @@ def sync_testdata(args: argparse.Namespace):
         upload_detection()
     elif args.action == Action.DOWNLOAD:
         download_detection()
+        download_asr()
     else:
         raise RuntimeError(f"Unsupported action {args.action}")
 
@@ -175,6 +242,11 @@ def parse_args():
         "--detection",
         action="store_true",
         help="Specify to apply action only to detection mdoel",
+    )
+    parser_models.add_argument(
+        "--asr",
+        action="store_true",
+        help="Specify to apply action only to asr model",
     )
     parser_models.add_argument(
         "--release",
