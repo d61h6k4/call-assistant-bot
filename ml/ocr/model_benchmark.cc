@@ -20,7 +20,7 @@
 static void BM_CDetr(benchmark::State &state) {
 
   auto config =
-      std::move(std::make_unique<Generators::Config>(fs::path("ml/ocr/data")));
+      std::move(std::make_unique<Generators::Config>(fs::path("ml/ocr/models")));
   auto model_ = std::make_shared<aikit::Florence2>(std::move(config),
                                                    Generators::GetOrtEnv());
 
