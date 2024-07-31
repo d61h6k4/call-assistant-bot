@@ -184,7 +184,9 @@ def sync_models(args: argparse.Namespace):
         )
 
         with tarfile.open(archive_name, "r:xz") as tar:
-            tar.extractall(path=str(args.current_directory / "ml/asr/models" / archive_name[:-7])
+            tar.extractall(
+                path=str(args.current_directory / "ml/asr/models" / archive_name[:-7])
+            )
 
         os.remove(archive_name)
 
