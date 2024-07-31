@@ -14,7 +14,7 @@ proto_library(
 
 py_proto_library(
     name = "evaluator_py_pb2",
-    visibility = ["//meeting_bot:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [":evaluator_proto"],
 )
 
@@ -38,7 +38,10 @@ py_binary(
     visibility = ["//meeting_bot:__subpackages__"],
     deps = [
         ":evaluator_py_pb2_grpc",
+        "//meeting_bot:meeting_bot_py_pb2",
+        "//meeting_bot:meeting_bot_py_pb2_grpc",
         "//meeting_bot/common:logging",
+        "//ml/leave_call:model",
         "@com_github_grpc_grpc//src/python/grpcio/grpc:grpcio",
         "@pip//grpcio_health_checking",
         "@pip//picologging",

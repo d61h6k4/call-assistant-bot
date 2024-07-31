@@ -7,7 +7,6 @@ on:
     paths:
       - "ml/**"
       - "av_transducer/**"
-
 env:
   GAR_LOCATION: ${{ vars.GAR_LOCATION }}
   APP: meeting-bot
@@ -25,7 +24,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: "false"
-
       - name: "Google auth"
         id: "auth"
         uses: "google-github-actions/auth@v2"
@@ -36,18 +34,15 @@ jobs:
         uses: "google-github-actions/setup-gcloud@v2"
         with:
           project_id: "${{ env.PROJECT_ID }}"
-
       - name: "Docker auth"
         run: |-
           gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
-
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
         with:
           # this might remove tools that are actually needed,
           # if set to "true" but frees about 6 GB
           tool-cache: false
-
           # all of these default to true, but feel free to set to
           # "false" if necessary for your workflow
           android: true
@@ -56,7 +51,6 @@ jobs:
           large-packages: true
           docker-images: true
           swap-storage: true
-
       - name: Mount bazel cache # Optional
         uses: actions/cache@v4
         with:

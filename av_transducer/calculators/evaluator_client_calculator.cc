@@ -1,4 +1,5 @@
 
+#include <chrono>
 #include <grpc/grpc.h>
 #include <grpcpp/channel.h>
 #include <grpcpp/client_context.h>
@@ -48,6 +49,9 @@ EvaluatorClientCalculator::Process(mediapipe::CalculatorContext *cc) {
   const auto &detections = kInDetections(cc).Get();
 
   grpc::ClientContext context;
+  auto deadline = std::chrono::system_clock::now() + std::chrono::milliseconds(100);
+  context.set_deadline(deadline);
+
   aikit::evaluator::DetectionsRequest request;
   request.set_event_timestamp(cc->InputTimestamp().Microseconds());
   for (auto& detection : detections) {

@@ -157,9 +157,7 @@ def convert(model_name: str, output_model: Path, quantization: str):
                 "EmbedLayerNormalization",
             ]
 
-        model_quantized_path = quantizer.quantize(
-            save_dir=output_model, quantization_config=dqconfig
-        )
+        quantizer.quantize(save_dir=output_model, quantization_config=dqconfig)
 
 
 def main():

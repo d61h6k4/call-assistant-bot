@@ -15,6 +15,14 @@ filegroup(
 )
 
 filegroup(
+    name = "evaluator_logs",
+    srcs = glob([
+        "evaluator.jsonl",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "test_audio",
     srcs = glob([
         "*.wav",

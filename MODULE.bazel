@@ -18,7 +18,8 @@ bazel_dep(name = "rules_python", version = "0.34.0")
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     configure_coverage_tool = True,
-    python_version = "3.11")
+    python_version = "3.11",
+)
 use_repo(python, "python_3_11")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
@@ -83,6 +84,16 @@ oci.pull(
 
 # For each oci.pull call, repeat the "name" here to expose them as dependencies.
 use_repo(oci, "base")
+oci.pull(
+    name = "distroless_python3",
+    image = "gcr.io/distroless/python3-debian12",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64/v8",
+    ],
+    tag = "nonroot",
+)
+use_repo(oci, "distroless_python3")
 
 bazel_dep(name = "rules_pkg", version = "1.0.0")
 
