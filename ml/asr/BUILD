@@ -29,6 +29,7 @@ cc_test(
 cc_test(
     name = "model_benchmark",
     srcs = ["model_benchmark.cc"],
+    tags = ["exclusive"],
     data = [
         "//ml/asr/models:vosk_models",
         "//testdata:test_audio",
