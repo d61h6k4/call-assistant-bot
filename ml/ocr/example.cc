@@ -29,7 +29,7 @@ void CXX_API() {
   std::cout << "Creating model..." << std::endl;
 
   auto config = std::move(
-      std::make_unique<Generators::Config>(fs::path("ml/ocr/data")));
+      std::make_unique<Generators::Config>(fs::path("ml/ocr/models")));
   auto model_ = std::make_shared<aikit::Florence2>(std::move(config),
                                                    Generators::GetOrtEnv());
   std::cout << "Creating multimodal processor..." << std::endl;
