@@ -106,6 +106,7 @@ cc_test(
     data = [
         "//testdata:test_images",
     ],
+    tags = ["exclusive"],
     deps = [
         ":model",
         ":processor",
