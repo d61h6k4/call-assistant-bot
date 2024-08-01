@@ -34,6 +34,7 @@ cc_library(
     ],
     strip_include_prefix = "tools/CLAPACK",
     alwayslink = 1,
+    linkopts = ["-lgfortran"],  # OpenBLAS requires
 )
 
 cc_library(
