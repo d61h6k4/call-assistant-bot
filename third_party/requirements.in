@@ -27,3 +27,4 @@ grpcio-health-checking
 nodriver
 pycocotools
 setuptools
+easyocr

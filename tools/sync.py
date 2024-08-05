@@ -138,36 +138,11 @@ def sync_models(args: argparse.Namespace):
     def upload_ocr(release: bool):
         # no training, so nothing to release
         del release
-
-        with TemporaryDirectory() as tmp_dir:
-            working_dir = Path(tmp_dir)
-            models_dir = working_dir / "models"
-            # ml/ocr/models contains only symlinks to the files
-            # and make_archive doesn't resolve symlinks, so we copy files here.
-            models_dir.mkdir()
-            for model_part_path in (args.current_directory / "ml/ocr/models").glob(
-                "*.onnx"
-            ):
-                shutil.copy2(
-                    model_part_path,
-                    models_dir / model_part_path.name,
-                    follow_symlinks=True,
-                )
-
-            archive_path_name = working_dir / "v1"
-            archive_path = shutil.make_archive(
-                str(archive_path_name),
-                "tar",
-                str(models_dir),
-                verbose=True,
-                logger=_LOGGER,
-            )
-            archive_path = Path(archive_path)
-            upload_blob(
-                archive_path.absolute(),
-                f"ocr/{archive_path.name}",
-                ARTIFACTS_BUCKET_NAME,
-            )
+        upload_blob(
+            args.current_directory / "ml/ocr/models/model.onnx",
+            "ocr/model.onnx",
+            ARTIFACTS_BUCKET_NAME,
+        )
 
     def download_detection():
         download_blob(
@@ -193,16 +168,11 @@ def sync_models(args: argparse.Namespace):
         _LOGGER.info(f"Archive {archive_name} unpacked to ml/asr/models and removed.")
 
     def download_ocr():
-        with TemporaryDirectory() as tmpdir:
-            archive_dst = tmpdir + "/v1.tar"
-            download_blob(
-                f"ocr/v1.tar",
-                archive_dst,
-                ARTIFACTS_BUCKET_NAME,
-            )
-            shutil.unpack_archive(archive_dst, args.current_directory / "ml/ocr/models")
-
-        _LOGGER.info(f"Archive {archive_dst} unpacked to ml/ocr/models.")
+        download_blob(
+            "ocr/model.onnx",
+            args.current_directory / "ml/ocr/models/model.onnx",
+            ARTIFACTS_BUCKET_NAME,
+        )
 
     if not any((args.all, args.detection, args.asr, args.ocr)):
         _LOGGER.warning(
@@ -253,7 +223,13 @@ def sync_testdata(args: argparse.Namespace):
             "testvideo.mp4",
             "meeting_frame.png",
             "meeting_audio.wav",
-            "participant.png",
+            "participant_name.png",
+            "Danila_Petrov.png",
+            "Denis_Semenov.png",
+            "Dina_Karakash.png",
+            "Rinat_Kurbanov.png",
+            "AI-kit_Meeting_Bot.png",
+            "AlumniHub_bot.png",
         ]:
             src = "2024/07/19/testdata/" + filename
             dst = args.current_directory / "testdata" / filename

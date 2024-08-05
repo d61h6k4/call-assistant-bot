@@ -6,8 +6,8 @@ py_library(
     srcs = ["model.py"],
     visibility = ["//visibility:public"],
     deps = [
-        "@pip//river",
         "@pip//picologging",
+        "@pip//river",
     ],
 )
 
