@@ -10,12 +10,13 @@ py_binary(
     visibility = ["//visibility:public"],
     data = ["//testdata:test_images"],
     deps = [
-        "@pip//onnxtr",
+        "@pip//easyocr",
         "@pip//numpy",
         "@pip//pillow",
         "@pip//onnx",
         "@pip//onnxruntime",
         "@pip//onnxruntime_extensions",
+        "@pip//torch",
     ],
 )
 
