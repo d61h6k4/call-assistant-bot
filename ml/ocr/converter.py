@@ -55,6 +55,30 @@ def ocr_postprocessing():
 
 def convert(output_model: Path):
     config = easyocr.config.recognition_models["gen2"]["cyrillic_g2"]
+    (output_model / "vocab.h.inc").write_text(
+        "\n".join(
+            [
+                "#pragma once",
+                "#include <array>",
+                "#include <string>",
+                "namespace aikit::ml {",
+                "constexpr std::array<const char*, {}> kVocab = ".format(
+                    len(config["characters"]) + 1
+                ),
+                "{",
+                "\n, ".join(
+                    map(
+                        lambda x: f'"{x}"' if x not in ('"', "\\") else f'"\{x}"',
+                        "." + config["characters"],
+                    )
+                ),
+                "};",
+                "}",
+            ]
+        )
+    )
+    return
+
     with TemporaryDirectory() as tmpdir:
         easyocr.utils.download_and_unzip(config["url"], config["filename"], tmpdir)
 

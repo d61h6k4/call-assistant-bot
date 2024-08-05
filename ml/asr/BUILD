@@ -6,8 +6,8 @@ cc_library(
     hdrs = ["model.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "@vosk_api//:vosk",
         "@com_google_absl//absl/status:statusor",
+        "@vosk_api//:vosk",
     ],
 )
 
@@ -29,11 +29,11 @@ cc_test(
 cc_test(
     name = "model_benchmark",
     srcs = ["model_benchmark.cc"],
-    tags = ["exclusive"],
     data = [
         "//ml/asr/models:vosk_models",
         "//testdata:test_audio",
     ],
+    tags = ["exclusive"],
     deps = [
         ":model",
         "@google_benchmark//:benchmark_main",

@@ -26,7 +26,6 @@ class OCRTest(unittest.TestCase):
         ]:
             image = np.asarray(Image.open("testdata/" + image_name))
             img_cv_grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            # img = np.expand_dims(img_cv_grey, axis=-1)
             preds = self.onnx_model(img_cv_grey)
             preds_str = self.model.converter.decode_greedy(preds[0], [64])
             s = self.model.recognize(img_cv_grey, reformat=False)
