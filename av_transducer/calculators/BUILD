@@ -119,6 +119,20 @@ cc_library(
 )
 
 cc_library(
+    name = "asr_calculator",
+    srcs = ["asr_calculator.cc"],
+    deps = [
+        "//ml/asr:model",
+        "@mediapipe//mediapipe/framework:calculator_framework",
+        "@mediapipe//mediapipe/framework/api2:node",
+        "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/tool:status_util",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
     name = "dumper_calculator",
     srcs = ["dumper_calculator.cc"],
     deps = [
@@ -184,6 +198,23 @@ cc_test(
         "@mediapipe//mediapipe/framework/port:gtest",
         "@mediapipe//mediapipe/framework/port:gtest_main",
         "@mediapipe//mediapipe/framework/port:parse_text_proto",
+    ],
+)
+
+cc_test(
+    name = "asr_calculator_test",
+    srcs = ["asr_calculator_test.cc"],
+    data = [
+        "//ml/asr/models:vosk_models",
+        "//testdata:test_audio",
+    ],
+    deps = [
+        ":asr_calculator",
+        "@com_google_absl//absl/log:absl_log",
+        "@mediapipe//mediapipe/framework:calculator_runner",
+        "@mediapipe//mediapipe/framework/port:gtest",
+        "@mediapipe//mediapipe/framework/port:gtest_main",
+        "@mediapipe//mediapipe/framework/port:status",
     ],
 )
 
