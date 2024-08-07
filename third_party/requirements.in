@@ -26,5 +26,5 @@ albumentations
 grpcio-health-checking
 nodriver
 pycocotools
-setuptools
 easyocr
+setuptools==69.5.1
