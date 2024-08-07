@@ -8,7 +8,10 @@ cc_library(
     ],
     hdrs = ["model.h"],
     visibility = ["//visibility:public"],
-    deps = ["//third_party:libonnxruntime"],
+    deps = [
+        "//ml/formats:detection",
+        "//third_party:libonnxruntime",
+    ],
 )
 
 cc_test(

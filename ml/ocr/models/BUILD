@@ -9,5 +9,5 @@ filegroup(
 cc_library(
     name = "vocab",
     hdrs = ["vocab.h.inc"],
-     visibility = ["//visibility:public"],
+    visibility = ["//visibility:public"],
 )

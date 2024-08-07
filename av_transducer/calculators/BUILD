@@ -169,6 +169,55 @@ cc_library(
     alwayslink = True,
 )
 
+cc_library(
+    name = "speaker_name_rect_calculator",
+    srcs = ["speaker_name_rect_calculator.cc"],
+    deps = [
+        "//ml/formats:detection",
+        "@mediapipe//mediapipe/framework:calculator_framework",
+        "@mediapipe//mediapipe/framework/api2:node",
+        "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/formats:rect_cc_proto",
+        "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/tool:status_util",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "ocr_calculator",
+    srcs = ["ocr_calculator.cc"],
+    deps = [
+        "//ml/ocr:model",
+        "//third_party:opencv",
+        "@mediapipe//mediapipe/framework:calculator_framework",
+        "@mediapipe//mediapipe/framework/api2:node",
+        "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/formats:image_frame",
+        "@mediapipe//mediapipe/framework/formats:image_frame_opencv",
+        "@mediapipe//mediapipe/framework/port:status",
+        "@mediapipe//mediapipe/framework/tool:status_util",
+    ],
+    alwayslink = True,
+)
+
+cc_test(
+    name = "ocr_calculator_test",
+    srcs = ["ocr_calculator_test.cc"],
+    data = [
+        "//ml/ocr/models:model",
+        "//testdata:test_images",
+    ],
+    deps = [
+        ":ocr_calculator",
+        "@com_google_absl//absl/log:absl_log",
+        "@mediapipe//mediapipe/framework:calculator_runner",
+        "@mediapipe//mediapipe/framework/port:gtest",
+        "@mediapipe//mediapipe/framework/port:gtest_main",
+        "@mediapipe//mediapipe/framework/port:parse_text_proto",
+    ],
+)
+
 cc_test(
     name = "cdetr_calculator_test",
     srcs = ["cdetr_calculator_test.cc"],

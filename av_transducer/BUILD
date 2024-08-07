@@ -28,6 +28,7 @@ cc_binary(
     srcs = ["debug.cc"],
     data = [
         "//ml/detection/models:cdetr",
+        "//ml/ocr/models:model",
     ],
     deps = [
         "//av_transducer/calculators:dumper_calculator",

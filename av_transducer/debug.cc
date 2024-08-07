@@ -43,12 +43,18 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .SetName("cdetr_model_path")
           .Cast<std::string>() >>
       visual_subgraph.SideIn("CDETR_MODEL_PATH");
+  graph.SideIn("OCR_MODEL_PATH")
+          .SetName("ocr_model_path")
+          .Cast<std::string>() >>
+      visual_subgraph.SideIn("OCR_MODEL_PATH");
   yuv_video_stream >> visual_subgraph.In("IN_VIDEO");
   auto detections_stream = visual_subgraph.Out("DETECTIONS");
+  auto speaker_name_stream = visual_subgraph.Out("STRING");
 
   // Dump to stdout
   auto &dumper_node = graph.AddNode("DumperCalculator");
   detections_stream >> dumper_node.In("DETECTIONS");
+  speaker_name_stream >> dumper_node.In("STRING");
 
   return graph.GetConfig();
 }
@@ -66,6 +72,8 @@ absl::Status RunMPPGraph() {
           video_stream_parameters);
   input_side_packets["cdetr_model_path"] =
       mediapipe::MakePacket<std::string>("ml/detection/models/model.onnx");
+  input_side_packets["ocr_model_path"] =
+      mediapipe::MakePacket<std::string>("ml/ocr/models/model.onnx");
 
   ABSL_LOG(INFO) << "Initialize the calculator graph.";
   mediapipe::CalculatorGraph graph;
