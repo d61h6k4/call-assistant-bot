@@ -55,11 +55,11 @@ public:
     auto images_stream = yuv_to_image_node.Out("IMAGE");
 
     // Apply CDETR
-    auto &cdetr_node = graph.AddNode("CDETRCalculator");
-    graph.SideIn("CDETR_MODEL_PATH")
-            .SetName("cdetr_model_path")
+    auto &cdetr_node = graph.AddNode("DetectionCalculator");
+    graph.SideIn("DETECTION_MODEL_PATH")
+            .SetName("model_path")
             .Cast<std::string>() >>
-        cdetr_node.SideIn("CDETR_MODEL_PATH");
+        cdetr_node.SideIn("MODEL_PATH");
     images_stream >> cdetr_node.In("IMAGE");
     auto detections = cdetr_node.Out("DETECTIONS");
     detections >> graph.Out(kOutDetections);

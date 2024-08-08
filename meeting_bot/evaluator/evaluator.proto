@@ -25,7 +25,8 @@ message Detection {
 
 message DetectionsRequest {
     int64 event_timestamp = 1;
-    repeated Detection detections = 2;
+    string speaker_name = 2;
+    repeated Detection detections = 3;
 }
 
 message DetectionsReply {}

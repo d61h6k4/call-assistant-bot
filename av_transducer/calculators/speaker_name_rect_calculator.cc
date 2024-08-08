@@ -1,11 +1,11 @@
 
+#include <optional>
 #include <vector>
 
 #include "mediapipe/framework/api2/node.h"
 #include "mediapipe/framework/api2/packet.h"
+#include "mediapipe/framework/formats/detection.pb.h"
 #include "mediapipe/framework/formats/rect.pb.h"
-
-#include "ml/formats/detection.h"
 
 namespace aikit {
 
@@ -19,7 +19,7 @@ namespace aikit {
 // }
 class SpeakerNameRectCalculator : public mediapipe::api2::Node {
 public:
-  static constexpr mediapipe::api2::Input<std::vector<ml::Detection>>
+  static constexpr mediapipe::api2::Input<std::vector<mediapipe::Detection>>
       kInDetections{"DETECTIONS"};
   static constexpr mediapipe::api2::Output<mediapipe::NormalizedRect> kOutRect{
       "NORM_RECT"};
@@ -35,16 +35,31 @@ SpeakerNameRectCalculator::Process(mediapipe::CalculatorContext *cc) {
 
   for (auto &detection : detections) {
     // speaker, only one
-    if (detection.label_id == 0) {
-      mediapipe::NormalizedRect speaker_name_rect;
+    if (detection.label_id(0) == 0) {
+      auto &speaker_rect = detection.location_data().relative_bounding_box();
+      for (auto &detection : detections) {
+        if (detection.label_id(0) == 6) {
+          auto &bbox = detection.location_data().relative_bounding_box();
+          // Check name inside speaker's rectangle
+          if (speaker_rect.xmin() <= bbox.xmin() &&
+              speaker_rect.ymin() <= bbox.ymin() &&
+              bbox.xmin() + bbox.width() <
+                  speaker_rect.xmin() + speaker_rect.width() &&
+              bbox.ymin() + bbox.height() <
+                  speaker_rect.ymin() + speaker_rect.height()) {
 
-      speaker_name_rect.set_x_center(detection.xmin +
-                                     detection.width * 0.75f / 2.0f);
-      speaker_name_rect.set_y_center(detection.ymin + 0.9 * detection.height);
-      speaker_name_rect.set_height(0.2 * detection.height);
-      speaker_name_rect.set_width(detection.width * 0.75f);
+            mediapipe::NormalizedRect speaker_name_rect;
 
-      kOutRect(cc).Send(speaker_name_rect);
+            speaker_name_rect.set_x_center(bbox.xmin() + bbox.width() / 2.0f);
+            speaker_name_rect.set_y_center(bbox.ymin() + bbox.height() / 2.0f);
+            speaker_name_rect.set_height(bbox.height());
+            speaker_name_rect.set_width(bbox.width());
+
+            kOutRect(cc).Send(speaker_name_rect);
+            return absl::OkStatus();
+          }
+        }
+      }
     }
   }
 

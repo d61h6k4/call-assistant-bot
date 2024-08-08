@@ -19,9 +19,9 @@ TEST(TestMLDetectionModel, SanityCheck) {
                cv::COLOR_BGR2RGB);
   auto det = model(input_mat.data);
 
-  EXPECT_EQ(det.size(), 5);
+  EXPECT_EQ(det.size(), 10);
   for (auto d : det) {
-    ABSL_LOG(INFO) << "[" << d.xmin << ", " << d.ymin << ", " << d.width << ", "
+    ABSL_LOG(INFO) << "[" << d.x_center << ", " << d.y_center << ", " << d.width << ", "
                    << d.height << "] " << d.label_id << " " << d.score << "\n";
   }
 }
