@@ -98,7 +98,7 @@ def object_detection_postprocessor():
             [IoMapEntry(producer="Identity", producer_idx=1, consumer_idx=0)],
         ),
         (
-            SelectBestBoundingBoxesByNMS(max_detections=50),
+            SelectBestBoundingBoxesByNMS(),
             [
                 IoMapEntry(producer="SqueezeBoxes", producer_idx=0, consumer_idx=0),
                 IoMapEntry(producer="SqueezeLogits", producer_idx=0, consumer_idx=1),

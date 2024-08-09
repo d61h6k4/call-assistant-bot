@@ -55,8 +55,8 @@ std::vector<Detection> CDetr::operator()(const uint8_t *image) {
   res.reserve(elements_num);
   for (auto detection_ix = 0; detection_ix < elements_num; ++detection_ix) {
     res.emplace_back(Detection{
-        .xmin = floatarr[detection_ix * 6 + 0],
-        .ymin = floatarr[detection_ix * 6 + 1],
+        .x_center = floatarr[detection_ix * 6 + 0],
+        .y_center = floatarr[detection_ix * 6 + 1],
         .width = floatarr[detection_ix * 6 + 2],
         .height = floatarr[detection_ix * 6 + 3],
         .label_id = static_cast<int>(floatarr[detection_ix * 6 + 5]),

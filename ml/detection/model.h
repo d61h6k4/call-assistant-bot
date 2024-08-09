@@ -7,12 +7,13 @@
 #include <vector>
 
 namespace aikit::ml {
+
 // A bounding box. The box is defined by its upper left corner (xmin, ymin)
 // and its width and height, all in coordinates normalized by the image
 // dimensions.
 struct Detection {
-  float xmin;
-  float ymin;
+  float x_center;
+  float y_center;
   float width;
   float height;
   int label_id;
@@ -21,7 +22,7 @@ struct Detection {
 
 class CDetr {
 public:
-  explicit CDetr(const std::string& path_to_model);
+  explicit CDetr(const std::string &path_to_model);
 
   std::vector<Detection> operator()(const uint8_t *image);
 

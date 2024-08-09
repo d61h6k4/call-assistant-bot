@@ -20,6 +20,7 @@ class VisualGraph : public mediapipe::Subgraph {
 public:
   static constexpr std::string_view kInVideo = "IN_VIDEO";
   static constexpr std::string_view kOutDetections = "DETECTIONS";
+  static constexpr std::string_view kOutSpeakerName = "STRING";
 
   absl::StatusOr<mediapipe::CalculatorGraphConfig>
   GetConfig(mediapipe::SubgraphContext *sc) override {
@@ -54,13 +55,30 @@ public:
     auto images_stream = yuv_to_image_node.Out("IMAGE");
 
     // Apply CDETR
-    auto &cdetr_node = graph.AddNode("CDETRCalculator");
-    graph.SideIn("CDETR_MODEL_PATH")
-            .SetName("cdetr_model_path")
+    auto &cdetr_node = graph.AddNode("DetectionCalculator");
+    graph.SideIn("DETECTION_MODEL_PATH")
+            .SetName("model_path")
             .Cast<std::string>() >>
-        cdetr_node.SideIn("CDETR_MODEL_PATH");
+        cdetr_node.SideIn("MODEL_PATH");
     images_stream >> cdetr_node.In("IMAGE");
-    cdetr_node.Out("DETECTIONS") >> graph.Out(kOutDetections);
+    auto detections = cdetr_node.Out("DETECTIONS");
+    detections >> graph.Out(kOutDetections);
+
+    // Find speaker's name rect
+    auto &speaker_name_rect_node = graph.AddNode("SpeakerNameRectCalculator");
+    detections >> speaker_name_rect_node.In("DETECTIONS");
+    auto speaker_name_rect = speaker_name_rect_node.Out("NORM_RECT");
+
+    // OCR
+    auto &ocr_node = graph.AddNode("OCRGraph");
+    images_stream >> ocr_node.In("IMAGE");
+    speaker_name_rect >> ocr_node.In("NORM_RECT");
+    graph.SideIn("OCR_MODEL_PATH")
+            .SetName("ocr_model_path")
+            .Cast<std::string>() >>
+        ocr_node.SideIn("OCR_MODEL_PATH");
+    auto speaker_name = ocr_node.Out("STRING");
+    speaker_name >> graph.Out(kOutSpeakerName);
 
     return graph.GetConfig();
   }
