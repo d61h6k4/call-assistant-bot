@@ -83,7 +83,20 @@ class GoogleMeetOperator:
                     "session_id": self.session_id,
                 }
             )
-            return
+            # When the meeting is open, there is no Ask to join, but Join now button
+            ask_to_join_span = await tab.find_element_by_text("Join now")
+            if not ask_to_join_span or ask_to_join_span.tag != "span":
+                screenshot_path = self.screenshots_dir / "join_now.jpg"
+                await tab.save_screenshot(filename=screenshot_path)
+                self.logger.error(
+                    {
+                        "message": "Expected to find span with 'Join now' text on it. See screenshot.",
+                        "screenshot_path": screenshot_path,
+                        "session_id": self.session_id,
+                    }
+                )
+                return
+
         ask_to_join_btn = ask_to_join_span.parent
         if not ask_to_join_btn or ask_to_join_btn.tag != "button":
             screenshot_path = self.screenshots_dir / "ask_to_join_btn.jpg"
