@@ -52,7 +52,6 @@ absl::Status ASRCalculator::Process(mediapipe::CalculatorContext *cc) {
     if (!status.ok()) {
         return status;
     }
-    std::cout << "audio_buffer size: " << audio_buffer_.size() << std::endl;
     if (audio_buffer_.size() >= buffer_size_) {
         auto result = model_->operator()(audio_buffer_);
         audio_buffer_.clear();
