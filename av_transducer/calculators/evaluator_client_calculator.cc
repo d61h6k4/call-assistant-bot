@@ -30,7 +30,7 @@ public:
       kInDetections{"DETECTIONS"};
   static constexpr mediapipe::api2::Input<std::string>::Optional kInSpeakerName{
       "SPEAKER_NAME"};
-  MEDIAPIPE_NODE_CONTRACT(kInDetections);
+  MEDIAPIPE_NODE_CONTRACT(kInDetections, kInSpeakerName);
 
   absl::Status Open(mediapipe::CalculatorContext *cc) override;
   absl::Status Process(mediapipe::CalculatorContext *cc) override;
