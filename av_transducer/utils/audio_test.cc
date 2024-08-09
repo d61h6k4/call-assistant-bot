@@ -63,21 +63,27 @@ TEST(TestAudioUtils, CheckFillAudioData) {
 }
 
 TEST(TestAudioUtils, CheckAppendAudioData) {
-  auto audio_data = GenerateAudioData(16000);
+  auto audio_data = GenerateAudioData(16);
 
   AVChannelLayout in_channel_layout = AV_CHANNEL_LAYOUT_MONO;
   auto in_frame_or = aikit::media::AudioFrame::CreateAudioFrame(
-      AV_SAMPLE_FMT_FLT, &in_channel_layout, 16000, 16000);
+      AV_SAMPLE_FMT_FLT, &in_channel_layout, 16, 16);
   EXPECT_TRUE(in_frame_or);
   auto status = in_frame_or->FillAudioData(audio_data);
   EXPECT_TRUE(status.ok()) << status.message();
-  EXPECT_EQ(in_frame_or->c_frame()->linesize[0], 64000);
+  EXPECT_EQ(in_frame_or->c_frame()->linesize[0], 64);
 
   std::vector<float> copied_audio_data;
+  copied_audio_data.reserve(32);
   status = in_frame_or->AppendAudioData(copied_audio_data);
-  EXPECT_EQ(copied_audio_data.size(), 16000) << status.message();
+  EXPECT_EQ(copied_audio_data.size(), 16) << status.message();
 
-  for (auto i = 0; i < 16000; ++i) {
+  for (auto i = 0; i < 16; ++i) {
+    EXPECT_FLOAT_EQ(audio_data[0], copied_audio_data[0]);
+  }
+  status = in_frame_or->AppendAudioData(copied_audio_data);
+  EXPECT_EQ(copied_audio_data.size(), 32) << status.message();
+  for (auto i = 0; i < 16; ++i) {
     EXPECT_FLOAT_EQ(audio_data[0], copied_audio_data[0]);
   }
 }
