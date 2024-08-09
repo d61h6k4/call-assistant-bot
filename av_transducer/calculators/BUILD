@@ -123,6 +123,7 @@ cc_library(
     srcs = ["asr_calculator.cc"],
     deps = [
         "//ml/asr:model",
+        "//av_transducer/utils:audio",
         "@mediapipe//mediapipe/framework:calculator_framework",
         "@mediapipe//mediapipe/framework/api2:node",
         "@mediapipe//mediapipe/framework/api2:packet",
@@ -210,6 +211,7 @@ cc_test(
     ],
     deps = [
         ":asr_calculator",
+        "//av_transducer/utils:audio",
         "@com_google_absl//absl/log:absl_log",
         "@mediapipe//mediapipe/framework:calculator_runner",
         "@mediapipe//mediapipe/framework/port:gtest",

@@ -95,7 +95,7 @@ absl::Status AudioFrame::FillAudioData(std::vector<float> &audio_data) {
   return absl::OkStatus();
 }
 
-absl::Status AudioFrame::AppendAudioData(std::vector<float> &audio_data) {
+absl::Status AudioFrame::AppendAudioData(std::vector<float> &audio_data) const {
   if (c_frame_->format != AV_SAMPLE_FMT_FLT &&
       c_frame_->format != AV_SAMPLE_FMT_FLTP) {
     return absl::AbortedError(

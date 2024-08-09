@@ -1,6 +1,7 @@
 #include "absl/log/absl_log.h"
 #include "mediapipe/framework/calculator_runner.h"
 #include "mediapipe/framework/port/status_matchers.h"
+#include "av_transducer/utils/audio.h"
 #include "ml/asr/model.h"
 #include "gtest/gtest.h"
 #include <vector>
@@ -40,13 +41,19 @@ void SetInput() {
     buffer[i] *= 32767.0f;
   }
 
+  AVChannelLayout in_channel_layout = AV_CHANNEL_LAYOUT_MONO;
   const size_t chunk_size = 1000;
+
   for (size_t i = 0; i < buffer.size(); i += chunk_size) {
     size_t current_chunk_size = std::min(chunk_size, buffer.size() - i);
     std::vector<float> audio_chunk(buffer.begin() + i, buffer.begin() + i + current_chunk_size);
+
+    auto in_frame_or = media::AudioFrame::CreateAudioFrame(
+      AV_SAMPLE_FMT_FLTP, &in_channel_layout, 16000, chunk_size);
+    auto status = in_frame_or->FillAudioData(audio_chunk);
     
     runner_.MutableInputs()->Tag("AUDIO").packets.push_back(
-        mediapipe::Adopt(new std::vector<float>(std::move(audio_chunk))).At(mediapipe::Timestamp(i)));
+        mediapipe::Adopt(in_frame_or.release()).At(mediapipe::Timestamp(i)));
   }
 }
 

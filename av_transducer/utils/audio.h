@@ -46,7 +46,7 @@ public:
   // Important: we assume here number of channels 1 and sample format FLT
   absl::Status FillAudioData(std::vector<float> &audio_data);
   // Copies frames data to the given vector.
-  absl::Status AppendAudioData(std::vector<float> &audio_data);
+  absl::Status AppendAudioData(std::vector<float> &audio_data) const;
 
   int64_t GetPTS() const { return c_frame_->pts; }
   void SetPTS(int64_t pts) { c_frame_->pts = pts; }
