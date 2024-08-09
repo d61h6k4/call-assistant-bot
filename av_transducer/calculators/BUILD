@@ -119,7 +119,6 @@ cc_library(
     alwayslink = True,
 )
 
-
 cc_library(
     name = "ffmpeg_source_video_calculator",
     srcs = ["ffmpeg_source_video_calculator.cc"],
@@ -147,9 +146,9 @@ cc_library(
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/log:absl_log",
         "@mediapipe//mediapipe/framework:calculator_framework",
-        "@mediapipe//mediapipe/framework/formats:detection_cc_proto",
         "@mediapipe//mediapipe/framework/api2:node",
         "@mediapipe//mediapipe/framework/api2:packet",
+        "@mediapipe//mediapipe/framework/formats:detection_cc_proto",
         "@mediapipe//mediapipe/framework/port:status",
         "@mediapipe//mediapipe/framework/tool:status_util",
     ],
@@ -211,9 +210,9 @@ cc_library(
         "@mediapipe//mediapipe/framework:calculator_framework",
         "@mediapipe//mediapipe/framework/api2:node",
         "@mediapipe//mediapipe/framework/api2:packet",
-        "@mediapipe//mediapipe/util:render_data_cc_proto",
         "@mediapipe//mediapipe/framework/port:status",
         "@mediapipe//mediapipe/framework/tool:status_util",
+        "@mediapipe//mediapipe/util:render_data_cc_proto",
     ],
     alwayslink = True,
 )
