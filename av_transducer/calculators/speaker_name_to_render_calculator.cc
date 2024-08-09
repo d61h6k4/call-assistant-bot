@@ -30,14 +30,19 @@ absl::Status
 SpeakerNameToRenderCalculator::Process(mediapipe::CalculatorContext *cc) {
   const auto &speaker_name = kInSpeakerName(cc).Get();
 
-  ABSL_LOG(INFO) << speaker_name;
   mediapipe::RenderData render_data;
   auto *annotation = render_data.add_render_annotations();
 
   auto *text = annotation->mutable_text();
   text->set_display_text(absl::StrCat("Speaker: ", speaker_name));
   text->set_left(10);
-  text->set_baseline(10);
+  text->set_baseline(660);
+  text->set_font_height(14);
+
+  auto* color = annotation->mutable_color();
+  color->set_r(0);
+  color->set_g(142);
+  color->set_b(143);
 
   kOutRenderData(cc).Send(std::move(render_data));
   return absl::OkStatus();

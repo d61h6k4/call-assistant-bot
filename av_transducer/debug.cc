@@ -12,6 +12,7 @@
 
 ABSL_FLAG(std::string, input_file_path, "", "Full path of video to read.");
 ABSL_FLAG(std::string, output_file_path, "", "Full path of video to save.");
+ABSL_FLAG(bool, profile, false, "Full path of video to save.");
 
 mediapipe::CalculatorGraphConfig BuildGraph() {
   mediapipe::api2::builder::Graph graph;
@@ -67,7 +68,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   detections_stream >> det_to_render_node.In("DETECTIONS");
   auto det_render_data_stream = det_to_render_node.Out("RENDER_DATA");
 
-  auto& speaker_to_render_node = graph.AddNode("SpeakerNameToRenderCalculator");
+  auto &speaker_to_render_node = graph.AddNode("SpeakerNameToRenderCalculator");
   speaker_name_stream >> speaker_to_render_node.In("SPEAKER_NAME");
   auto speaker_render_data_stream = speaker_to_render_node.Out("RENDER_DATA");
 
@@ -152,6 +153,15 @@ absl::Status RunMPPGraph() {
   input_side_packets["ocr_model_path"] =
       mediapipe::MakePacket<std::string>("ml/ocr/models/model.onnx");
 
+  if (absl::GetFlag(FLAGS_profile)) {
+    // Enable profiling
+    mediapipe::ProfilerConfig *profilerConfig =
+        config.mutable_profiler_config();
+    profilerConfig->set_trace_enabled(true);
+    profilerConfig->set_enable_profiler(true);
+    profilerConfig->set_trace_log_disabled(false);
+  }
+
   ABSL_LOG(INFO) << "Initialize the calculator graph.";
   mediapipe::CalculatorGraph graph;
   MP_RETURN_IF_ERROR(graph.Initialize(config, input_side_packets));
@@ -163,6 +173,7 @@ absl::Status RunMPPGraph() {
 }
 
 int main(int argc, char **argv) {
+  google::InitGoogleLogging(argv[0]);
   absl::SetProgramUsageMessage(
       "Captures screen/audio of a machine and process them.");
   absl::ParseCommandLine(argc, argv);

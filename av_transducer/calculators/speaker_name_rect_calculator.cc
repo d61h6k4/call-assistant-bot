@@ -50,8 +50,8 @@ SpeakerNameRectCalculator::Process(mediapipe::CalculatorContext *cc) {
 
             mediapipe::NormalizedRect speaker_name_rect;
 
-            speaker_name_rect.set_x_center(bbox.xmin() + bbox.width() / 2.0f);
-            speaker_name_rect.set_y_center(bbox.ymin() + bbox.height() / 2.0f);
+            speaker_name_rect.set_x_center(bbox.xmin() + bbox.width() * 0.5f);
+            speaker_name_rect.set_y_center(bbox.ymin() + bbox.height() * 0.5f);
             speaker_name_rect.set_height(bbox.height());
             speaker_name_rect.set_width(bbox.width());
 
