@@ -79,11 +79,11 @@ TEST(TestAudioUtils, CheckAppendAudioData) {
   EXPECT_EQ(copied_audio_data.size(), 16) << status.message();
 
   for (auto i = 0; i < 16; ++i) {
-    EXPECT_FLOAT_EQ(audio_data[0], copied_audio_data[0]);
+    EXPECT_FLOAT_EQ(audio_data[i], copied_audio_data[i]);
   }
   status = in_frame_or->AppendAudioData(copied_audio_data);
   EXPECT_EQ(copied_audio_data.size(), 32) << status.message();
   for (auto i = 0; i < 16; ++i) {
-    EXPECT_FLOAT_EQ(audio_data[0], copied_audio_data[0]);
+    EXPECT_FLOAT_EQ(audio_data[i], copied_audio_data[i]);
   }
 }
