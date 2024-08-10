@@ -3,6 +3,7 @@
 
 #include "ml/asr/model.h"
 #include "json.h"
+#include <algorithm>
 
 namespace aikit::ml {
 
@@ -51,7 +52,8 @@ void ASRModel::initialize() {
     }
 }
 
-absl::StatusOr<ASRResult> ASRModel::operator()(const std::vector<float>& audio_buffer) {
+absl::StatusOr<ASRResult> ASRModel::operator()(std::vector<float>& audio_buffer) {
+    std::for_each(audio_buffer.begin(), audio_buffer.end(), [](float& x) { x *= 32767.0f; });
     int final_status = vosk_recognizer_accept_waveform_f(recognizer_.get(), audio_buffer.data(), audio_buffer.size());
 
     if (final_status != 0) {

@@ -95,7 +95,7 @@ absl::Status AudioFrame::FillAudioData(std::vector<float> &audio_data) {
   return absl::OkStatus();
 }
 
-absl::Status AudioFrame::AppendAudioData(std::vector<float> &audio_data) {
+absl::Status AudioFrame::AppendAudioData(std::vector<float> &audio_data) const {
   if (c_frame_->format != AV_SAMPLE_FMT_FLT &&
       c_frame_->format != AV_SAMPLE_FMT_FLTP) {
     return absl::AbortedError(
@@ -113,7 +113,7 @@ absl::Status AudioFrame::AppendAudioData(std::vector<float> &audio_data) {
       av_get_bytes_per_sample(static_cast<AVSampleFormat>(c_frame_->format));
   int plane_size = bps * c_frame_->nb_samples;
 
-  auto append_from = audio_data.size();
+  auto append_from = bps * audio_data.size();
   audio_data.resize(audio_data.size() + c_frame_->nb_samples);
 
   uint8_t *ptr = nullptr;

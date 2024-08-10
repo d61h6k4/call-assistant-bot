@@ -22,9 +22,6 @@ TEST(TestMLASRModel, SanityCheck) {
     wavin.seekg(44, std::ios::beg);
     std::vector<float> audio_buffer(size);
     wavin.read(reinterpret_cast<char*>(audio_buffer.data()), size * sizeof(float));
-    for (int i = 0; i < audio_buffer.size(); i++) {
-        audio_buffer[i] *= 32767.0f;
-    }
     auto start_time = std::chrono::high_resolution_clock::now();
     auto result = model(audio_buffer);
     auto end_time = std::chrono::high_resolution_clock::now();
