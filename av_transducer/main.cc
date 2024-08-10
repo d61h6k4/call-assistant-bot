@@ -34,6 +34,16 @@ ABSL_FLAG(
     std::string, ocr_model_path,
     "/meeting_bot/meeting_bot.runfiles/_main/ml/ocr/models/model.onnx",
     "Specify path to the OCR model.");
+
+ABSL_FLAG(
+    std::string, asr_model_path,
+    "/meeting_bot/meeting_bot.runfiles/_main/ml/asr/models/vosk-model-ru-0.22",
+    "Specify path to the ASR model.");
+ABSL_FLAG(
+    std::string, spk_model_path,
+    "/meeting_bot/meeting_bot.runfiles/_main/ml/asr/models/vosk-model-spk-0.4",
+    "Specify path to the SPK model.");
+
 ABSL_FLAG(std::string, output_file_path, "", "Full path of video to save.");
 
 mediapipe::CalculatorGraphConfig BuildGraph() {
@@ -71,6 +81,26 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
 
   // Processing
 
+  // audio
+  auto &audio_subgraph = graph.AddNode("AudioGraph");
+  audio_header >> audio_subgraph.SideIn("IN_AUDIO_HEADER");
+  audio_stream >> audio_subgraph.In("IN_AUDIO");
+    graph.SideIn("OUT_ASR_AUDIO_HEADER")
+          .SetName("out_asr_audio_header")
+          .Cast<aikit::media::AudioStreamParameters>() >>
+      audio_subgraph.SideIn("OUT_AUDIO_HEADER");
+
+  graph.SideIn("ASR_MODEL_PATH")
+          .SetName("asr_model_path")
+          .Cast<std::string>() >>
+      audio_subgraph.SideIn("ASR_MODEL_PATH");
+  graph.SideIn("SPK_MODEL_PATH")
+          .SetName("spk_model_path")
+          .Cast<std::string>() >>
+      audio_subgraph.SideIn("SPK_MODEL_PATH");
+  auto transcription = audio_subgraph.Out("TRANSCRIPTION");
+
+  // visual
   auto &visual_subgraph = graph.AddNode("VisualGraph");
   graph.SideIn("OUT_VIDEO_HEADER")
           .SetName("out_video_header")
@@ -130,6 +160,12 @@ absl::Status RunMPPGraph() {
       mediapipe::MakePacket<aikit::media::AudioStreamParameters>(
           audio_stream_parameters);
 
+  aikit::media::AudioStreamParameters asr_audio_stream_parameters;
+  asr_audio_stream_parameters.sample_rate = 16000;
+  input_side_packets["out_asr_audio_header"] =
+      mediapipe::MakePacket<aikit::media::AudioStreamParameters>(
+          asr_audio_stream_parameters);
+
   aikit::media::VideoStreamParameters video_stream_parameters;
   input_side_packets["out_video_header"] =
       mediapipe::MakePacket<aikit::media::VideoStreamParameters>(
@@ -138,6 +174,11 @@ absl::Status RunMPPGraph() {
       mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_cdetr_model_path));
   input_side_packets["ocr_model_path"] =
         mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_ocr_model_path));
+
+  input_side_packets["asr_model_path"] =
+      mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_asr_model_path));
+  input_side_packets["spk_model_path"] =
+      mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_spk_model_path));
 
   ABSL_LOG(INFO) << "Initialize the calculator graph.";
   mediapipe::CalculatorGraph graph;

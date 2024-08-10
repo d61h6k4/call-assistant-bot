@@ -55,6 +55,25 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   auto detections_stream = visual_subgraph.Out("DETECTIONS");
   auto speaker_name_stream = visual_subgraph.Out("STRING");
 
+  // audio
+  auto &audio_subgraph = graph.AddNode("AudioGraph");
+  audio_header >> audio_subgraph.SideIn("IN_AUDIO_HEADER");
+  audio_stream >> audio_subgraph.In("IN_AUDIO");
+    graph.SideIn("OUT_ASR_AUDIO_HEADER")
+          .SetName("out_asr_audio_header")
+          .Cast<aikit::media::AudioStreamParameters>() >>
+      audio_subgraph.SideIn("OUT_AUDIO_HEADER");
+
+  graph.SideIn("ASR_MODEL_PATH")
+          .SetName("asr_model_path")
+          .Cast<std::string>() >>
+      audio_subgraph.SideIn("ASR_MODEL_PATH");
+  graph.SideIn("SPK_MODEL_PATH")
+          .SetName("spk_model_path")
+          .Cast<std::string>() >>
+      audio_subgraph.SideIn("SPK_MODEL_PATH");
+  auto transcription = audio_subgraph.Out("TRANSCRIPTION");
+
   // Debug graph
   auto &det_to_render_node = graph.AddNode("DetectionsToRenderDataCalculator");
   auto &det_to_render_options =
@@ -140,6 +159,13 @@ absl::Status RunMPPGraph() {
   auto config = BuildGraph();
 
   std::map<std::string, mediapipe::Packet> input_side_packets;
+
+  aikit::media::AudioStreamParameters asr_audio_stream_parameters;
+  asr_audio_stream_parameters.sample_rate = 16000;
+  input_side_packets["out_asr_audio_header"] =
+      mediapipe::MakePacket<aikit::media::AudioStreamParameters>(
+          asr_audio_stream_parameters);
+
   input_side_packets["input_file_path"] =
       mediapipe::MakePacket<std::string>(absl::GetFlag(FLAGS_input_file_path));
   input_side_packets["output_file_path"] =
@@ -152,6 +178,11 @@ absl::Status RunMPPGraph() {
       mediapipe::MakePacket<std::string>("ml/detection/models/model.onnx");
   input_side_packets["ocr_model_path"] =
       mediapipe::MakePacket<std::string>("ml/ocr/models/model.onnx");
+
+  input_side_packets["asr_model_path"] =
+      mediapipe::MakePacket<std::string>("ml/asr/models/vosk-model-ru-0.22");
+  input_side_packets["spk_model_path"] =
+      mediapipe::MakePacket<std::string>("ml/asr/models/vosk-model-spk-0.4");
 
   if (absl::GetFlag(FLAGS_profile)) {
     // Enable profiling
