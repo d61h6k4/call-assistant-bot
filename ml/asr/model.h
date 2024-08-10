@@ -25,7 +25,7 @@ public:
   ASRModel(const ASRModel&) = delete;
   ASRModel& operator=(const ASRModel&) = delete;
 
-  absl::StatusOr<ASRResult> operator()(const std::vector<float>& audio_buffer);
+  absl::StatusOr<ASRResult> operator()(std::vector<float>& audio_buffer);
 private:
   const std::string log_id_ = "asr_model";
 

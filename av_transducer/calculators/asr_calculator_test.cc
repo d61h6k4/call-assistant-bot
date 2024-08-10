@@ -28,7 +28,7 @@ void SetInput() {
   runner_.MutableSidePackets()->Tag("SPK_MODEL_PATH") =
       mediapipe::MakePacket<std::string>("ml/asr/models/vosk-model-spk-0.4");
   runner_.MutableSidePackets()->Tag("BUFFER_DURATION_SEC") =
-      mediapipe::MakePacket<int>(10);
+      mediapipe::MakePacket<int>(1);
 
   std::ifstream wavin("testdata/meeting_audio.wav", std::ios::binary | std::ios::ate);
   std::streamsize size = wavin.tellg();
@@ -36,10 +36,6 @@ void SetInput() {
 
   std::vector<float> buffer(size / sizeof(float));
   wavin.read(reinterpret_cast<char*>(buffer.data()), size);
-
-  for (size_t i = 0; i < buffer.size(); i++) {
-    buffer[i] *= 32767.0f;
-  }
 
   AVChannelLayout in_channel_layout = AV_CHANNEL_LAYOUT_MONO;
   const size_t chunk_size = 1000;
