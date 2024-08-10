@@ -26,6 +26,7 @@ LABEL_TO_CATEGORY = {
     "black screen": 3,
     "welcome page": 4,
     "alone": 5,
+    "name": 6,
 }
 
 

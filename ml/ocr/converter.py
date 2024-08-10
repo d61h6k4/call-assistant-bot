@@ -1,92 +1,142 @@
 import argparse
-import json
+import easyocr
+import easyocr.model.vgg_model
+import numpy as np
+import onnx
+import torch
 
+from collections import OrderedDict
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from PIL import Image
+
+from onnxruntime_extensions.tools.pre_post_processing import (
+    ChannelsLastToChannelsFirst,
+    Identity,
+    create_named_value,
+    Resize,
+    ImageBytesToFloat,
+    Normalize,
+    Unsqueeze,
+    PrePostProcessor,
+    ArgMax,
+)
 
 
-def create_gen_config(config):
-    return {
-        "model": {
-            "type": config["model_type"],
-            "pad_token_id": config["pad_token_id"],
-            "eos_token_id": config["eos_token_id"],
-            "bos_token_id": config["bos_token_id"],
-            "decoder_start_token_id": config["text_config"]["decoder_start_token_id"],
-            "vocab_size": config["vocab_size"],
-            "context_length": config["projection_dim"],
-            "encoder_decoder_init": {"filename": "encoder_model.onnx"},
-            "embedding": {
-                "filename": "embed_tokens.onnx",
-                "inputs": {"input_ids": "input_ids"},
-                # "outputs": {"embeddings": "inputs_embeds"},
-            },
-            "vision": {
-                "filename": "vision_encoder_with_preprocessing.onnx",
-                "inputs": {"pixel_values": "image"},
-                "outputs": {
-                    "visual_features": "image_features",
-                },
-            },
-            "decoder": {
-                "filename": "decoder_model_merged.onnx",
-                "hidden_size": config["text_config"]["d_model"],
-                "num_hidden_layers": config["text_config"]["num_hidden_layers"],
-                "num_key_value_heads": config["text_config"]["decoder_attention_heads"],
-                "head_size": 64,
-                "inputs": {
-                    "attention_mask": "encoder_attention_mask",
-                    "past_key_names": "past_key_values.%d.decoder.key",
-                    "past_value_names": "past_key_values.%d.decoder.value",
-                    "cross_past_key_names": "past_key_values.%d.encoder.key",
-                    "cross_past_value_names": "past_key_values.%d.encoder.value",
-                },
-                "outputs": {
-                    "logits": "logits",
-                    "present_key_names": "present.%d.decoder.key",
-                    "present_value_names": "present.%d.decoder.value",
-                    "cross_present_key_names": "present.%d.encoder.key",
-                    "cross_present_value_names": "present.%d.encoder.value",
-                },
-            },
-        },
-        "search": {
-            "do_sample": True,
-            "early_stopping": True,
-            "diversity_penalty": 0.0,
-            "min_length": 0,
-            "max_length": 50,
-            "num_beams": 3,
-            "top_k": 1,
-            "top_p": 1.0,
-            "temperature": 1.0,
-            "repetition_penalty": 1.0,
-            "past_present_share_buffer": False,
-            "num_return_sequences": 1,
-        },
-    }
-
-
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--config_json",
+        "--output_model",
+        help="Specify directory to store converted model's data.",
         type=Path,
-        help="Specify path to the model's config.json file",
         required=True,
     )
-    parser.add_argument(
-        "--genai_config_json",
-        type=Path,
-        help="Specify path to store generated genai_config.json",
-        required=True,
-    )
+
     return parser.parse_args()
 
 
-def main(args):
-    config = json.loads(args.config_json.read_text())
-    args.genai_config_json.write_text(json.dumps(create_gen_config(config), indent=2))
+def image_processor(mean: tuple[float, ...], std: tuple[float, ...]):
+    return [
+        # ChannelsLastToChannelsFirst(),
+        Resize((64, 256), layout="HW"),
+        # create channel
+        Unsqueeze([0]),
+        ImageBytesToFloat(rescale_factor=0.00392156862745098),
+        # Normalize(list(zip(mean, std)), layout="CHW"),
+        # create batch
+        Unsqueeze([0]),
+    ]
+
+
+def ocr_postprocessing():
+    return [ArgMax()]
+
+
+def convert(output_model: Path):
+    config = easyocr.config.recognition_models["gen2"]["cyrillic_g2"]
+    (output_model / "vocab.h.inc").write_text(
+        "\n".join(
+            [
+                "#pragma once",
+                "#include <array>",
+                "#include <string>",
+                "namespace aikit::ml {",
+                "constexpr std::array<const char*, {}> kVocab = ".format(
+                    len(config["characters"]) + 1
+                ),
+                "{",
+                "\n, ".join(
+                    map(
+                        lambda x: f'"{x}"' if x not in ('"', "\\") else f'"\{x}"',
+                        "." + config["characters"],
+                    )
+                ),
+                "};",
+                "}",
+            ]
+        )
+    )
+    return
+
+    with TemporaryDirectory() as tmpdir:
+        easyocr.utils.download_and_unzip(config["url"], config["filename"], tmpdir)
+
+        recog_network = "generation2"
+        network_params = {"input_channel": 1, "output_channel": 256, "hidden_size": 256}
+        recognizer = easyocr.model.vgg_model.Model(
+            # +1 is blank for CTCLoss
+            num_class=len(config["characters"]) + 1,
+            **network_params,
+        )
+        state_dict = torch.load(
+            tmpdir + f"/{config['filename']}", map_location="cpu", weights_only=False
+        )
+        new_state_dict = OrderedDict()
+        for key, value in state_dict.items():
+            new_key = key[7:]
+            new_state_dict[new_key] = value
+        recognizer.load_state_dict(new_state_dict)
+
+        batch_size_1_1 = 256
+        in_shape_1 = [1, 1, 64, batch_size_1_1]
+        dummy_input_1 = torch.rand(in_shape_1)
+        dummy_input_1 = dummy_input_1
+
+        batch_size_2_1 = 25
+        in_shape_2 = [1, batch_size_2_1]
+        dummy_input_2 = torch.rand(in_shape_2)
+        dummy_input_2 = dummy_input_2
+
+        dummy_input = (dummy_input_1, dummy_input_2)
+
+        torch.onnx.export(
+            recognizer,
+            dummy_input,
+            tmpdir + "/model.onnx",
+            export_params=True,
+            opset_version=18,
+            input_names=["input", "input2"],
+            output_names=["output"],
+            verbose=True,
+        )
+
+        model = onnx.load(tmpdir + "/model.onnx")
+
+        inputs = [
+            create_named_value("image", onnx.TensorProto.UINT8, ["height", "width"])
+        ]
+        pipeline = PrePostProcessor(inputs, 18)
+        preprocessing = image_processor([0.5], [0.5])
+        pipeline.add_pre_processing(preprocessing)
+        pipeline._pre_processing_joins = [(preprocessing[-1], 0, "input")]
+        pipeline.add_post_processing(ocr_postprocessing())
+        model_with_preprocessing = pipeline.run(model)
+        onnx.save_model(model_with_preprocessing, str(output_model / "model.onnx"))
+
+
+def main(args: argparse.Namespace):
+    convert(args.output_model)
 
 
 if __name__ == "__main__":

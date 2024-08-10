@@ -102,8 +102,9 @@ FFMPEGSourceVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
         container_stream_context_->PacketToFrame(packet_, audio_frame_or.get());
     if (status.ok()) {
       auto timestamp = mediapipe::Timestamp(
-          container_stream_context_->FramePTSInMicroseconds(
-              audio_frame_or.get()));
+                           container_stream_context_->FramePTSInMicroseconds(
+                               audio_frame_or.get())) +
+                       1;
       kOutAudio(cc).Send(std::move(audio_frame_or), timestamp);
       return absl::OkStatus();
     } else {
@@ -116,12 +117,14 @@ FFMPEGSourceVideoCalculator::Process(mediapipe::CalculatorContext *cc) {
         container_stream_context_->PacketToFrame(packet_, video_frame_or.get());
     if (status.ok()) {
       auto timestamp = mediapipe::Timestamp(
-          container_stream_context_->FramePTSInMicroseconds(video_frame_or.get())) + 1;
+                           container_stream_context_->FramePTSInMicroseconds(
+                               video_frame_or.get())) +
+                       1;
       kOutVideo(cc).Send(std::move(video_frame_or), timestamp);
       return absl::OkStatus();
     } else {
-      return mediapipe::InvalidArgumentErrorBuilder(MEDIAPIPE_LOC)
-             << "failed to decode a video packet. " << status.message();
+      ABSL_LOG_EVERY_N_SEC(INFO, 1)
+          << "failed to decode a video packet. " << status.message();
     }
   }
 

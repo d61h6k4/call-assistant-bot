@@ -30,6 +30,7 @@ LABEL_TO_CATEGORY = {
     "black screen": 3,
     "welcome page": 4,
     "alone": 5,
+    "name": 6,
 }
 
 
@@ -216,7 +217,7 @@ class ModelOutput:
 
 
 @torch.no_grad()
-def compute_metrics(evaluation_results, image_processor, threshold=0.0, id2label=None):
+def compute_metrics(evaluation_results, image_processor, threshold=0.7, id2label=None):
     """
     Compute mean average mAP, mAR and their variants for the object detection task.
 
@@ -228,6 +229,9 @@ def compute_metrics(evaluation_results, image_processor, threshold=0.0, id2label
     Returns:
         Mapping[str, float]: Metrics in a form of dictionary {<metric_name>: <metric_value>}
     """
+
+    if id2label is None:
+        id2label = {v: k for k, v in LABEL_TO_CATEGORY.items()}
 
     predictions, targets = evaluation_results.predictions, evaluation_results.label_ids
 
@@ -351,17 +355,17 @@ def main():
         output_dir="detr_finetuned_cppe5",
         num_train_epochs=30,
         fp16=False,
-        per_device_train_batch_size=24,
+        per_device_train_batch_size=4,
         dataloader_num_workers=4,
-        learning_rate=5e-5,
+        learning_rate=1e-4,
         lr_scheduler_type="cosine",
         weight_decay=1e-4,
         max_grad_norm=0.01,
         metric_for_best_model="eval_map",
         greater_is_better=True,
         load_best_model_at_end=True,
-        eval_strategy="no",
-        save_strategy="no",
+        eval_strategy="epoch",
+        save_strategy="epoch",
         save_total_limit=1,
         remove_unused_columns=False,
         eval_do_concat_batches=False,

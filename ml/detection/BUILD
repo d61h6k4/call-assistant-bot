@@ -8,7 +8,9 @@ cc_library(
     ],
     hdrs = ["model.h"],
     visibility = ["//visibility:public"],
-    deps = ["//third_party:libonnxruntime"],
+    deps = [
+        "//third_party:libonnxruntime",
+    ],
 )
 
 cc_test(
@@ -30,11 +32,11 @@ cc_test(
 cc_test(
     name = "model_benchmark",
     srcs = ["model_benchmark.cc"],
-    tags = ["exclusive"],
     data = [
         "//ml/detection/models:cdetr",
         "//testdata:test_images",
     ],
+    tags = ["exclusive"],
     deps = [
         ":model",
         "//third_party:opencv",

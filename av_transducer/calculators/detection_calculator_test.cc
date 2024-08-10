@@ -2,6 +2,7 @@
 #include "absl/log/absl_log.h"
 #include "mediapipe/framework/calculator_runner.h"
 
+#include "mediapipe/framework/formats/detection.pb.h"
 #include "mediapipe/framework/formats/image.h"
 #include "mediapipe/framework/formats/image_frame.h"
 #include "mediapipe/framework/formats/image_frame_opencv.h"
@@ -21,14 +22,14 @@ class CDetrCalculatorTest : public ::testing::Test {
 protected:
   CDetrCalculatorTest()
       : runner_(R"pb(
-                      calculator: "CDETRCalculator"
-                      input_side_packet: "CDETR_MODEL_PATH:cdetr_model_path"
+                      calculator: "DetectionCalculator"
+                      input_side_packet: "MODEL_PATH:model_path"
                       input_stream: "IMAGE:image"
                       output_stream: "DETECTIONS:detections"
                     )pb") {}
 
   void SetInput() {
-    runner_.MutableSidePackets()->Tag("CDETR_MODEL_PATH") =
+    runner_.MutableSidePackets()->Tag("MODEL_PATH") =
         mediapipe::MakePacket<std::string>("ml/detection/models/model.onnx");
 
     cv::Mat input_mat;
@@ -47,11 +48,11 @@ protected:
         input_frame_packet.At(timestamp));
   }
 
-  const std::vector<aikit::ml::Detection> &GetOutputs() {
+  const std::vector<mediapipe::Detection> &GetOutputs() {
     return runner_.Outputs()
         .Tag("DETECTIONS")
         .packets[0]
-        .Get<std::vector<aikit::ml::Detection>>();
+        .Get<std::vector<mediapipe::Detection>>();
   }
 
   mediapipe::CalculatorRunner runner_;
@@ -62,10 +63,9 @@ TEST_F(CDetrCalculatorTest, SanityCheck) {
   MP_ASSERT_OK(runner_.Run());
   auto &det = GetOutputs();
 
-  EXPECT_EQ(det.size(), 5);
-  for (auto d : det) {
-    ABSL_LOG(INFO) << "[" << d.xmin << ", " << d.ymin << ", " << d.width << ", "
-                   << d.height << "] " << d.label_id << " " << d.score << "\n";
+  EXPECT_EQ(det.size(), 10);
+  for (const auto& d : det) {
+    ABSL_LOG(INFO) << d.DebugString() << "\n";
   }
 }
 
