@@ -60,6 +60,21 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
 
         return evaluator_pb2.DetectionsReply()
 
+    async def ASRResult(
+        self, request: evaluator_pb2.ASRResultRequest, context
+    ) -> evaluator_pb2.ASRResultReply:
+
+        self.logger.info(
+            {
+                "message": "Received ASR result",
+                "event_timestamp": request.event_timestamp,
+                "transcription": request.transcription,
+                "spk_embedding": request.spk_embedding,
+            }
+        )
+
+        return evaluator_pb2.ASRResultReply()
+
     async def send_shutdown_signal(self):
         stub = meeting_bot_pb2_grpc.MeetingBotStub(self.meeting_bot_client)
         await stub.Shutdown(

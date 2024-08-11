@@ -13,7 +13,7 @@
 
 
 TEST(TestMLASRModel, SanityCheck) {
-    auto model = aikit::ml::ASRModel("ml/asr/models/vosk-model-ru-0.22", "ml/asr/models/vosk-model-spk-0.4");
+    auto model = aikit::ml::ASRModel("ml/asr/models/vosk-model-ru-0.42", "ml/asr/models/vosk-model-spk-0.4");
     std::string text;
     std::int32_t size_emb;
 

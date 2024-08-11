@@ -37,7 +37,7 @@ ABSL_FLAG(
 
 ABSL_FLAG(
     std::string, asr_model_path,
-    "/meeting_bot/meeting_bot.runfiles/_main/ml/asr/models/vosk-model-ru-0.22",
+    "/meeting_bot/meeting_bot.runfiles/_main/ml/asr/models/vosk-model-ru-0.42",
     "Specify path to the ASR model.");
 ABSL_FLAG(
     std::string, spk_model_path,

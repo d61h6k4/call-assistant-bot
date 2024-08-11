@@ -193,7 +193,7 @@ def sync_models(args: argparse.Namespace):
             upload_detection(args.release)
 
         if args.asr:
-            upload_asr("vosk-model-ru-0.22", args.release)
+            upload_asr("vosk-model-ru-0.42", args.release)
             upload_asr("vosk-model-spk-0.4", args.release)
 
         if args.ocr:
@@ -204,7 +204,7 @@ def sync_models(args: argparse.Namespace):
             download_detection()
 
         if args.asr:
-            download_asr("vosk-model-ru-0.22.tar.gz")
+            download_asr("vosk-model-ru-0.42.tar.gz")
             download_asr("vosk-model-spk-0.4.tar.gz")
 
         if args.ocr:

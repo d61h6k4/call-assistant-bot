@@ -12,7 +12,7 @@ std::vector<float> g_audio_buffer;
 
 
 void SetupBenchmark(benchmark::State& state) {
-    g_model = std::make_unique<aikit::ml::ASRModel>("ml/asr/models/vosk-model-ru-0.22", "ml/asr/models/vosk-model-spk-0.4");
+    g_model = std::make_unique<aikit::ml::ASRModel>("ml/asr/models/vosk-model-ru-0.42", "ml/asr/models/vosk-model-spk-0.4");
     
     std::ifstream wavin("testdata/meeting_audio.wav", std::ios::binary | std::ios::ate);
     std::streamsize size = 16000 * 10;

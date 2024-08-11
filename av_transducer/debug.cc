@@ -180,7 +180,7 @@ absl::Status RunMPPGraph() {
       mediapipe::MakePacket<std::string>("ml/ocr/models/model.onnx");
 
   input_side_packets["asr_model_path"] =
-      mediapipe::MakePacket<std::string>("ml/asr/models/vosk-model-ru-0.22");
+      mediapipe::MakePacket<std::string>("ml/asr/models/vosk-model-ru-0.42");
   input_side_packets["spk_model_path"] =
       mediapipe::MakePacket<std::string>("ml/asr/models/vosk-model-spk-0.4");
 

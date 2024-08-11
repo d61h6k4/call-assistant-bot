@@ -7,6 +7,7 @@ package aikit.evaluator;
 service Evaluator {
     rpc Shutdown (ShutdownRequest) returns (ShutdownReply) {}
     rpc Detections (DetectionsRequest) returns (DetectionsReply) {}
+    rpc ASRResult (ASRResultRequest) returns (ASRResultReply) {}
 }
 
 message ShutdownRequest {
@@ -30,3 +31,11 @@ message DetectionsRequest {
 }
 
 message DetectionsReply {}
+
+message ASRResultRequest {
+    int64 event_timestamp = 1;
+    string transcription = 2;
+    repeated float spk_embedding = 3;
+}
+
+message ASRResultReply {}

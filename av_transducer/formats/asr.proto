@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package aikit;
+
+message ASRResult {
+  string transcription = 1;
+  repeated float spk_embedding = 2;
+}

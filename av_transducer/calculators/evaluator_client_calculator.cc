@@ -13,6 +13,7 @@
 #include "mediapipe/framework/formats/detection.pb.h"
 
 #include "meeting_bot/evaluator/evaluator.grpc.pb.h"
+#include "av_transducer/formats/asr.pb.h"
 
 namespace aikit {
 
@@ -26,11 +27,13 @@ namespace aikit {
 // }
 class EvaluatorClientCalculator : public mediapipe::api2::Node {
 public:
-  static constexpr mediapipe::api2::Input<std::vector<mediapipe::Detection>>
+  static constexpr mediapipe::api2::Input<std::vector<mediapipe::Detection>>::Optional
       kInDetections{"DETECTIONS"};
   static constexpr mediapipe::api2::Input<std::string>::Optional kInSpeakerName{
       "SPEAKER_NAME"};
-  MEDIAPIPE_NODE_CONTRACT(kInDetections, kInSpeakerName);
+  static constexpr mediapipe::api2::Input<ASRResult>::Optional kInASRResult{
+      "ASR_RESULT"};
+  MEDIAPIPE_NODE_CONTRACT(kInDetections, kInSpeakerName, kInASRResult);
 
   absl::Status Open(mediapipe::CalculatorContext *cc) override;
   absl::Status Process(mediapipe::CalculatorContext *cc) override;
@@ -50,39 +53,62 @@ absl::Status EvaluatorClientCalculator::Open(mediapipe::CalculatorContext *cc) {
 
 absl::Status
 EvaluatorClientCalculator::Process(mediapipe::CalculatorContext *cc) {
-  const auto &detections = kInDetections(cc).Get();
 
   grpc::ClientContext context;
   auto deadline =
       std::chrono::system_clock::now() + std::chrono::milliseconds(100);
   context.set_deadline(deadline);
 
-  aikit::evaluator::DetectionsRequest request;
-  request.set_event_timestamp(cc->InputTimestamp().Microseconds());
-  for (auto &detection : detections) {
+  if (!kInDetections(cc).IsEmpty()) {
+    const auto &detections = kInDetections(cc).Get();
 
-    auto &bbox = detection.location_data().relative_bounding_box();
+    aikit::evaluator::DetectionsRequest request;
+    request.set_event_timestamp(cc->InputTimestamp().Microseconds());
+    for (auto &detection : detections) {
 
-    auto *d = request.add_detections();
-    d->set_xmin(bbox.xmin());
-    d->set_ymin(bbox.ymin());
-    d->set_width(bbox.width());
-    d->set_height(bbox.height());
-    d->set_label_id(detection.label_id(0));
-    d->set_score(detection.score(0));
+      auto &bbox = detection.location_data().relative_bounding_box();
+
+      auto *d = request.add_detections();
+      d->set_xmin(bbox.xmin());
+      d->set_ymin(bbox.ymin());
+      d->set_width(bbox.width());
+      d->set_height(bbox.height());
+      d->set_label_id(detection.label_id(0));
+      d->set_score(detection.score(0));
+    }
+
+    if (!kInSpeakerName(cc).IsEmpty()) {
+      const auto &speaker_name = kInSpeakerName(cc).Get();
+      request.set_speaker_name(speaker_name);
+    }
+
+    aikit::evaluator::DetectionsReply reply;
+    auto status = stub_->Detections(&context, request, &reply);
+
+    if (!status.ok()) {
+      ABSL_LOG(WARNING) << "Could not send detections to evaluator. "
+                        << status.error_message();
+    }
   }
 
-  if (!kInSpeakerName(cc).IsEmpty()) {
-    const auto &speaker_name = kInSpeakerName(cc).Get();
-    request.set_speaker_name(speaker_name);
-  }
+  if (!kInASRResult(cc).IsEmpty()) {
+    const auto &asr_result = kInASRResult(cc).Get();
 
-  aikit::evaluator::DetectionsReply reply;
-  auto status = stub_->Detections(&context, request, &reply);
+    aikit::evaluator::ASRResultRequest request;
+    request.set_event_timestamp(cc->InputTimestamp().Microseconds());
+    request.set_transcription(asr_result.transcription());
+    request.mutable_spk_embedding()->Assign(
+                asr_result.spk_embedding().begin(),
+                asr_result.spk_embedding().end()
+            ); 
 
-  if (!status.ok()) {
-    ABSL_LOG(WARNING) << "Could not send detections to evaluator. "
-                      << status.error_message();
+    aikit::evaluator::ASRResultReply reply;
+    auto status = stub_->ASRResult(&context, request, &reply);
+
+    if (!status.ok()) {
+      ABSL_LOG(WARNING) << "Could not send ASR result to evaluator. "
+                        << status.error_message();
+    }
   }
 
   return absl::OkStatus();

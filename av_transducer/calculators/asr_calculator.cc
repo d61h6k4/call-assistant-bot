@@ -2,6 +2,7 @@
 #include "mediapipe/framework/api2/packet.h"
 #include "ml/asr/model.h"
 #include "av_transducer/utils/audio.h"
+#include "av_transducer/formats/asr.pb.h"
 #include <vector>
 
 namespace aikit {
@@ -16,7 +17,7 @@ public:
         "BUFFER_DURATION_SEC"};
     static constexpr mediapipe::api2::Input<media::AudioFrame> kInAudio{
         "AUDIO"};
-    static constexpr mediapipe::api2::Output<aikit::ml::ASRResult>
+    static constexpr mediapipe::api2::Output<aikit::ASRResult>
         kOutASRResult{"ASR_RESULT"};
     MEDIAPIPE_NODE_CONTRACT(kInASRModelPath, kInSPKModelPath, kInBufferDurationSec, kInAudio, kOutASRResult);
 
@@ -28,7 +29,7 @@ private:
     std::vector<float> audio_buffer_;
     size_t buffer_size_;
     static constexpr size_t kSampleRate = 16000;
-    static constexpr size_t kDefaultBufferDurationSec = 10;
+    static constexpr size_t kDefaultBufferDurationSec = 1;
 };
 
 MEDIAPIPE_REGISTER_NODE(ASRCalculator);
@@ -59,7 +60,13 @@ absl::Status ASRCalculator::Process(mediapipe::CalculatorContext *cc) {
             return absl::OkStatus();
         }
         else {
-            kOutASRResult(cc).Send(result.value());
+            aikit::ASRResult asr_result;
+            asr_result.set_transcription(result.value().text);
+            asr_result.mutable_spk_embedding()->Assign(
+                result.value().spk_embedding.begin(),
+                result.value().spk_embedding.end()
+            );  
+            kOutASRResult(cc).Send(asr_result);
         }
     }
     return absl::OkStatus();
