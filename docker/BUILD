@@ -140,6 +140,7 @@ PACKAGES = [
     "@bookworm//dbus",
     "@bookworm//dbus-x11",
     "@bookworm//eterm",
+    "@bookworm//gfortran",
 ]
 
 pkg_tar(
