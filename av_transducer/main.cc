@@ -124,7 +124,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   auto &evaluator_client_node = graph.AddNode("EvaluatorClientCalculator");
   detections_stream >> evaluator_client_node.In("DETECTIONS");
   speaker_name_stream >> evaluator_client_node.In("SPEAKER_NAME");
-  transcription_stream >> evaluator_client_node.In("TRANSCRIPTION");
+  transcription_stream >> evaluator_client_node.In("ASR_RESULT");
 
   // Write audio
   auto &sink_video_node = graph.AddNode("FFMPEGSinkVideoCalculator");
