@@ -49,6 +49,14 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
     async def Detections(
         self, request: evaluator_pb2.DetectionsRequest, context
     ) -> evaluator_pb2.DetectionsReply:
+        self.logger.info(
+            {
+                "message": "Received detections",
+                "event_timestamp": request.event_timestamp,
+                "detections": request.detections,
+                "speaker_name": request.speaker_name,
+            }
+        )
         should_leave_the_call = self.leave_call_model.predict_one(
             {
                 "event_timestamp": request.event_timestamp,
