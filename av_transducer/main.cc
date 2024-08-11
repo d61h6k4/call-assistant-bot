@@ -98,7 +98,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
           .SetName("spk_model_path")
           .Cast<std::string>() >>
       audio_subgraph.SideIn("SPK_MODEL_PATH");
-  auto transcription = audio_subgraph.Out("TRANSCRIPTION");
+  auto transcription_stream = audio_subgraph.Out("TRANSCRIPTION");
 
   // visual
   auto &visual_subgraph = graph.AddNode("VisualGraph");
@@ -124,6 +124,7 @@ mediapipe::CalculatorGraphConfig BuildGraph() {
   auto &evaluator_client_node = graph.AddNode("EvaluatorClientCalculator");
   detections_stream >> evaluator_client_node.In("DETECTIONS");
   speaker_name_stream >> evaluator_client_node.In("SPEAKER_NAME");
+  transcription_stream >> evaluator_client_node.In("TRANSCRIPTION");
 
   // Write audio
   auto &sink_video_node = graph.AddNode("FFMPEGSinkVideoCalculator");
