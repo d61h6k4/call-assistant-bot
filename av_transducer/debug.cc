@@ -191,6 +191,7 @@ absl::Status RunMPPGraph() {
     profilerConfig->set_trace_enabled(true);
     profilerConfig->set_enable_profiler(true);
     profilerConfig->set_trace_log_disabled(false);
+    profilerConfig->set_trace_log_count(10);
   }
 
   ABSL_LOG(INFO) << "Initialize the calculator graph.";

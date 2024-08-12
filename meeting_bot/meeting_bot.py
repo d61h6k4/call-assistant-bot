@@ -452,8 +452,8 @@ async def prepare_env(logger: logging.Logger):
             "sudo pactl set-default-sink MicOutput",
             "sudo pactl load-module module-virtual-source source_name=VirtualMic",
             # set volume
-            "sudo pactl set-sink-volume MicOutput 150%",
-            "sudo pactl set-source-volume MicOutput.monitor 150%",
+            "sudo pactl set-sink-volume MicOutput 100%",
+            "sudo pactl set-source-volume MicOutput.monitor 100%",
         ]:
             try:
                 res = subprocess.check_output(cmd, shell=True)
