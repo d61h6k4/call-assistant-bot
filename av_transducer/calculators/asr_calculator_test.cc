@@ -2,7 +2,7 @@
 #include "mediapipe/framework/calculator_runner.h"
 #include "mediapipe/framework/port/status_matchers.h"
 #include "av_transducer/utils/audio.h"
-#include "ml/asr/model.h"
+#include "av_transducer/formats/asr.pb.h"
 #include "gtest/gtest.h"
 #include <vector>
 #include <fstream>
@@ -24,7 +24,7 @@ protected:
 
 void SetInput() {
   runner_.MutableSidePackets()->Tag("ASR_MODEL_PATH") =
-      mediapipe::MakePacket<std::string>("ml/asr/models/vosk-model-ru-0.22");
+      mediapipe::MakePacket<std::string>("ml/asr/models/vosk-model-ru-0.42");
   runner_.MutableSidePackets()->Tag("SPK_MODEL_PATH") =
       mediapipe::MakePacket<std::string>("ml/asr/models/vosk-model-spk-0.4");
   runner_.MutableSidePackets()->Tag("BUFFER_DURATION_SEC") =
@@ -53,10 +53,10 @@ void SetInput() {
   }
 }
 
-std::vector<aikit::ml::ASRResult> GetAllOutputs() {
-    std::vector<aikit::ml::ASRResult> all_results;
+std::vector<aikit::ASRResult> GetAllOutputs() {
+    std::vector<aikit::ASRResult> all_results;
     for (const auto& packet : runner_.Outputs().Tag("ASR_RESULT").packets) {
-      all_results.push_back(packet.Get<aikit::ml::ASRResult>());
+      all_results.push_back(packet.Get<aikit::ASRResult>());
     }
     return all_results;
   }
@@ -71,8 +71,8 @@ TEST_F(ASRCalculatorTest, ProcessesAudioCorrectly) {
 
   EXPECT_GT(results.size(), 0);
   for (const auto &result : results) {
-    EXPECT_FALSE(result.text.empty());
-    ABSL_LOG(INFO) << "Text: " << result.text << ", Vector size: " << result.spk_embedding.size() << "\n";
+    EXPECT_FALSE(result.transcription().empty());
+    ABSL_LOG(INFO) << "Text: " << result.transcription() << ", Vector size: " << result.spk_embedding().size() << "\n";
   }
 }
 

@@ -37,3 +37,4 @@ packages:
   - "dbus-x11"
   - "eterm"
   - "pixz"
+  - "gfortran"

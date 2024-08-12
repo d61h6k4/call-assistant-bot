@@ -125,6 +125,7 @@ cc_library(
     deps = [
         "//ml/asr:model",
         "//av_transducer/utils:audio",
+        "//av_transducer/formats:asr_cc_proto",
         "@mediapipe//mediapipe/framework:calculator_framework",
         "@mediapipe//mediapipe/framework/api2:node",
         "@mediapipe//mediapipe/framework/api2:packet",
@@ -175,6 +176,7 @@ cc_library(
         "//meeting_bot/evaluator:evaluator_proto_grpc",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/log:absl_log",
+        "//av_transducer/formats:asr_cc_proto",
         "@mediapipe//mediapipe/framework:calculator_framework",
         "@mediapipe//mediapipe/framework/api2:node",
         "@mediapipe//mediapipe/framework/api2:packet",

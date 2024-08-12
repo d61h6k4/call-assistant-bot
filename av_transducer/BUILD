@@ -6,6 +6,7 @@ cc_binary(
     data = [
         "//ml/detection/models:cdetr",
         "//ml/ocr/models:model",
+        "//ml/asr/models:vosk_models"
     ],
     deps = [
         "//av_transducer/calculators:audio_converter_calculator",
@@ -15,6 +16,7 @@ cc_binary(
         "//av_transducer/calculators:ffmpeg_sink_video_calculator",
         "//av_transducer/calculators:video_converter_calculator",
         "//av_transducer/tasks:visual_graph",
+        "//av_transducer/tasks:audio_graph",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/log:absl_log",
@@ -30,6 +32,7 @@ cc_binary(
     data = [
         "//ml/detection/models:cdetr",
         "//ml/ocr/models:model",
+        "//ml/asr/models:vosk_models"
     ],
     deps = [
         "//av_transducer/calculators:ffmpeg_sink_video_calculator",
@@ -38,6 +41,7 @@ cc_binary(
         "//av_transducer/calculators:speaker_name_to_render_calculator",
         "//av_transducer/calculators:video_converter_calculator",
         "//av_transducer/tasks:visual_graph",
+        "//av_transducer/tasks:audio_graph",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/log:absl_log",

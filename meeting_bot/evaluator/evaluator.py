@@ -49,6 +49,14 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
     async def Detections(
         self, request: evaluator_pb2.DetectionsRequest, context
     ) -> evaluator_pb2.DetectionsReply:
+        self.logger.info(
+            {
+                "message": "Received detections",
+                "event_timestamp": request.event_timestamp,
+                "detections": request.detections,
+                "speaker_name": request.speaker_name,
+            }
+        )
         should_leave_the_call = self.leave_call_model.predict_one(
             {
                 "event_timestamp": request.event_timestamp,
@@ -59,6 +67,21 @@ class EvaluatorServicer(evaluator_pb2_grpc.EvaluatorServicer):
             _ = asyncio.create_task(self.send_shutdown_signal())
 
         return evaluator_pb2.DetectionsReply()
+
+    async def ASRResult(
+        self, request: evaluator_pb2.ASRResultRequest, context
+    ) -> evaluator_pb2.ASRResultReply:
+
+        self.logger.info(
+            {
+                "message": "Received ASR result",
+                "event_timestamp": request.event_timestamp,
+                "transcription": request.transcription,
+                "spk_embedding": request.spk_embedding,
+            }
+        )
+
+        return evaluator_pb2.ASRResultReply()
 
     async def send_shutdown_signal(self):
         stub = meeting_bot_pb2_grpc.MeetingBotStub(self.meeting_bot_client)

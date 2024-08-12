@@ -116,7 +116,7 @@ def sync_models(args: argparse.Namespace):
             archive_path_name = Path(tmp_dir) / f"{model}-v{datetime.now().isoformat()}"
             archive_path = shutil.make_archive(
                 str(archive_path_name),
-                "xztar",
+                "gztar",
                 str(args.current_directory / "ml/asr/models" / model),
                 verbose=True,
                 logger=_LOGGER,
@@ -131,7 +131,7 @@ def sync_models(args: argparse.Namespace):
             if release:
                 upload_blob(
                     archive_path.absolute(),
-                    f"asr/release/{model}.tar.xz",
+                    f"asr/release/{model}.tar.gz",
                     ARTIFACTS_BUCKET_NAME,
                 )
 
@@ -158,7 +158,7 @@ def sync_models(args: argparse.Namespace):
             ARTIFACTS_BUCKET_NAME,
         )
 
-        with tarfile.open(archive_name, "r:xz") as tar:
+        with tarfile.open(archive_name, "r:gz") as tar:
             tar.extractall(
                 path=str(args.current_directory / "ml/asr/models" / archive_name[:-7])
             )
@@ -193,7 +193,7 @@ def sync_models(args: argparse.Namespace):
             upload_detection(args.release)
 
         if args.asr:
-            upload_asr("vosk-model-ru-0.22", args.release)
+            upload_asr("vosk-model-ru-0.42", args.release)
             upload_asr("vosk-model-spk-0.4", args.release)
 
         if args.ocr:
@@ -204,7 +204,7 @@ def sync_models(args: argparse.Namespace):
             download_detection()
 
         if args.asr:
-            download_asr("vosk-model-ru-0.22.tar.gz")
+            download_asr("vosk-model-ru-0.42.tar.gz")
             download_asr("vosk-model-spk-0.4.tar.gz")
 
         if args.ocr:

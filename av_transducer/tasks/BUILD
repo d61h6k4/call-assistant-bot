@@ -33,3 +33,16 @@ cc_library(
     ],
     alwayslink = 1,
 )
+
+cc_library(
+    name = "audio_graph",
+    srcs = ["audio_graph.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//av_transducer/calculators:asr_calculator",
+        "//av_transducer/calculators:audio_converter_calculator",
+        "@mediapipe//mediapipe/framework:subgraph",
+        "@mediapipe//mediapipe/framework/api2:builder",
+    ],
+    alwayslink = 1,
+)

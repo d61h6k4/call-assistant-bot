@@ -32,7 +32,7 @@ absl::Status DumperCalculator::Process(mediapipe::CalculatorContext *cc) {
   const auto &detections = kInDetections(cc).Get();
 
   for (auto d : detections) {
-    ABSL_LOG(INFO) << "[" << d.xmin << ", " << d.ymin << ", " << d.width << ", "
+    ABSL_LOG(INFO) << "[" << d.x_center << ", " << d.y_center << ", " << d.width << ", "
                    << d.height << "] " << d.label_id << " " << d.score;
   }
 
