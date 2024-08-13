@@ -180,7 +180,7 @@ oci_image(
         "DBUS_STARTER_BUS_TYPE": "session",
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket",
         "TEMP": "/home/nonroot",
-        "OMP_THREADS_NUM": 8,
+        "OMP_NUM_THREADS": 4,
     },
     tars = [
         ":sh",
