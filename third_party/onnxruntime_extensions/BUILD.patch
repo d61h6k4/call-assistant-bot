@@ -1,6 +1,6 @@
---- /dev/null	2024-07-04 13:57:06
-+++ BUILD	2024-07-04 13:57:03
-@@ -0,0 +1,128 @@
+--- /dev/null	2024-08-21 17:16:14
++++ BUILD	2024-08-21 17:16:09
+@@ -0,0 +1,169 @@
 +config_setting(
 +    name = "osx_arm64",
 +    constraint_values = [
@@ -18,6 +18,7 @@
 +)
 +
 +DEFINES = [
++    "CC_OPTIMIZE",
 +    "ENABLE_GPT2_TOKENIZER",
 +    "ENABLE_C_API",
 +    "ENABLE_CV2",
@@ -109,6 +110,43 @@
 +    visibility = ["//visibility:public"],
 +)
 +
++
++cc_library(
++    name = "math",
++    hdrs = glob([
++        "operators/math/*.h*",
++        "operators/math/dlib/*.h*",
++    ]),
++    srcs = glob([
++        "operators/math/*.cc",
++    ]),
++    local_defines = DEFINES,
++    strip_include_prefix = "operators",
++    deps = [
++        ":includes",
++        ":base",
++    ],
++    visibility = ["//visibility:public"],
++)
++
++
++cc_library(
++    name = "audio",
++    hdrs = glob([
++        "operators/audio/*.h*",
++    ]),
++    srcs = glob([
++        "operators/audio/audio.cc",
++    ]),
++    local_defines = DEFINES,
++    strip_include_prefix = "operators",
++    deps = [
++        ":includes",
++        ":base",
++    ],
++    visibility = ["//visibility:public"],
++)
++
 +cc_library(
 +    name = "shared",
 +    hdrs = glob([
@@ -126,6 +164,9 @@
 +        ":base",
 +        ":gpt2_tokenizer",
 +        ":cv2",
++        ":audio",
++        ":math",
++        "@dlib//:libdlib",
 +    ],
 +    visibility = ["//visibility:public"],
 +)
