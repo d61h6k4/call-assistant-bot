@@ -1,5 +1,5 @@
---- /dev/null	2024-05-21 17:12:17
-+++ BUILD	2024-05-21 16:40:23
+--- /dev/null	2024-08-21 18:14:03
++++ BUILD	2024-08-21 18:14:00
 @@ -0,0 +1,30 @@
 +load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
 +

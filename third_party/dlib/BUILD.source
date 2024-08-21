@@ -1,0 +1,27 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+filegroup(
+    name = "dlib_srcs",
+    srcs = glob([
+        "**",
+    ]),
+)
+
+cmake(
+    name = "libdlib",
+    build_args = [
+        "-j8",
+    ],
+    generate_args = [
+        "-GNinja",
+    ],
+    cache_entries = {
+        "DLIB_ISO_CPP_ONLY": "OFF",
+        "DLIB_NO_GUI_SUPPORT": "ON",
+        "DLIB_USE_CUDA": "OFF",
+        "DLIB_USE_LAPACK": "OFF",
+        "DLIB_USE_BLAS": "OFF",
+    },
+    lib_source = ":dlib_srcs",
+    visibility = ["//visibility:public"],
+)

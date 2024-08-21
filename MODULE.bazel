@@ -161,18 +161,18 @@ archive_override(
 )
 
 # sudo apt-get install yasm
-bazel_dep(name = "ffmpeg", version = "7.0.1")
+bazel_dep(name = "ffmpeg", version = "7.0.2")
 archive_override(
     module_name = "ffmpeg",
-    integrity = "sha256-75CuPnGURNopHjzB6nB+/lXADRYx3EELHbbmVP7VmvQ=",
+    integrity = "sha256-veLwGK+6NbvV43V1b3BzxNimJnWvx6B2GEkVX2I65qg=",
     patches = [
         "//third_party/ffmpeg:BUILD.patch",
         "//third_party/ffmpeg:MODULE.bazel.patch",
         # Respect CC env variable
         "//third_party/ffmpeg:configure.patch",
     ],
-    strip_prefix = "FFmpeg-n7.0.1",
-    urls = "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.0.1.zip",
+    strip_prefix = "FFmpeg-n7.0.2",
+    urls = "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n7.0.2.zip",
 )
 
 bazel_dep(name = "iconv", version = "1.17.0", repo_name = "iconv")
@@ -318,12 +318,12 @@ bazel_dep(name = "zlib", version = "1.3.1")
 bazel_dep(name = "libpng", version = "1.6.40")
 bazel_dep(name = "libjpeg_turbo", version = "2.1.91")
 
-ONNX_VERSION = "1.18.1"
+ONNX_VERSION = "1.19.0"
 
 bazel_dep(name = "onnxruntime_osx_arm64", version = ONNX_VERSION, repo_name = "onnxruntime_osx_arm64")
 archive_override(
     module_name = "onnxruntime_osx_arm64",
-    integrity = "sha256-8zViA+m29QIxaKEtt0sQYKs5f4886PXLLCvZ5/EZWwE=",
+    integrity = "sha256-thfrOFOPymsgfBYWmqkzxTAVbSwtn4eOb82PEmngrhM=",
     patches = [
         "@//third_party/onnxruntime_osx_arm64:BUILD.patch",
         "@//third_party/onnxruntime_osx_arm64:MODULE.bazel.patch",
@@ -335,7 +335,7 @@ archive_override(
 bazel_dep(name = "onnxruntime_linux_x64", version = ONNX_VERSION)
 archive_override(
     module_name = "onnxruntime_linux_x64",
-    integrity = "sha256-oJlFEuweHevADBi/x6XxYkn269amEo/yA0RkzDgOohE=",
+    integrity = "sha256-hifK5JtRVE7RW7cMjs8lsYfyKjAcmcHO1fTzr1w2tEw=",
     patches = [
         "@//third_party/onnxruntime_linux_x64:BUILD.patch",
         "@//third_party/onnxruntime_linux_x64:MODULE.bazel.patch",
@@ -359,7 +359,7 @@ archive_override(
 bazel_dep(name = "onnxruntime_extensions", version = "0.11.0")
 git_override(
     module_name = "onnxruntime_extensions",
-    commit = "f1abea14e88422a16e8337f86820bf306b506c61",
+    commit = "711a2cfa699a768721f6bbb83c92e79b27df376f",
     patches = [
         "@//third_party/onnxruntime_extensions:BUILD.patch",
         "@//third_party/onnxruntime_extensions:MODULE.bazel.patch",
@@ -367,10 +367,22 @@ git_override(
     remote = "https://github.com/microsoft/onnxruntime-extensions.git",
 )
 
+bazel_dep(name = "dlib", version = "19.24.6")
+archive_override(
+    module_name = "dlib",
+    strip_prefix = "dlib-19.24.6",
+    integrity = "sha256-IlE8NT7JwVMwDDlAUMlsqdCI4ClmrA9jnpieUDGMgtY=",
+    patches = [
+        "@//third_party/dlib:BUILD.patch",
+        "@//third_party/dlib:MODULE.bazel.patch",
+    ],
+    urls = "https://github.com/davisking/dlib/archive/refs/tags/v19.24.6.tar.gz",
+)
+
 bazel_dep(name = "onnxruntime_genai", version = "0.3.0")
 git_override(
     module_name = "onnxruntime_genai",
-    commit = "54177bc1d6fd8ea4ec5ae8c47df9632c810c996a",
+    commit = "1a5ad14447d97f291afbb131a02d12c4a076e0ab",
     patches = [
         "@//third_party/onnxruntime_genai:BUILD.patch",
         "@//third_party/onnxruntime_genai:MODULE.bazel.patch",
