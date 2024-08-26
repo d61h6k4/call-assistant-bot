@@ -5,29 +5,12 @@ import os
 import argparse
 import tempfile
 import subprocess
-import gc
-import time
-import psutil
 
-from packaging import version
 import onnx
-import onnxruntime as ort
 from transformers import WhisperProcessor
 from onnxruntime_extensions import OrtPyFunction, util
 from onnxruntime_extensions.cvt import gen_processing_models
 
-
-def wait_for_memory_release(initial_memory, timeout=300, check_interval=5):
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        current_memory = psutil.virtual_memory().percent
-        if current_memory <= initial_memory:
-            print(f"Память освобождена. Текущее использование: {current_memory}%")
-            return True
-        print(f"Ожидание освобождения памяти. Текущее использование: {current_memory}%")
-        time.sleep(check_interval)
-    print("Превышено время ожидания освобождения памяти")
-    return False
 
 def parse_args():
     """
@@ -35,15 +18,12 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description="Convert Whisper model to ONNX format")
     parser.add_argument("--model_name", type=str, default="openai/whisper-large-v3", help="Model name or path")
-    parser.add_argument("--output_dir", type=str, default="ml/models/models", help="Directory to save ONNX model")
+    parser.add_argument("--output_dir", type=str, default=os.path.join(os.getcwd(), "ml/models/models/onnx"),
+                        help="Directory to save ONNX model")
     parser.add_argument("--precision", type=str, choices=["fp32", "int8"], default="fp32", help="Model precision")
     parser.add_argument("--quantize", action="store_true", help="Apply quantization (only for int8)")
     return parser.parse_args()
 
-
-def check_onnx_version():
-    if version.parse(ort.__version__) < version.parse("1.16.0"):
-        raise RuntimeError("ONNXRuntime version must >= 1.16.0")
 
 def convert_whisper_to_onnx(
     model_name: str,
@@ -61,7 +41,6 @@ def convert_whisper_to_onnx(
         precision (str, optional): Model precision. Default is "float32".
         quantize (bool, optional): Apply quantization. Default is False.
     """
-    check_onnx_version()
     sub_args = [
         "python", '-m',
         'onnxruntime.transformers.models.whisper.convert_to_onnx',
@@ -116,18 +95,10 @@ def main():
         output_dir = os.path.join(temp_dir, 'output')
         os.makedirs(cache_dir, exist_ok=True)
         os.makedirs(output_dir, exist_ok=True)
-        initial_memory = psutil.virtual_memory().percent
-        print(f"Начальное использование памяти: {initial_memory}%")
 
         result = convert_whisper_to_onnx(args.model_name, cache_dir, output_dir, args.precision, args.quantize)
         if not result:
             return
-
-        print("Очистка памяти...")
-        gc.collect()
-
-        if not wait_for_memory_release(initial_memory):
-            print("Не удалось дождаться полного освобождения памяти. Продолжение выполнения...")
         pre_m, post_m = process_test_file(args.model_name)
         fn_core = OrtPyFunction.from_model(
             os.path.join(output_dir, f"{args.model_name.split('/')[-1]}_beamsearch.onnx"),
@@ -135,7 +106,6 @@ def main():
         )
         print('ready to merge')
         final_m = util.quick_merge(pre_m, fn_core.onnx_model, post_m)
-        print('ready to save')
         onnx.save(
             final_m, os.path.join(args.output_dir, f"{args.model_name.split('/')[-1]}_e2e.onnx"),
             save_as_external_data=True

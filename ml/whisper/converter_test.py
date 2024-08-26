@@ -1,13 +1,20 @@
+"""
+Test for Whisper converter
+"""
+import unittest
 import difflib
 from onnxruntime_extensions import OrtPyFunction
 import numpy as np
-import unittest
 
 
 class WhisperConverter(unittest.TestCase):
+    """
+    Test for Whisper converter
+    """
 
     def setUp(self):
-        self.e2e_model = OrtPyFunction.from_model("ml/whisper/models/whisper-large-v3_fp32_e2e.onnx", cpu_only=True)
+        self.e2e_model = OrtPyFunction.from_model("ml/whisper/models/onnx/whisper-large-v3_fp32_e2e.onnx",
+                                                  cpu_only=True)
         self.e2e_model_ort_session = self.e2e_model._ensure_ort_session() # pylint: disable=protected-access
 
         self.raw_audio = np.fromfile("testdata/whisper_audio.wav", dtype=np.uint8)
@@ -28,8 +35,8 @@ class WhisperConverter(unittest.TestCase):
         required_input_names = {"audio_stream", "input_features", "max_length", "min_length", "num_beams",
                                 "num_return_sequences", "length_penalty", "repetition_penalty"}
         batch_size = 1
-        N_MELS = 128
-        N_FRAMES = 3000
+        N_MELS = 128 # pylint: disable=invalid-name
+        N_FRAMES = 3000 # pylint: disable=invalid-name
         vocab_size = 51864
         decoder_start_token_id = 50257
 
@@ -50,18 +57,21 @@ class WhisperConverter(unittest.TestCase):
                 raise NotImplementedError(f"'{name}' input is not supported")
         return inputs
 
-    def get_from_onnx(self):
-        model_inputs = self._get_model_inputs(self.e2e_model_ort_session, self.raw_audio)
-        text = self.e2e_model(*model_inputs)
-        return text[0][0].strip()
-
     def test_sanity_check(self):
-        text_from_torch = """Продукт-менеджер, у него огромный опыт работы с GNI, с разными продуктами, с бизнесом, \
-понимает ограничения, в том числе запросы, поэтому он здесь очень полезен. Наверное, если сделаешь небольшой интро \
-про то, где работал, тоже, чтобы ребятам было комфортно, и потом расскажу о ребятах. Да, да, да. Последний год я \
-работаю над консалтингом в AI. Вот мы со Sber, с Яндексом, вот с Нетологией и с другими прикольными компаниями как \
-раз повнедряли какие-то разные штуки."""
-        text_from_onnx = self.get_from_onnx()
+        """
+        Test for sanity check
+        """
+        text_from_torch = (
+            "Продукт-менеджер, у него огромный опыт работы с GNI, с разными продуктами, "
+            "с бизнесом, понимает ограничения, в том числе запросы, поэтому он здесь очень "
+            "полезен. Наверное, если сделаешь небольшой интро про то, где работал, тоже, "
+            "чтобы ребятам было комфортно, и потом расскажу о ребятах. Да, да, да. Последний "
+            "год я работаю над консалтингом в AI. Вот мы со Sber, с Яндексом, вот с Нетологией "
+            "и с другими прикольными компаниями как раз повнедряли какие-то разные штуки."
+        )
+
+        model_inputs = self._get_model_inputs(self.e2e_model_ort_session, self.raw_audio)
+        text_from_onnx = self.e2e_model(*model_inputs)[0][0].strip()
         print(text_from_onnx, sep='\n')
         similarity = difflib.SequenceMatcher(None, text_from_torch, text_from_onnx).ratio()
         self.assertGreater(similarity, 0.95, f"Similarity ({similarity:.2f}) is lower than expected")
