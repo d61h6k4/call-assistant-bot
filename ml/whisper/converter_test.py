@@ -62,7 +62,7 @@ class WhisperConverter(unittest.TestCase):
 работаю над консалтингом в AI. Вот мы со Sber, с Яндексом, вот с Нетологией и с другими прикольными компаниями как \
 раз повнедряли какие-то разные штуки."""
         text_from_onnx = self.get_from_onnx()
-        print(text_from_torch, text_from_onnx, sep='\n')
+        print(text_from_onnx, sep='\n')
         similarity = difflib.SequenceMatcher(None, text_from_torch, text_from_onnx).ratio()
         self.assertGreater(similarity, 0.95, f"Similarity ({similarity:.2f}) is lower than expected")
 
