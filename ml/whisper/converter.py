@@ -18,7 +18,7 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description="Convert Whisper model to ONNX format")
     parser.add_argument("--model_name", type=str, default="openai/whisper-large-v3", help="Model name or path")
-    parser.add_argument("--output_dir", type=str, default=os.path.join(os.getcwd(), "ml/models/models/onnx"),
+    parser.add_argument("--output_dir", type=str, default=os.path.join(os.getcwd(), "ml/whisper/models/onnx"),
                         help="Directory to save ONNX model")
     parser.add_argument("--precision", type=str, choices=["fp32", "int8"], default="fp32", help="Model precision")
     parser.add_argument("--quantize", action="store_true", help="Apply quantization (only for int8)")
