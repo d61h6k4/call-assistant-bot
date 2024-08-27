@@ -107,7 +107,7 @@ def main():
         print('ready to merge')
         final_m = util.quick_merge(pre_m, fn_core.onnx_model, post_m)
         onnx.save(
-            final_m, os.path.join(args.output_dir, f"{args.model_name.split('/')[-1]}_e2e.onnx"),
+            final_m, os.path.join(args.output_dir, f"{args.model_name.split('/')[-1]}_fp32_e2e.onnx"),
             save_as_external_data=True
         )
     print(f"model saved to {args.output_dir}")
