@@ -1,3 +1,23 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "torch",
+#     "transformers==4.42.4",
+#     "openai-whisper",
+#     "ffmpeg-python",
+#     "datasets",
+#     "soundfile",
+#     "librosa",
+#     "optimum==1.21.2",
+#     "onnxruntime-extensions==0.9.0",
+#     "onnx==1.16.1",
+#     "protobuf==3.20.2",
+#     "numpy==1.23.3",
+#     "psutil",
+#     "py3nvml",
+#     "onnxruntime==1.19.0",
+# ]
+# ///
 """
 Test for Whisper converter
 """
