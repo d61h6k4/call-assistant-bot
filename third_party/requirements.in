@@ -14,14 +14,13 @@ onnxruntime==1.19.0
 onnxruntime-extensions>=0.9.0
 onnxscript
 optimum<=1.21.2
+protobuf>=3.20.2
 timm
 einops
 Pillow
 torch==2.3.1+cpu
 torchvision==0.18.1+cpu
 torchaudio==2.3.1+cpu
-openai-whisper>=20231117
-ffmpeg-python
 torchmetrics
 transformers>=4.24.0,<=4.42.4
 accelerate
