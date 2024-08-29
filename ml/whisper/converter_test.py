@@ -13,7 +13,7 @@ class WhisperConverter(unittest.TestCase):
     """
 
     def setUp(self):
-        self.e2e_model = OrtPyFunction.from_model("ml/whisper/models/onnx/whisper-large-v3_fp32_e2e.onnx",
+        self.e2e_model = OrtPyFunction.from_model("ml/whisper/models/onnx/whisper-large-v2_fp32_e2e.onnx",
                                                   cpu_only=True)
         self.e2e_model_ort_session = self.e2e_model._ensure_ort_session() # pylint: disable=protected-access
 
@@ -25,11 +25,11 @@ class WhisperConverter(unittest.TestCase):
 
         inputs = [
             audio_data,                          # audio_stream/input_features
-            np.asarray([500], dtype=np.int32),   # max_length
+            np.asarray([300], dtype=np.int32),   # max_length
             np.asarray([0], dtype=np.int32),     # min_length
-            np.asarray([2], dtype=np.int32),     # num_beams
+            np.asarray([5], dtype=np.int32),     # num_beams
             np.asarray([1], dtype=np.int32),     # num_return_sequences
-            np.asarray([1.0], dtype=np.float32), # length_penalty
+            np.asarray([0.95], dtype=np.float32), # length_penalty
             np.asarray([1.0], dtype=np.float32), # repetition_penalty
         ]
         required_input_names = {"audio_stream", "input_features", "max_length", "min_length", "num_beams",
@@ -62,12 +62,16 @@ class WhisperConverter(unittest.TestCase):
         Test for sanity check
         """
         text_from_torch = (
-            "Продукт-менеджер, у него огромный опыт работы с GNI, с разными продуктами, "
-            "с бизнесом, понимает ограничения, в том числе запросы, поэтому он здесь очень "
-            "полезен. Наверное, если сделаешь небольшой интро про то, где работал, тоже, "
-            "чтобы ребятам было комфортно, и потом расскажу о ребятах. Да, да, да. Последний "
-            "год я работаю над консалтингом в AI. Вот мы со Sber, с Яндексом, вот с Нетологией "
-            "и с другими прикольными компаниями как раз повнедряли какие-то разные штуки."
+            "<|0.00|> Продукт-менеджер, у него огромный опыт работы с GNI,<|4.00|>"
+            "<|4.00|> с разными продуктами, с бизнесом, понимает ограничения,<|6.00|>"
+            "<|6.00|> в том числе запросы, поэтому он здесь очень полезен.<|10.00|>"
+            "<|10.00|> Наверное, там, если сделаешь небольшое интро про то,<|14.00|>"
+            "<|14.00|> где работал, тоже, чтобы ребятам было комфортно,<|16.00|>"
+            "<|16.00|> и потом расскажу о ребятах.<|18.00|>"
+            "<|18.00|> Да-да-да. Последний год я работаю над консалтингом в AI.<|22.00|>"
+            "<|22.00|> Вот мы с Асбером, с Яндексом, вот с Netology и с другими<|26.00|>"
+            "<|26.00|> прикольными компаниями как раз повнедряли<|28.00|>"
+            "<|28.00|>"
         )
 
         model_inputs = self._get_model_inputs(self.e2e_model_ort_session, self.raw_audio)

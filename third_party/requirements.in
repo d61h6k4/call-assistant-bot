@@ -20,6 +20,8 @@ Pillow
 torch==2.3.1+cpu
 torchvision==0.18.1+cpu
 torchaudio==2.3.1+cpu
+openai-whisper>=20231117
+ffmpeg-python
 torchmetrics
 transformers>=4.24.0,<=4.42.4
 accelerate
@@ -28,4 +30,6 @@ grpcio-health-checking
 nodriver
 pycocotools
 easyocr
+soundfile
+librosa
 setuptools==69.5.1
