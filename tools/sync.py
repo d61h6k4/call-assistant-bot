@@ -135,6 +135,30 @@ def sync_models(args: argparse.Namespace):
                     ARTIFACTS_BUCKET_NAME,
                 )
 
+    def upload_whisper(release: bool):
+        with TemporaryDirectory() as tmp_dir:
+            archive_path_name = Path(tmp_dir) / f"whisper-v{datetime.now().isoformat()}"
+            archive_path = shutil.make_archive(
+                str(archive_path_name),
+                "gztar",
+                str(args.current_directory / "ml/whisper/models/onnx"),
+                verbose=True,
+                logger=_LOGGER,
+            )
+            archive_path = Path(archive_path)
+            upload_blob(
+                archive_path.absolute(),
+                f"whisper/dev/{archive_path.name}",
+                ARTIFACTS_BUCKET_NAME,
+            )
+
+            if release:
+                upload_blob(
+                    archive_path.absolute(),
+                    "whisper/release/onnx.tar.gz",
+                    ARTIFACTS_BUCKET_NAME,
+                )
+
     def upload_ocr(release: bool):
         # no training, so nothing to release
         del release
@@ -167,6 +191,22 @@ def sync_models(args: argparse.Namespace):
 
         _LOGGER.info(f"Archive {archive_name} unpacked to ml/asr/models and removed.")
 
+    def download_whisper():
+        download_blob(
+            "whisper/release/onnx.tar.gz",
+            "onnx.tar.gz",
+            ARTIFACTS_BUCKET_NAME,
+        )
+
+        with tarfile.open("onnx.tar.gz", "r:gz") as tar:
+            tar.extractall(
+                path=str(args.current_directory / "ml/whisper/models/onnx")
+            )
+
+        os.remove("onnx.tar.gz")
+
+        _LOGGER.info("Archive onnx.tar.gz unpacked to ml/whisper/models/onnx and removed.")
+
     def download_ocr():
         download_blob(
             "ocr/model.onnx",
@@ -174,7 +214,7 @@ def sync_models(args: argparse.Namespace):
             ARTIFACTS_BUCKET_NAME,
         )
 
-    if not any((args.all, args.detection, args.asr, args.ocr)):
+    if not any((args.all, args.detection, args.asr, args.ocr, args.whisper)):
         _LOGGER.warning(
             {
                 "message": f"Nothing to do, please specify which model specifically you want to {args.action}",
@@ -187,6 +227,7 @@ def sync_models(args: argparse.Namespace):
         args.detection = True
         args.asr = True
         args.ocr = True
+        args.whisper = True
 
     if args.action == Action.UPLOAD:
         if args.detection:
@@ -199,6 +240,9 @@ def sync_models(args: argparse.Namespace):
         if args.ocr:
             upload_ocr(args.release)
 
+        if args.whisper:
+            upload_whisper(args.release)
+
     elif args.action == Action.DOWNLOAD:
         if args.detection:
             download_detection()
@@ -209,6 +253,9 @@ def sync_models(args: argparse.Namespace):
 
         if args.ocr:
             download_ocr()
+
+        if args.whisper:
+            download_whisper()
 
     else:
         raise RuntimeError(f"Unsupported action {args.action}")
@@ -230,6 +277,7 @@ def sync_testdata(args: argparse.Namespace):
             "Rinat_Kurbanov.png",
             "AI-kit_Meeting_Bot.png",
             "AlumniHub_bot.png",
+            "whisper_audio.wav",
         ]:
             src = "2024/07/19/testdata/" + filename
             dst = args.current_directory / "testdata" / filename
@@ -279,6 +327,11 @@ def parse_args():
         "--asr",
         action="store_true",
         help="Specify to apply action only to asr model",
+    )
+    parser_models.add_argument(
+        "--whisper",
+        action="store_true",
+        help="Specify to apply action only to whisper model",
     )
     parser_models.add_argument(
         "--ocr", action="store_true", help="Specify to apply action only to ocr model"

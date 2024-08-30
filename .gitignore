@@ -244,3 +244,4 @@ gha-creds-*.json
 
 #asr ignore
 ml/asr/models/vosk*
+ml/whisper/models/onnx*
